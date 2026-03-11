@@ -1,0 +1,79 @@
+/* ═══════════════════════════════════════════════════════════════
+   Tom Select Custom Styling
+   Matches Tailwind "input-control" look and feel
+   Compatible with Tom Select v2.x
+═══════════════════════════════════════════════════════════════ */
+
+/* Main input control */
+.ts-wrapper .ts-control {
+    border-color: #cbd5e1 !important;
+    /* border-slate-300 */
+    border-radius: 0.5rem !important;
+    /* rounded-lg */
+    padding: 0.5rem 0.75rem !important;
+    /* py-2 px-3 */
+    min-height: 2.5rem !important;
+    font-size: 0.875rem !important;
+    /* text-sm */
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    /* text-slate-800 */
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+/* Focus state */
+.ts-wrapper .ts-control.focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
+}
+
+/* Transparent background for single-select text display */
+.ts-wrapper.single .ts-control {
+    background: #ffffff !important;
+    cursor: pointer !important;
+}
+
+/* Dropdown menu styling */
+.ts-dropdown {
+    font-size: 0.875rem !important;
+    border-radius: 0.5rem !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+    margin-top: 4px !important;
+    overflow: hidden !important;
+}
+
+/* Dropdown option styling */
+.ts-dropdown .option,
+.ts-dropdown .optgroup-header {
+    padding: 0.5rem 0.75rem !important;
+    transition: background-color 0.1s ease !important;
+}
+
+/* Active/highlighted option */
+.ts-dropdown .option.active {
+    background-color: #f1f5f9 !important;
+    /* bg-slate-100 */
+    color: #0f172a !important;
+}
+
+/* Selected option in dropdown */
+.ts-dropdown .option.selected {
+    background-color: #e0f2fe !important;
+    /* bg-sky-100 */
+    color: #0369a1 !important;
+}
+
+/* No results message */
+.ts-dropdown .no-results {
+    padding: 0.75rem !important;
+    text-align: center !important;
+    color: #94a3b8 !important;
+    font-size: 0.875rem !important;
+}
+
+/* Fix clear button UI */
+.ts-wrapper .clear-button {
+    margin-right: -4px !important;
+}

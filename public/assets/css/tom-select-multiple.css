@@ -1,0 +1,81 @@
+/* ═══════════════════════════════════════════════════════════════
+   Tom Select Custom Styling for Multiple Select Input
+   Extends properties to look good with multiple chips
+   Compatible with Tom Select v2.x
+═══════════════════════════════════════════════════════════════ */
+
+/* Wrapper for multi-select */
+.ts-wrapper.multi .ts-control {
+    padding: 0.35rem 0.5rem !important;
+    min-height: 2.75rem !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+/* Styling border dan box-shadow agar senada dengan input-control lain */
+.ts-wrapper.multi .ts-control.focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2) !important;
+}
+
+/* Styling Chip (Item yang terpilih) */
+.ts-wrapper.multi .ts-control>.item {
+    background: linear-gradient(135deg, #e2e8f0, #f1f5f9) !important;
+    color: #1e293b !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 9999px !important;
+    padding: 3px 10px !important;
+    margin: 2px 0 !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    line-height: 1.4 !important;
+    transition: all 0.15s ease !important;
+}
+
+.ts-wrapper.multi .ts-control>.item:hover {
+    background: linear-gradient(135deg, #dbeafe, #e0f2fe) !important;
+    border-color: #93c5fd !important;
+}
+
+.ts-wrapper.multi .ts-control>.item.active {
+    background: linear-gradient(135deg, #bfdbfe, #dbeafe) !important;
+    border-color: #60a5fa !important;
+}
+
+/* Styling Tombol Hapus (Silang) di dalam chip */
+.ts-wrapper.multi .ts-control>.item .remove {
+    margin-left: 6px !important;
+    color: #94a3b8 !important;
+    border-left: none !important;
+    font-weight: bold !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 2px !important;
+    font-size: 1rem !important;
+    line-height: 1 !important;
+    transition: color 0.15s ease !important;
+}
+
+.ts-wrapper.multi .ts-control>.item .remove:hover {
+    background: transparent !important;
+    color: #ef4444 !important;
+}
+
+/* Menyesuaikan input text placeholder dalam multiple-select */
+.ts-wrapper.multi .ts-control>input {
+    font-size: 0.875rem !important;
+    color: #1e293b !important;
+    padding-left: 4px !important;
+    min-width: 160px !important;
+}
+
+/* Placeholder styling */
+.ts-wrapper.multi .ts-control>input::placeholder {
+    color: #94a3b8 !important;
+    font-weight: 400 !important;
+}

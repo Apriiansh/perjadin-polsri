@@ -1,0 +1,219 @@
+document.addEventListener('DOMContentLoaded', function () {
+    let membersSelect;
+    const originalSelect = document.getElementById('members');
+
+    if (originalSelect) {
+        // Function to extract member data safely
+        function extractMemberData(val) {
+            // First check if it's in our stored custom object
+            if (membersSelect.options[val]) {
+                return membersSelect.options[val];
+            }
+            return null;
+        }
+
+        // Initialize TomSelect with AJAX loading
+        membersSelect = new TomSelect('#members', {
+            create: false,
+            valueField: 'id',
+            labelField: 'name',
+            searchField: ['name', 'nip'],
+            sortField: {
+                field: "name",
+                direction: "asc"
+            },
+            placeholder: "Ketik nama atau NIP pegawai...",
+            hideSelected: true, 
+            preload: 'focus', // Load when user clicks
+            load: function(query, callback) {
+                const golVal = document.getElementById('filter-golongan')?.value || '';
+                const jurVal = document.getElementById('filter-jurusan')?.value || '';
+                
+                const url = new URL(window.location.origin + '/travel/employees');
+                if (query) url.searchParams.append('q', query);
+                if (golVal) url.searchParams.append('golongan', golVal);
+                if (jurVal) url.searchParams.append('jurusan', jurVal);
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => {
+                        // Map the complex backend object to flat fields for TomSelect, handling nulls
+                        const results = json.map(emp => ({
+                            id: emp.id,
+                            name: emp.name,
+                            nip: emp.nip || '',
+                            golongan: emp.pangkat_golongan || '-',
+                            jurusan: emp.nama_jurusan || '-'
+                        }));
+                        callback(results);
+                    }).catch(()=>{
+                        callback();
+                    });
+            },
+            render: {
+                // Dropdown option
+                option: function(item, escape) {
+                    return `
+                        <div>
+                            <span class="block font-bold">` + escape(item.name) + `</span>
+                            <span class="block text-xs text-slate-500">` + escape(item.nip) + ` • ` + escape(item.golongan) + ` • ` + escape(item.jurusan) + `</span>
+                        </div>
+                    `;
+                },
+                // Return an empty div for selected items inside the input box
+                item: function(data, escape) {
+                    return '<div style="display:none;" data-id="' + escape(data.id) + '"></div>';
+                }
+            },
+            onChange: function () {
+                renderSelectedMembers();
+                debounceCheckTariffs();
+            }
+        });
+
+        // Sync initial options from HTML (for Edit mode) into TomSelect's internal options format
+        Array.from(originalSelect.options).forEach(opt => {
+            if (opt.selected) {
+                 membersSelect.addOption({
+                    id: opt.value,
+                    name: opt.getAttribute('data-name') || opt.text,
+                    nip: opt.getAttribute('data-nip') || '',
+                    golongan: opt.getAttribute('data-golongan') || '-',
+                    jurusan: opt.getAttribute('data-jurusan') || '-'
+                });
+            }
+        });
+        
+        // Listen for filter changes to refresh dropdown options via AJAX
+        const filterGolongan = document.getElementById('filter-golongan');
+        const filterJurusan = document.getElementById('filter-jurusan');
+
+        function triggerFilter() {
+            membersSelect.clearOptions(); // Clear old cached options
+            membersSelect.clearCache(); // Clear Sifter Cache
+            membersSelect.load(""); // Trigger a reload with empty query to fetch filtered list
+            membersSelect.open(); // Open dropdown to show user results
+        }
+
+        if (filterGolongan) filterGolongan.addEventListener('change', triggerFilter);
+        if (filterJurusan) filterJurusan.addEventListener('change', triggerFilter);
+
+        // Render selected items securely outside the input field
+        function renderSelectedMembers() {
+            const listContainer = document.getElementById('selected-members-list');
+            const countSpan = document.getElementById('selected-count');
+
+            if (!listContainer) return;
+
+            const emptyMsg = document.getElementById('empty-members-msg');
+            listContainer.innerHTML = '';
+
+            const selectedValues = membersSelect.getValue(); // returns an array
+            if (countSpan) countSpan.textContent = selectedValues.length;
+
+            if (selectedValues.length === 0) {
+                if (emptyMsg) {
+                    emptyMsg.style.display = 'block';
+                    listContainer.appendChild(emptyMsg);
+                }
+                return;
+            }
+
+            if (emptyMsg) {
+                emptyMsg.style.display = 'none';
+                listContainer.appendChild(emptyMsg); 
+            }
+
+            selectedValues.forEach(val => {
+                const emp = extractMemberData(val);
+                if (!emp) return;
+
+                const card = document.createElement('div');
+                card.className = 'flex items-center justify-between p-3 border border-slate-200 rounded-md bg-white shadow-sm';
+                card.innerHTML = `
+                    <div class="flex flex-col">
+                        <span class="font-bold text-sm text-slate-800">${emp.name}</span>
+                        <span class="text-xs text-slate-500 font-mono">${emp.nip} • Gol: ${emp.golongan} • Unit: ${emp.jurusan}</span>
+                    </div>
+                    <button type="button" class="text-red-500 p-1.5 hover:bg-red-50 rounded-md transition-colors" data-remove-id="${emp.id}" title="Hapus Pegawai">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    </button>
+                `;
+                listContainer.appendChild(card);
+            });
+
+            // Re-bind remove events
+            listContainer.querySelectorAll('[data-remove-id]').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const idToRemove = this.getAttribute('data-remove-id');
+                    membersSelect.removeItem(idToRemove);
+                });
+            });
+        }
+
+        // Run render initially (for edit page mainly)
+        renderSelectedMembers();
+    }
+
+    // -----------------------------------------------------
+    // Elemen terkait AJAX Tarif (Tidak berubah banyak)
+    // -----------------------------------------------------
+    const provinceSelect = document.getElementById('province');
+    const citySelect = document.getElementById('city');
+    const warningContainer = document.getElementById('tariff-warning-container');
+    const warningList = document.getElementById('tariff-warning-list');
+
+    // Listener ke perubahan input destinasi
+    if (provinceSelect) provinceSelect.addEventListener('change', debounceCheckTariffs);
+    if (citySelect) citySelect.addEventListener('change', debounceCheckTariffs);
+
+    let debounceTimer;
+
+    function debounceCheckTariffs() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(checkTariffs, 500); // 500ms delay
+    }
+
+    async function checkTariffs() {
+        if (!provinceSelect || !membersSelect) return;
+        const province = provinceSelect.options[provinceSelect.selectedIndex]?.text;
+        const city = citySelect && citySelect.selectedIndex > 0 ? citySelect.options[citySelect.selectedIndex].text : '';
+        const selectedMembers = membersSelect.getValue(); // ini nge-return array values
+
+        // Reset UI
+        if (warningContainer) warningContainer.style.display = 'none';
+        if (warningList) warningList.innerHTML = '';
+
+        if (!province || selectedMembers.length === 0 || province.includes('Sedang memuat') || province === '') {
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('province', province);
+        formData.append('city', city);
+        formData.append('members', JSON.stringify(selectedMembers));
+
+        try {
+            const response = await fetch('/travel/check-tariff', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (result.status === 'success' && result.missing_tariffs.length > 0 && warningList && warningContainer) {
+                result.missing_tariffs.forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong>${item.name}</strong> (Tingkat ${item.tingkat_biaya}): Data tidak ditemukan.`;
+                    warningList.appendChild(li);
+                });
+
+                warningContainer.style.display = 'flex';
+                warningContainer.classList.remove('hidden');
+            }
+
+        } catch (error) {
+            console.error('Error checking tariffs:', error);
+        }
+    }
+});
