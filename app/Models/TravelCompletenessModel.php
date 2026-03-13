@@ -100,4 +100,19 @@ class TravelCompletenessModel extends Model
     {
         return parent::insertBatch($set, $escape, $batchSize, $testing);
     }
+
+    /**
+     * Get completeness items with their uploaded files
+     */
+    public function getByRequestWithFiles(int $requestId): array
+    {
+        $items = $this->getByRequestId($requestId);
+        $fileModel = new \App\Models\TravelCompletenessFileModel();
+
+        foreach ($items as &$item) {
+            $item->files = $fileModel->getByCompletenessId($item->id);
+        }
+
+        return $items;
+    }
 }

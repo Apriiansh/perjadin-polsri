@@ -4,7 +4,7 @@
 <!-- Page header -->
 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
-        <h1 class="text-2xl font-extrabold text-slate-900">Pengajuan Perdin</h1>
+        <h1 class="text-2xl font-extrabold text-slate-900"><?= esc($title ?? 'Pengajuan Perdin') ?></h1>
         <p class="mt-1 text-sm text-slate-500"><?= ($isStaff ?? false) ? 'Kelola data perjalanan dinas pegawai.' : 'Daftar perjalanan dinas Anda.' ?></p>
     </div>
 
@@ -83,16 +83,44 @@
                         ];
                         $badge = $badgeMap[$req->status] ?? $badgeMap['draft'];
                         ?>
-                        <span class="dt-badge p-2 <?= $badge[0] ?>">
-                            <span class="dt-badge-dot <?= $badge[1] ?>"></span>
-                            <?= $badge[2] ?>
-                        </span>
+                        <div class="flex flex-col gap-1.5">
+                            <span class="dt-badge py-1 px-2 <?= $badge[0] ?>">
+                                <span class="dt-badge-dot <?= $badge[1] ?>"></span>
+                                <?= $badge[2] ?>
+                            </span>
+
+                            <?php if ($req->status === 'active' && isset($req->total_docs) && $req->total_docs > 0): ?>
+                                <?php if ($req->uploaded_docs > 0): ?>
+                                    <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100 flex items-center gap-1 w-fit whitespace-nowrap">
+                                        <i data-lucide="file-up" class="w-2.5 h-2.5"></i>
+                                        <?= $req->uploaded_docs ?> Dokumen Baru
+                                    </span>
+                                <?php endif; ?>
+                                <?php if ($req->verified_docs > 0): ?>
+                                    <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 flex items-center gap-1 w-fit whitespace-nowrap">
+                                        <i data-lucide="check-check" class="w-2.5 h-2.5"></i>
+                                        <?= $req->verified_docs ?> Terverifikasi
+                                    </span>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
                     </td>
                     <td class="text-center align-middle">
                         <div class="flex justify-center items-center gap-2">
-                            <?php if (auth()->user()->inGroup('superadmin') && $req->status === 'draft'): ?>
+                            <?php if (auth()->user()->inGroup('superadmin', 'admin') && $req->status === 'draft'): ?>
                                 <a href="<?= base_url('travel/' . $req->id . '/enrichment') ?>" class="btn-primary w-full justify-center shadow-md hover:shadow-lg transition-all inline-flex items-center gap-1">
                                     <i data-lucide="clipboard-check" class="w-4 h-4"></i> Lengkapi
+                                </a>
+                            <?php endif; ?>
+                            <?php if ($req->status === 'active'): ?>
+                                <?php 
+                                    $isVerifOnly = auth()->user()->inGroup('verificator') && !auth()->user()->inGroup('superadmin', 'admin');
+                                    $btnLabel = $isVerifOnly ? 'Verifikasi' : 'Dokumentasi';
+                                    $btnIcon = $isVerifOnly ? 'shield-check' : 'upload-cloud';
+                                    $btnPath = $isVerifOnly ? 'documentation/' . $req->id . '/verification' : 'documentation/' . $req->id;
+                                ?>
+                                <a href="<?= base_url($btnPath) ?>" class="btn-warning w-full justify-center shadow-md hover:shadow-lg transition-all inline-flex items-center gap-1">
+                                    <i data-lucide="<?= $btnIcon ?>" class="w-4 h-4"></i> <?= $btnLabel ?>
                                 </a>
                             <?php endif; ?>
                             <a href="<?= base_url('travel/' . $req->id) ?>" class="rounded-md border p-1.5 text-blue-500 hover:bg-blue-50" title="Lihat Detail">

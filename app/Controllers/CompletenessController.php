@@ -51,6 +51,14 @@ class CompletenessController extends BaseController
         }
 
         $members = $this->travelMemberModel->getByRequestWithEmployee($id);
+        
+        // Fetch existing data for Edit mode
+        $expenseItems = [];
+        foreach ($members as $member) {
+            $expenseItems[$member->id] = $this->travelExpenseItemModel->getByMember($member->id);
+        }
+        
+        $existingChecklist = $this->travelCompletenessModel->getByRequestId($id);
         $signatories = $this->signatoriesModel->getAllWithEmployee();
 
         // Group signatories by role for easier selection
@@ -78,6 +86,8 @@ class CompletenessController extends BaseController
         return view('travel/completeness', [
             'request' => $request,
             'members' => $members,
+            'expenseItems' => $expenseItems,
+            'existingChecklist' => $existingChecklist,
             'groupedSignatories' => $groupedSignatories,
             'title' => 'Lengkapi Data Perjalanan',
         ]);

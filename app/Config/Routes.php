@@ -57,8 +57,9 @@ $routes->group('', ['filter' => 'session'], static function ($routes): void {
 	});
 
 	// Pengajuan Perdin — accessible by Kepegawaian, Keuangan, Dosen
-	$routes->group('travel', ['filter' => 'group:admin,superadmin,lecturer'], static function ($routes): void {
+	$routes->group('travel', ['filter' => 'group:admin,superadmin,lecturer,verificator'], static function ($routes): void {
 		$routes->get('', 'TravelRequestController::index');
+		$routes->get('active', 'TravelRequestController::active');
 		$routes->get('create', 'TravelRequestController::create');
 		$routes->post('store', 'TravelRequestController::store');
 		$routes->get('employees', 'TravelRequestController::getEmployees');
@@ -69,14 +70,24 @@ $routes->group('', ['filter' => 'session'], static function ($routes): void {
 		$routes->post('(:num)/destroy', 'TravelRequestController::destroy/$1');
 		$routes->post('(:num)/submit', 'TravelRequestController::submit/$1');
 		$routes->post('(:num)/cancel', 'TravelRequestController::cancel/$1');
-		$routes->get('(:num)/lampiran', 'TravelRequestController::downloadLampiran/$1');
-		$routes->get('(:num)/spd', 'TravelRequestController::downloadSpd/$1');
+		    $routes->get('download/lampiran/(:num)', 'TravelRequestController::downloadLampiran/$1');
+    $routes->get('download/file/(:num)', 'TravelRequestController::downloadFile/$1');
+    $routes->get('download/spd/(:num)', 'TravelRequestController::downloadSpd/$1');
 		$routes->get('(:num)/statement', 'TravelRequestController::downloadStatement/$1');
 		$routes->get('(:num)/control-list', 'TravelRequestController::downloadControlList/$1');
 
 		// Data Enrichment (Phase 8)
 		$routes->get('(:num)/enrichment', 'CompletenessController::enrichment/$1');
 		$routes->post('(:num)/enrichment', 'CompletenessController::storeEnrichment/$1');
+
+		// Document Submission & Review (Phase 8b & 9)
+		$routes->group('completeness', static function ($routes) {
+			$routes->post('(:num)/upload', 'ReviewController::upload/$1');
+			$routes->get('(:num)/download', 'ReviewController::download/$1');
+			$routes->post('(:num)/verify', 'ReviewController::verify/$1');
+			$routes->post('(:num)/verify-all', 'ReviewController::verifyAll/$1'); // Phase 20
+			$routes->post('(:num)/reject-all', 'ReviewController::rejectAll/$1'); // Phase 21
+		});
 	});
 
 	$routes->group('verification', ['filter' => 'group:verificator'], static function ($routes): void {
@@ -85,4 +96,14 @@ $routes->group('', ['filter' => 'session'], static function ($routes): void {
 		$routes->post('(:num)/approve', 'VerificationController::approve/$1');
 		$routes->post('(:num)/reject', 'VerificationController::reject/$1');
 	});
+
+    // Documentation & Verification (Phase 12 & 13)
+    $routes->group('documentation', function($routes) {
+        $routes->get('(:num)', 'ReviewController::documentation/$1');
+        $routes->post('(:num)', 'ReviewController::submitDocumentation/$1');
+        $routes->delete('file/(:num)', 'ReviewController::deleteFile/$1');
+        $routes->get('file/(:num)', 'ReviewController::viewFile/$1'); // Phase 15
+        $routes->get('download/(:num)', 'ReviewController::downloadFile/$1'); // Phase 16
+        $routes->get('(:num)/verification', 'ReviewController::verification/$1', ['filter' => 'group:superadmin,verificator']);
+    });
 });

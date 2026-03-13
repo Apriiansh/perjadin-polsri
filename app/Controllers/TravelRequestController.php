@@ -82,6 +82,57 @@ class TravelRequestController extends BaseController
     }
 
     /**
+     * List active travel requests
+     */
+    public function active(): string|ResponseInterface
+    {
+        if ($this->isStaff()) {
+            $travelRequests = $this->travelRequestModel->where('status', 'active')->orderBy('created_at', 'DESC')->findAll();
+        } elseif (auth()->user()->inGroup('verificator')) {
+            // Verificator sees all active requests
+            $travelRequests = $this->travelRequestModel->where('status', 'active')->orderBy('created_at', 'DESC')->findAll();
+        } else {
+            // Dosen only sees active requests where they are a member
+            $employee = $this->getCurrentEmployee();
+            if (!$employee) {
+                return view('travel/index', [
+                    'title'          => 'Perjalanan Dinas Aktif',
+                    'travelRequests' => [],
+                    'isStaff'        => false,
+                ]);
+            }
+
+            // Find travel_request IDs where this employee is a member
+            $memberRows = $this->travelMemberModel->where('employee_id', $employee['id'])->findAll();
+            $requestIds = array_unique(array_column($memberRows, 'travel_request_id'));
+
+            $travelRequests = !empty($requestIds)
+                ? $this->travelRequestModel->whereIn('id', $requestIds)->where('status', 'active')->orderBy('created_at', 'DESC')->findAll()
+                : [];
+        }
+
+        $isVerifOnly = auth()->user()->inGroup('verificator') && !$this->isStaff();
+        $title = $isVerifOnly ? 'Verifikasi Perdin' : 'Perjalanan Dinas Aktif';
+
+        // Attach members and documentation stats to each request
+        $completenessModel = new \App\Models\TravelCompletenessModel();
+        foreach ($travelRequests as &$req) {
+            $req->members = $this->travelMemberModel->getByRequestWithEmployee($req->id);
+
+            $items = $completenessModel->where('travel_request_id', $req->id)->findAll();
+            $req->total_docs = count($items);
+            $req->uploaded_docs = count(array_filter($items, fn($i) => $i->status === 'uploaded'));
+            $req->verified_docs = count(array_filter($items, fn($i) => $i->status === 'verified'));
+        }
+
+        return view('travel/index', [
+            'title'          => $title,
+            'travelRequests' => $travelRequests,
+            'isStaff'        => $this->isStaff(),
+        ]);
+    }
+
+    /**
      * Create form — only Kepegawaian / Keuangan
      */
     public function create(): string|ResponseInterface
@@ -242,7 +293,8 @@ class TravelRequestController extends BaseController
         }
 
         // Dosen can only view requests where they are a member
-        if (!$this->isStaff()) {
+        // Staff (Admin/Superadmin) and Verificators can view any request
+        if (!$this->isStaff() && !auth()->user()->inGroup('verificator')) {
             $employee = $this->getCurrentEmployee();
             $isMember = $employee
                 ? $this->travelMemberModel->where('travel_request_id', $id)->where('employee_id', $employee['id'])->first()
@@ -262,7 +314,12 @@ class TravelRequestController extends BaseController
 
         // Get completeness items
         $completenessModel = model('TravelCompletenessModel');
+        $fileModel = model('TravelCompletenessFileModel');
         $completeness = $completenessModel->getByRequestId($id);
+
+        foreach ($completeness as $item) {
+            $item->files = $fileModel->getByCompletenessId($item->id);
+        }
 
         return view('travel/show', [
             'title'          => 'Detail Perjalanan Dinas',
@@ -662,6 +719,25 @@ class TravelRequestController extends BaseController
         $originalName = $travelRequest->lampiran_original_name ?: basename($filePath);
 
         return $this->response->download($filePath, null)->setFileName($originalName);
+    }
+
+    /**
+     * Download specific documentation file (Phase 12)
+     */
+    public function downloadFile(int $fileId): ResponseInterface
+    {
+        $fileModel = model('TravelCompletenessFileModel');
+        $file = $fileModel->find($fileId);
+        if (!$file) {
+            return redirect()->back()->with('error', 'File tidak ditemukan.');
+        }
+
+        $filePath = WRITEPATH . 'uploads/' . $file->file_path;
+        if (!is_file($filePath)) {
+            return redirect()->back()->with('error', 'File fisik tidak ditemukan.');
+        }
+
+        return $this->response->download($filePath, null)->setFileName($file->original_name);
     }
 
     /**

@@ -55,8 +55,12 @@
                 <p class="text-xs text-slate-500 mb-4 italic">Item ini akan muncul di dashboard Dosen untuk dilengkapi sebagai syarat pencairan.</p>
 
                 <div id="checklist-container" class="space-y-2">
-                    <?php $defaultChecklist = ['Laporan Perjalanan', 'Dokumentasi Kegiatan', 'Tiket & Boarding Pass', 'Daftar Pengeluaran Riil']; ?>
-                    <?php foreach ($defaultChecklist as $item): ?>
+                    <?php 
+                    $itemsToDisplay = !empty($existingChecklist) 
+                        ? array_column($existingChecklist, 'item_name') 
+                        : ['Laporan Perjalanan', 'Dokumentasi Kegiatan', 'Tiket & Boarding Pass', 'Daftar Pengeluaran Riil']; 
+                    ?>
+                    <?php foreach ($itemsToDisplay as $item): ?>
                         <div class="flex items-center gap-2 bg-slate-50 p-2 rounded border border-slate-200">
                             <input type="text" name="checklist[]" value="<?= esc($item) ?>" class="bg-transparent border-none text-sm flex-1 focus:ring-0 p-0">
                             <button type="button" class="text-slate-400 hover:text-red-500 transition-colors" onclick="this.parentElement.remove()">
@@ -178,29 +182,59 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
-                                    <!-- Row Template (Initial rows if needed, or pre-fill with basics) -->
-                                    <tr class="expense-row">
-                                        <td class="px-3 py-2">
-                                            <select name="expense_items[<?= $member->id ?>][0][category]" class="input-control text-xs py-1 px-2 border-none bg-transparent hover:bg-slate-50">
-                                                <option value="tiket">Tiket</option>
-                                                <option value="penginapan">Penginapan</option>
-                                                <option value="transport_darat">Trans Darat</option>
-                                                <option value="transport_lokal">Trans Lokal</option>
-                                                <option value="lain-lain">Lain-lain</option>
-                                            </select>
-                                        </td>
-                                        <td class="px-3 py-2">
-                                            <input type="text" name="expense_items[<?= $member->id ?>][0][item_name]" placeholder="Misal: Garuda GA-123 Palembang - Jakarta" class="input-control text-xs py-1 px-2 border-none bg-transparent hover:bg-slate-50 w-full">
-                                        </td>
-                                        <td class="px-3 py-2 text-right">
-                                            <input type="text" name="expense_items[<?= $member->id ?>][0][amount]" value="0" class="input-control text-xs py-1 px-2 border-none bg-transparent hover:bg-slate-50 text-right font-semibold number-input" oninput="formatNumber(this)">
-                                        </td>
-                                        <td class="px-3 py-2 text-center">
-                                            <button type="button" class="text-slate-300 hover:text-red-500 transition-colors" onclick="this.closest('tr').remove()">
-                                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    <?php 
+                                    $memberItems = $expenseItems[$member->id] ?? [];
+                                    if (empty($memberItems)): 
+                                    ?>
+                                        <!-- Default empty row if no items exist -->
+                                        <tr class="expense-row">
+                                            <td class="px-3 py-2">
+                                                <select name="expense_items[<?= $member->id ?>][0][category]" class="input-control text-xs py-1 px-2 border-none bg-transparent hover:bg-slate-50">
+                                                    <option value="tiket">Tiket</option>
+                                                    <option value="penginapan">Penginapan</option>
+                                                    <option value="transport_darat">Trans Darat</option>
+                                                    <option value="transport_lokal">Trans Lokal</option>
+                                                    <option value="lain-lain">Lain-lain</option>
+                                                </select>
+                                            </td>
+                                            <td class="px-3 py-2">
+                                                <input type="text" name="expense_items[<?= $member->id ?>][0][item_name]" placeholder="Misal: Garuda GA-123 Palembang - Jakarta" class="input-control text-xs py-1 px-2 border-none bg-transparent hover:bg-slate-50 w-full">
+                                            </td>
+                                            <td class="px-3 py-2 text-right">
+                                                <input type="text" name="expense_items[<?= $member->id ?>][0][amount]" value="0" class="input-control text-xs py-1 px-2 border-none bg-transparent hover:bg-slate-50 text-right font-semibold number-input" oninput="formatNumber(this)">
+                                            </td>
+                                            <td class="px-3 py-2 text-center">
+                                                <button type="button" class="text-slate-300 hover:text-red-500 transition-colors" onclick="this.closest('tr').remove()">
+                                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <?php else: ?>
+                                        <?php foreach ($memberItems as $idx => $item): ?>
+                                            <tr class="expense-row">
+                                                <td class="px-3 py-2">
+                                                    <select name="expense_items[<?= $member->id ?>][<?= $idx ?>][category]" class="input-control text-xs py-1 px-2 border-none bg-transparent hover:bg-slate-50">
+                                                        <option value="tiket" <?= $item->category === 'tiket' ? 'selected' : '' ?>>Tiket</option>
+                                                        <option value="penginapan" <?= $item->category === 'penginapan' ? 'selected' : '' ?>>Penginapan</option>
+                                                        <option value="transport_darat" <?= $item->category === 'transport_darat' ? 'selected' : '' ?>>Trans Darat</option>
+                                                        <option value="transport_lokal" <?= $item->category === 'transport_lokal' ? 'selected' : '' ?>>Trans Lokal</option>
+                                                        <option value="lain-lain" <?= $item->category === 'lain-lain' ? 'selected' : '' ?>>Lain-lain</option>
+                                                    </select>
+                                                </td>
+                                                <td class="px-3 py-2">
+                                                    <input type="text" name="expense_items[<?= $member->id ?>][<?= $idx ?>][item_name]" value="<?= esc($item->item_name) ?>" placeholder="Deskripsi..." class="input-control text-xs py-1 px-2 border-none bg-transparent hover:bg-slate-50 w-full">
+                                                </td>
+                                                <td class="px-3 py-2 text-right">
+                                                    <input type="text" name="expense_items[<?= $member->id ?>][<?= $idx ?>][amount]" value="<?= number_format($item->amount, 0, ',', '.') ?>" class="input-control text-xs py-1 px-2 border-none bg-transparent hover:bg-slate-50 text-right font-semibold number-input" oninput="formatNumber(this)">
+                                                </td>
+                                                <td class="px-3 py-2 text-center">
+                                                    <button type="button" class="text-slate-300 hover:text-red-500 transition-colors" onclick="this.closest('tr').remove()">
+                                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>

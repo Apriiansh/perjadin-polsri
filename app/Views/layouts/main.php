@@ -65,6 +65,10 @@
     <!-- Lucide Icons Core -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <!-- Global Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <!-- App Scripts -->
     <script src="<?= base_url('assets/js/app-layout.js') ?>" defer></script>
     <?= $this->renderSection('pageScripts') ?>

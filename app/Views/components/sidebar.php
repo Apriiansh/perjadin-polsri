@@ -4,7 +4,9 @@ $userGroups  = auth()->user()?->getGroups() ?? [];
 $config = config('AuthGroups');
 $groupTitles = array_map(fn($group) => $config->groups[$group]['title'] ?? $group, $userGroups);
 $isAdmin = in_array('superadmin', $userGroups) || in_array('admin', $userGroups);
-$isVerif = in_array('verificator', $userGroups) || $isAdmin;
+$isSuperAdmin = in_array('superadmin', $userGroups);
+$isVerificatorOnly = in_array('verificator', $userGroups) && !$isAdmin;
+$isLecturerOnly = in_array('lecturer', $userGroups) && !$isAdmin && !$isVerificatorOnly;
 ?>
 <aside class="flex h-full flex-col border-r border-surface-200 bg-white lg:min-h-screen">
   <!-- Brand header -->
@@ -32,18 +34,30 @@ $isVerif = in_array('verificator', $userGroups) || $isAdmin;
       Dashboard
     </a>
 
-    <a href="<?= base_url('travel') ?>" class="sidebar-link group <?= str_starts_with($current, 'travel') ? 'active' : '' ?>">
-      <i data-lucide="send" class="sidebar-icon"></i>
-      Perjalanan Dinas
-    </a>
+    <?php if ($isAdmin): ?>
+      <a href="<?= base_url('travel') ?>" class="sidebar-link group <?= ($current === 'travel') ? 'active' : '' ?>">
+        <i data-lucide="send" class="sidebar-icon"></i>
+        Perjalanan Dinas
+      </a>
+    <?php endif; ?>
 
-    <?php if ($isVerif): ?>
-      <!-- Section: Verifikasi -->
-      <p class="mb-2 mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Verifikasi</p>
-
-      <a href="<?= base_url('verification') ?>" class="sidebar-link group <?= str_starts_with($current, 'verification') ? 'active' : '' ?>">
-        <i data-lucide="shield-check" class="sidebar-icon"></i>
-        Verifikasi Perdin
+    <?php 
+      // Consolidate "travel/active" links to remove redundancy (Phase 22)
+      // Perjadin Aktif hidden for superadmin as they use the main "Perjalanan Dinas" list
+      $showActive = ($isLecturerOnly || $isVerificatorOnly || $isAdmin) && !$isSuperAdmin;
+      if ($showActive): 
+        $activeTitle = 'Perjadin Aktif';
+        $activeIcon = 'check-circle';
+        
+        // If user is ONLY a verificator (not admin), show "Verifikasi Perdin"
+        if ($isVerificatorOnly) {
+          $activeTitle = 'Verifikasi Perdin';
+          $activeIcon = 'shield-check';
+        }
+    ?>
+      <a href="<?= base_url('travel/active') ?>" class="sidebar-link group <?= str_starts_with($current, 'travel/active') ? 'active' : '' ?>">
+        <i data-lucide="<?= $activeIcon ?>" class="sidebar-icon"></i>
+        <?= $activeTitle ?>
       </a>
     <?php endif; ?>
 
