@@ -119,16 +119,16 @@ class TravelRequestController extends BaseController
             'departure_place'             => $this->request->getPost('departure_place') ?: null,
             'budget_burden_by'            => $this->request->getPost('budget_burden_by'),
             'tahun_anggaran'              => $this->request->getPost('tahun_anggaran'),
-            'tgl_mulai'                   => $this->request->getPost('tgl_mulai'),
-            'tgl_selesai'                 => $this->request->getPost('tgl_selesai'),
+            'departure_date'              => $this->request->getPost('departure_date'),
+            'return_date'                 => $this->request->getPost('return_date'),
             'status'                      => 'draft',
             'created_by'                  => auth()->id(),
         ];
 
-        // Auto-calculate duration_days from tgl_mulai & tgl_selesai
-        if (!empty($dataRequest['tgl_mulai']) && !empty($dataRequest['tgl_selesai'])) {
-            $start = new \DateTime($dataRequest['tgl_mulai']);
-            $end   = new \DateTime($dataRequest['tgl_selesai']);
+        // Auto-calculate duration_days from departure_date & return_date
+        if (!empty($dataRequest['departure_date']) && !empty($dataRequest['return_date'])) {
+            $start = new \DateTime($dataRequest['departure_date']);
+            $end   = new \DateTime($dataRequest['return_date']);
             $dataRequest['duration_days'] = (int) $start->diff($end)->days + 1;
         }
 
@@ -152,6 +152,7 @@ class TravelRequestController extends BaseController
 
         // Process members: create travel_members first, then calculate expenses
         $memberIds = $this->request->getPost('members');
+        $memberGolongan = $this->request->getPost('member_golongan') ?? [];
         $calculator = new TravelExpenseCalculator();
         $totalBudgetAll = 0;
         $errors = [];
@@ -161,15 +162,21 @@ class TravelRequestController extends BaseController
                 $emp = $this->employeeModel->find($empId);
                 if (!$emp) continue;
 
-                // Create travel_member row with golongan snapshot
+                // Create travel_member row with golongan snapshot from form
+                $kodeGol = $memberGolongan[$empId] ?? null;
+                $namaGol = $kodeGol ? $this->getNamaGolongan($kodeGol) : null;
+
                 $this->travelMemberModel->insert([
                     'travel_request_id' => $requestId,
                     'employee_id'       => $empId,
-                    'kode_golongan'     => $emp['pangkat_golongan'] ?? null,
+                    'kode_golongan'     => $kodeGol,
+                    'nama_golongan'     => $namaGol,
                 ]);
                 $memberId = $this->travelMemberModel->insertID();
 
-                $tingkatBiaya = $this->getTingkatBiayaFromGolongan($emp['pangkat_golongan'] ?? '');
+                // Use kode_golongan from form for tingkat biaya, fallback to employee API data
+                $golForTingkat = $kodeGol ?: ($emp['pangkat_golongan'] ?? '');
+                $tingkatBiaya = $this->getTingkatBiayaFromGolongan($golForTingkat);
 
                 $biaya = [
                     'uang_harian'       => 0,
@@ -247,6 +254,12 @@ class TravelRequestController extends BaseController
 
         $members = $this->travelExpenseModel->getByRequestWithMember($id);
 
+        // Fetch itemized expenses (Phase 8)
+        $expenseItemModel = new \App\Models\TravelExpenseItemModel();
+        foreach ($members as &$member) {
+            $member->expense_items = $expenseItemModel->where('travel_member_id', $member->travel_member_id)->findAll();
+        }
+
         // Get completeness items
         $completenessModel = model('TravelCompletenessModel');
         $completeness = $completenessModel->getByRequestId($id);
@@ -311,14 +324,14 @@ class TravelRequestController extends BaseController
             'departure_place'             => $this->request->getPost('departure_place') ?: null,
             'budget_burden_by'            => $this->request->getPost('budget_burden_by'),
             'tahun_anggaran'              => $this->request->getPost('tahun_anggaran'),
-            'tgl_mulai'                   => $this->request->getPost('tgl_mulai'),
-            'tgl_selesai'                 => $this->request->getPost('tgl_selesai'),
+            'departure_date'              => $this->request->getPost('departure_date'),
+            'return_date'                 => $this->request->getPost('return_date'),
         ];
 
-        // Auto-calculate duration_days from tgl_mulai & tgl_selesai
-        if (!empty($data['tgl_mulai']) && !empty($data['tgl_selesai'])) {
-            $start = new \DateTime($data['tgl_mulai']);
-            $end   = new \DateTime($data['tgl_selesai']);
+        // Auto-calculate duration_days from departure_date & return_date
+        if (!empty($data['departure_date']) && !empty($data['return_date'])) {
+            $start = new \DateTime($data['departure_date']);
+            $end   = new \DateTime($data['return_date']);
             $data['duration_days'] = (int) $start->diff($end)->days + 1;
         }
 
@@ -352,6 +365,7 @@ class TravelRequestController extends BaseController
 
         // Re-create members and recalculate expenses
         $memberIds = $this->request->getPost('members');
+        $memberGolongan = $this->request->getPost('member_golongan') ?? [];
         $calculator = new TravelExpenseCalculator();
         $totalBudgetAll = 0;
         $errors = [];
@@ -361,14 +375,19 @@ class TravelRequestController extends BaseController
                 $emp = $this->employeeModel->find($empId);
                 if (!$emp) continue;
 
+                $kodeGol = $memberGolongan[$empId] ?? null;
+                $namaGol = $kodeGol ? $this->getNamaGolongan($kodeGol) : null;
+
                 $this->travelMemberModel->insert([
                     'travel_request_id' => $id,
                     'employee_id'       => $empId,
-                    'kode_golongan'     => $emp['pangkat_golongan'] ?? null,
+                    'kode_golongan'     => $kodeGol,
+                    'nama_golongan'     => $namaGol,
                 ]);
                 $memberId = $this->travelMemberModel->insertID();
 
-                $tingkatBiaya = $this->getTingkatBiayaFromGolongan($emp['pangkat_golongan'] ?? '');
+                $golForTingkat = $kodeGol ?: ($emp['pangkat_golongan'] ?? '');
+                $tingkatBiaya = $this->getTingkatBiayaFromGolongan($golForTingkat);
 
                 $biaya = [
                     'uang_harian'       => 0,
@@ -561,6 +580,33 @@ class TravelRequestController extends BaseController
     }
 
     /**
+     * Map kode_golongan (e.g. IV/a, III/d) to nama_golongan
+     */
+    private function getNamaGolongan(string $kode): string
+    {
+        $map = [
+            'IV/e'  => 'Pembina Utama',
+            'IV/d'  => 'Pembina Utama Madya',
+            'IV/c'  => 'Pembina Utama Muda',
+            'IV/b'  => 'Pembina TK. I',
+            'IV/a'  => 'Pembina',
+            'III/d' => 'Penata TK. I',
+            'III/c' => 'Penata',
+            'III/b' => 'Penata Muda TK. 1',
+            'III/a' => 'Penata Muda',
+            'II/d'  => 'Pengatur TK. I',
+            'II/c'  => 'Pengatur',
+            'II/b'  => 'Pengatur Muda TK. 1',
+            'II/a'  => 'Pengatur Muda',
+            'I/d'   => 'Juru TK. I',
+            'I/c'   => 'Juru',
+            'I/b'   => 'Juru Muda TK. 1',
+            'I/a'   => 'Juru Muda',
+        ];
+        return $map[$kode] ?? '';
+    }
+
+    /**
      * Map Pangkat/Golongan to Tingkat Biaya Perjadin
      */
     private function getTingkatBiayaFromGolongan(string $golongan): string
@@ -619,10 +665,10 @@ class TravelRequestController extends BaseController
     }
 
     /**
-     * Download SPPD (.docx)
-     * Signatories (PPK, KPA) can be passed via ?ppk_id & ?kpa_id query params.
+     * Download SPD (.docx)
+     * PPK can be passed via ?ppk_id query param, or auto-resolved from signatories.
      */
-    public function downloadSppd(int $id): ResponseInterface
+    public function downloadSpd(int $id): ResponseInterface
     {
         $travelRequest = $this->travelRequestModel->find($id);
         if (!$travelRequest) {
@@ -641,11 +687,101 @@ class TravelRequestController extends BaseController
 
         $members = $this->travelExpenseModel->getByRequestWithMember($id);
 
-        $ppk = $this->resolveSignatory($this->request->getGet('ppk_id'));
-        $kpa = $this->resolveSignatory($this->request->getGet('kpa_id'));
+        // Resolve PPK: prioritize ppk_id from travel_requests, then query param, then fallback to active PPK
+        $ppkId = $travelRequest->ppk_id ?: $this->request->getGet('ppk_id');
+        $ppk = $this->resolveSignatory((string) $ppkId);
 
-        (new \App\Libraries\Templates\SppdTemplate())->generate($travelRequest, $members, $ppk, $kpa);
+        if (!$ppk) {
+            $ppkSig = $this->signatoryModel
+                ->like('jabatan', 'PPK')
+                ->where('is_active', 1)
+                ->first();
+            if ($ppkSig) {
+                $ppk = $this->resolveSignatory((string) $ppkSig->id);
+            }
+        }
+
+        (new \App\Libraries\Templates\SppdTemplate())->generate($travelRequest, $members, $ppk);
         exit; // generate() streams output
+    }
+
+    /**
+     * Generate and download Surat Pernyataan.
+     */
+    public function downloadStatement(int $id): ResponseInterface
+    {
+        $travelRequest = $this->travelRequestModel->find($id);
+        if (!$travelRequest) {
+            return redirect()->to('/travel')->with('error', 'Data tidak ditemukan.');
+        }
+
+        $isStaff = $this->isStaff();
+        $emp = $this->getCurrentEmployee();
+        $specificMemberId = $this->request->getGet('member_id');
+
+        if (!$isStaff) {
+            $isMember = $emp
+                ? $this->travelMemberModel->where('travel_request_id', $id)->where('employee_id', $emp['id'])->first()
+                : null;
+            if (!$isMember) {
+                return redirect()->to('/travel')->with('error', 'Akses ditolak.');
+            }
+            // Lecturer can only see their own
+            $specificMemberId = $isMember->id;
+        }
+
+        $members = $this->travelExpenseModel->getByRequestWithMember($id);
+
+        // Resolve PPK
+        $ppkId = $travelRequest->ppk_id;
+        $ppk = $this->resolveSignatory((string) $ppkId);
+
+        if (!$ppk) {
+            $ppkSig = $this->signatoryModel
+                ->like('jabatan', 'PPK')
+                ->where('is_active', 1)
+                ->first();
+            if ($ppkSig) {
+                $ppk = $this->resolveSignatory((string) $ppkSig->id);
+            }
+        }
+
+        (new \App\Libraries\Templates\SuratPernyataanTemplate())->generate($travelRequest, $members, $ppk, $specificMemberId);
+        exit;
+    }
+
+    /**
+     * Generate and download Daftar Kontrol Pembayaran (Excel).
+     */
+    public function downloadControlList(int $id): ResponseInterface
+    {
+        if (!$this->isStaff()) {
+            return redirect()->to('/travel')->with('error', 'Akses ditolak.');
+        }
+
+        $travelRequest = $this->travelRequestModel->find($id);
+        if (!$travelRequest) {
+            return redirect()->to('/travel')->with('error', 'Data tidak ditemukan.');
+        }
+
+        $members = $this->travelExpenseModel->getByRequestWithMember($id);
+
+        // Resolve BPP
+        $bppId = $travelRequest->bpp_id;
+        $bpp = $this->resolveSignatory((string) $bppId);
+
+        if (!$bpp) {
+            $bppSig = $this->signatoryModel
+                ->like('jabatan', 'Bendahara Pengeluaran Pembantu')
+                ->where('is_active', 1)
+                ->first();
+            if ($bppSig) {
+                $bpp = $this->resolveSignatory((string) $bppSig->id);
+            }
+        }
+
+        (new \App\Libraries\Templates\DaftarKontrolTemplate())->generate($travelRequest, $members, $bpp);
+        exit;
     }
 
     /**

@@ -70,7 +70,13 @@ $routes->group('', ['filter' => 'session'], static function ($routes): void {
 		$routes->post('(:num)/submit', 'TravelRequestController::submit/$1');
 		$routes->post('(:num)/cancel', 'TravelRequestController::cancel/$1');
 		$routes->get('(:num)/lampiran', 'TravelRequestController::downloadLampiran/$1');
-		$routes->get('(:num)/sppd', 'TravelRequestController::downloadSppd/$1');
+		$routes->get('(:num)/spd', 'TravelRequestController::downloadSpd/$1');
+		$routes->get('(:num)/statement', 'TravelRequestController::downloadStatement/$1');
+		$routes->get('(:num)/control-list', 'TravelRequestController::downloadControlList/$1');
+
+		// Data Enrichment (Phase 8)
+		$routes->get('(:num)/enrichment', 'CompletenessController::enrichment/$1');
+		$routes->post('(:num)/enrichment', 'CompletenessController::storeEnrichment/$1');
 	});
 
 	$routes->group('verification', ['filter' => 'group:verificator'], static function ($routes): void {

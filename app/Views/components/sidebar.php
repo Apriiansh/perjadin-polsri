@@ -34,7 +34,7 @@ $isVerif = in_array('verificator', $userGroups) || $isAdmin;
 
     <a href="<?= base_url('travel') ?>" class="sidebar-link group <?= str_starts_with($current, 'travel') ? 'active' : '' ?>">
       <i data-lucide="send" class="sidebar-icon"></i>
-      Pengajuan Perdin
+      Perjalanan Dinas
     </a>
 
     <?php if ($isVerif): ?>

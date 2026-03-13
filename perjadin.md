@@ -7,14 +7,7 @@
 
 ## 📋 Table of Contents
 
-1. [Prasyarat & Environment Setup](#1-prasyarat--environment-setup)
-2. [Project Initialization](#2-project-initialization)
-3. [Konfigurasi `.env`](#3-konfigurasi-env)
-4. [Database Design (Improved)](#4-database-design-improved)
-5. [Development Phases & Checklist](#5-development-phases--checklist)
-6. [Architecture & Best Practices](#6-architecture--best-practices)
-7. [Security Hardening](#7-security-hardening)
-8. [Deployment Strategy](#8-deployment-strategy)
+
 
 ---
 
@@ -55,163 +48,6 @@ extension=zip       ; untuk PhpSpreadsheet
 
 ---
 
-## 2. Project Initialization
-
-### Step-by-step
-
-```bash
-# 1. Buat project CI4 di workspace
-cd /home/apriiansh/.gemini/antigravity/playground/obsidian-crab
-composer create-project codeigniter4/appstarter . --no-dev
-
-# 2. Install dev dependencies
-composer require --dev phpunit/phpunit
-composer require --dev codeigniter4/devkit  # optional: CI4 dev tools
-
-# 3. Install production dependencies
-composer require phpoffice/phpspreadsheet
-composer require dompdf/dompdf
-
-# 4. Init TailwindCSS (standalone CLI — tanpa webpack/vite)
-npm init -y
-npm install -D tailwindcss @tailwindcss/forms
-npx tailwindcss init
-
-# 5. Init Git
-git init
-cp env .env   # CI4 ships 'env' as template
-```
-
-### TailwindCSS Configuration
-
-```js
-// tailwind.config.js
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: [
-    "./app/Views/**/*.php",
-    "./public/assets/js/**/*.js",
-  ],
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          50:  '#eff6ff',
-          100: '#dbeafe',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          900: '#1e3a5f',
-        },
-        accent: '#f59e0b',
-      },
-    },
-  },
-  plugins: [
-    require('@tailwindcss/forms'),
-  ],
-}
-```
-
-```css
-/* app/Views/css/input.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer components {
-  .btn-primary {
-    @apply px-4 py-2 bg-primary-600 text-white rounded-lg 
-           hover:bg-primary-700 transition-colors font-medium;
-  }
-  .btn-danger {
-    @apply px-4 py-2 bg-red-600 text-white rounded-lg 
-           hover:bg-red-700 transition-colors font-medium;
-  }
-  .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
-  }
-  .form-input-group {
-    @apply flex flex-col gap-1;
-  }
-  .form-label {
-    @apply text-sm font-medium text-gray-700;
-  }
-}
-```
-
-**Build command** (gunakan `composer.json` scripts):
-
-```json
-{
-    "scripts": {
-        "css:build": "npx @tailwindcss/cli -i ./app/Views/css/input.css -o ./public/assets/css/app.css --minify",
-        "css:watch": "npx @tailwindcss/cli -i ./app/Views/css/input.css -o ./public/assets/css/app.css --watch",
-        "serve": "php spark serve",
-        "dev": "sh -c 'npx @tailwindcss/cli -i ./app/Views/css/input.css -o ./public/assets/css/app.css --watch & php spark serve'"
-    }
-}
-```
-
----
-
-## 3. Konfigurasi `.env`
-
-```ini
-#--------------------------------------------------------------------
-# ENVIRONMENT
-#--------------------------------------------------------------------
-CI_ENVIRONMENT = development
-
-#--------------------------------------------------------------------
-# APP
-#--------------------------------------------------------------------
-app.baseURL = 'http://localhost:8080/'
-app.indexPage = ''
-
-#--------------------------------------------------------------------
-# DATABASE
-#--------------------------------------------------------------------
-database.default.hostname = localhost
-database.default.database = perjadin_db
-database.default.username = root
-database.default.password = 
-database.default.DBDriver = MySQLi
-database.default.DBPrefix =
-database.default.port = 3306
-database.default.charset = utf8mb4
-database.default.DBCollat = utf8mb4_unicode_ci
-
-#--------------------------------------------------------------------
-# ENCRYPTION
-#--------------------------------------------------------------------
-encryption.key = <generate-dengan-bin2hex(random_bytes(32))>
-
-#--------------------------------------------------------------------
-# SESSION
-#--------------------------------------------------------------------
-session.driver = 'CodeIgniter\Session\Handlers\DatabaseHandler'
-session.cookieName = 'perjadin_session'
-session.savePath = 'ci_sessions'
-
-#--------------------------------------------------------------------
-# SECURITY
-#--------------------------------------------------------------------
-security.csrfProtection = 'session'
-security.tokenRandomize = true
-
-#--------------------------------------------------------------------
-# CUSTOM: POLSRI API
-#--------------------------------------------------------------------
-POLSRI_API_URL = 'https://polsripay.polsri.ac.id/api/pegawai'
-POLSRI_API_KEY = 'polsripayNRWpokIi5kUsdmuIMvsz6g6C4Yhz9BiR'
-```
-
-> [!IMPORTANT]
-> Jangan pernah commit `.env` ke Git! Pastikan `.env` ada di `.gitignore`.
-
----
-
 ## 4. Database Design (Revised v3 — Current Implementation)
 
 > **Revisi terbaru** per 11/03/2026. Semua migration sudah dijalankan.
@@ -223,7 +59,7 @@ POLSRI_API_KEY = 'polsripayNRWpokIi5kUsdmuIMvsz6g6C4Yhz9BiR'
 > - **Hapus `surat_dasar`, `purpose`, `task_detail`** — diganti dengan field rujukan terstruktur
 > - **Tambah field surat rujukan**: `nomor_surat_rujukan`, `tgl_surat_rujukan`, `instansi_pengirim_rujukan`, `perihal_surat_rujukan`
 > - **Surat Tugas (ST) = lampiran upload** bukan dokumen yang di-generate. Field: `lampiran_path`, `lampiran_original_name`
-> - **Tambah `tgl_mulai`/`tgl_selesai`** — tanggal kegiatan sesuai ST, auto-hitung `duration_days`
+> - **Gunakan `departure_date`/`return_date`** — tanggal berangkat & kembali sesuai ST, auto-hitung `duration_days`. Kolom `tgl_mulai`/`tgl_selesai` sudah di-drop (migration `DropTglMulaiSelesaiFromTravelRequests`).
 > - **Tambah `kode_golongan` + `nama_golongan`** di `travel_members` — snapshot kode golongan (IV/a, III/d) dan nama golongan (Pembina, Penata TK. I) saat perjalanan. Kode angka (IV, III) tetap di `employees.pangkat_golongan` dari API.
 > - **Signatories lebih fleksibel** — `role_type` ENUM → `jabatan` VARCHAR (input manual)
 > - **Role tetap 4 group**: `superadmin` (Keuangan), `admin` (Kepegawaian), `verificator` (Verifikator), `lecturer` (Dosen)
@@ -283,9 +119,9 @@ Golongan PNS/Dosen memiliki dua level:
 | Shield Group | Nama Display | Fungsi Utama |
 |---|---|---|
 | `superadmin` | Keuangan | Full access, kalkulasi biaya (honor), manage system |
-| `admin` | Kepegawaian | Input ST, auto-generate SPPD, kelola pegawai, master data |
+| `admin` | Kepegawaian | Input ST, auto-generate SPD, kelola pegawai, master data |
 | `verificator` | Verifikator (Keuangan) | Verifikasi dokumen & kelengkapan, buat form kelengkapan |
-| `lecturer` | Dosen | Lihat & print ST/SPPD, lihat form kelengkapan, upload dokumentasi |
+| `lecturer` | Dosen | Lihat & print ST/SPD, lihat form kelengkapan, upload dokumentasi |
 
 ### ERD Overview (v3 — Current)
 
@@ -350,9 +186,9 @@ erDiagram
         varchar destination_city
         varchar lokasi "venue opsional"
         varchar departure_place "tempat berangkat, opsional"
-        date tgl_mulai "tanggal mulai kegiatan"
-        date tgl_selesai "tanggal selesai kegiatan"
-        int duration_days "auto: tgl_selesai - tgl_mulai + 1"
+        date departure_date "tanggal berangkat"
+        date return_date "tanggal kembali"
+        int duration_days "auto: return_date - departure_date + 1"
         varchar mak
         varchar budget_burden_by
         decimal total_budget "calculated sum"
@@ -439,7 +275,7 @@ Berdasarkan format surat real dari Polsri:
 | Dokumen | Sumber Data | Per |
 |---|---|---|
 | **Surat Tugas (ST)** | `travel_requests` + `travel_members` + `employees` | 1 per perjalanan |
-| **SPPD** | `travel_members` + `employees` + `travel_requests` | 1 per anggota |
+| **SPD (Surat Perjalanan Dinas)** | `travel_members` + `employees` + `travel_requests` + `tariffs` | 1 per anggota |
 | **Rincian Biaya Perjalanan Dinas** | `travel_expenses` + `travel_members` | 1 per anggota |
 | **Kuitansi** | `travel_expenses` + `travel_members` + signatories | 1 per anggota |
 | **Perhitungan SPPD Rampung** | `travel_expenses` | 1 per anggota |
@@ -468,15 +304,16 @@ Berdasarkan format surat real dari Polsri:
 
 ```mermaid
 flowchart TD
-    A["🏢 Kepegawaian\nInput Surat Tugas (ST)\n→ Disimpan sebagai DRAFT"] --> B["📝 Kepegawaian\nLengkapi Data (kode golongan,\nsignatories, dll) → Status: ACTIVE"]
-    B --> C["⚡ Otomatis\nSPPD ter-generate per anggota"]
-    C --> D["💰 Keuangan\nAkses ST & SPPD\nKalkulasi biaya (honor)\nBuat Surat Pernyataan\nBuat Form Kelengkapan"]
-    D --> E["✈️ Dosen Berangkat\nPerjalanan Dinas"]
-    E --> F["📤 Dosen\nUpload dokumentasi\n& bukti kelengkapan"]
-    F --> G["✅ Keuangan\nVerifikasi dokumen\n& kelengkapan"]
-    G --> H{"Semua\nTerverifikasi?"}
-    H -->|Ya| I["💵 Tahap Pencairan\n(Disbursement)"]
-    H -->|Tidak| J["❌ Reject\nDosen revisi & upload ulang"]
+	    A["🏢 Kepegawaian<br />Input Surat Tugas (ST)<br />→ Disimpan sebagai DRAFT"] --> B["📝 Keuangan<br />Lengkapi Data (Biaya Tiket (bisa lebih dari satu alat transportasi dan tiket bisa berbeda beda, jadi mungkin buat table baru buat nyimpen ini), terus <br />signatories, dll) → Status: ACTIVE"]
+    
+    B --> C["💰 Keuangan<br />Akses ST & SPD<br />Kalkulasi biaya (honor)<br />Buat Surat Pernyataan<br />Buat Form Kelengkapan"]
+    C --> D["⚡ Otomatis<br />SPD ter-generate per anggota"]
+    D --> E["✈️ Dosen Berangkat<br />Perjalanan Dinas"]
+    E --> F["📤 Dosen<br />Upload dokumentasi<br />& bukti kelengkapan"]
+    F --> G["✅ Keuangan<br />Verifikasi dokumen<br />& kelengkapan"]
+    G --> H{"Semua<br />Terverifikasi?"}
+    H -->|Ya| I["💵 Tahap Pencairan<br />(Disbursement)"]
+    H -->|Tidak| J["❌ Reject<br />Dosen revisi & upload ulang"]
     J --> F
 ```
 
@@ -488,12 +325,12 @@ flowchart LR
         K1[Input Surat Tugas → Draft]
         K2[Pilih anggota dari employees]
         K3[Lengkapi Data → Active]
-        K4[SPPD auto-generated]
+        K4[SPD auto-generated]
         K1 --> K2 --> K3 --> K4
     end
 
     subgraph Keuangan["💰 Keuangan (superadmin)"]
-        U1[View & Print ST + SPPD]
+        U1[View & Print ST + SPD]
         U2[Kalkulasi biaya per anggota]
         U3[Buat Surat Pernyataan]
         U4[Buat Form Kelengkapan]
@@ -511,7 +348,7 @@ flowchart LR
     end
 
     subgraph Dosen["👨‍🏫 Dosen (lecturer)"]
-        D1[Lihat & Print ST + SPPD]
+        D1[Lihat & Print ST + SPD]
         D2[Lihat Form Kelengkapan]
         D3[Upload dokumentasi & bukti]
     end
@@ -554,8 +391,8 @@ stateDiagram-v2
 | Fitur | superadmin (Keuangan) | admin (Kepegawaian) | verificator (Verifikator) | lecturer (Dosen) |
 |---|:---:|:---:|:---:|:---:|
 | Input Surat Tugas | ✅ | ✅ | ❌ | ❌ |
-| SPPD auto-generate | ✅ | ✅ | ❌ | ❌ |
-| View/Print ST & SPPD | ✅ | ✅ | ✅ | ✅ |
+| SPD auto-generate | ✅ | ✅ | ❌ | ❌ |
+| View/Print ST & SPD | ✅ | ✅ | ✅ | ✅ |
 | Kalkulasi biaya (honor) | ✅ | ❌ | ❌ | ❌ |
 | Buat Surat Pernyataan | ✅ | ❌ | ❌ | ❌ |
 | Buat Form Kelengkapan | ✅ | ❌ | ✅ | ❌ |
@@ -577,12 +414,12 @@ stateDiagram-v2
 
 1. **SK tidak perlu diaplikasikan** di sistem, tapi bisa jadi lampiran saat pengajuan
 2. **superadmin = Keuangan** (full access + kalkulasi), **verificator = Verifikator Keuangan** (pengecek dokumen)
-3. **ST → SPPD otomatis** — tidak perlu approval flow di sistem. Approval fisik di kertas.
+3. **ST → SPD otomatis** — tidak perlu approval flow di sistem. Approval fisik di kertas.
 4. **Form Kelengkapan** bisa dibuat sebelum ATAU sesudah perjalanan
 5. **Tiket dll dipesan dari Poltek** — jadi banyak item kelengkapan pakai metode `vendor`
 6. **Upload dari Dosen** terutama untuk bukti pengeluaran pribadi → `reimbursement`
 7. **Signatories (pejabat penandatangan) dipilih saat export dokumen** (PDF/Excel), bukan saat input pengajuan. Jabatan diinput manual (VARCHAR), bukan pilihan tetap.
-8. **ST selalu disimpan sebagai draft** — perubahan status `draft → active` dilakukan melalui fitur "Lengkapi Data" di halaman detail. Fitur ini mengisi: `kode_golongan` & `nama_golongan` per anggota, memilih signatories untuk SPPD, dan mengaktifkan ST.
+8. **ST selalu disimpan sebagai draft** — perubahan status `draft → active` dilakukan melalui fitur "Lengkapi Data" di halaman detail. Fitur ini mengisi: `kode_golongan` & `nama_golongan` per anggota, memilih signatories untuk SPD, dan mengaktifkan ST.
 
 ---
 
@@ -629,7 +466,8 @@ stateDiagram-v2
 
 - [x] Buat migration: `travel_members` table (ReviseSchemaV2)
 - [x] Revisi migration: `travel_requests` — hapus `employee_id`, `no_sppd`, `tgl_sppd`, `surat_dasar`, `purpose`, `task_detail`, `precautions`, `origin`, `destination`
-- [x] Tambah field: `nomor_surat_rujukan`, `tgl_surat_rujukan`, `instansi_pengirim_rujukan`, `perihal_surat_rujukan`, `lokasi`, `tahun_anggaran`, `lampiran_path`, `lampiran_original_name`, `tgl_mulai`, `tgl_selesai`
+- [x] Tambah field: `nomor_surat_rujukan`, `tgl_surat_rujukan`, `instansi_pengirim_rujukan`, `perihal_surat_rujukan`, `lokasi`, `tahun_anggaran`, `lampiran_path`, `lampiran_original_name`
+- [x] Drop kolom redundan `tgl_mulai`/`tgl_selesai` — gunakan `departure_date`/`return_date` yang sudah ada (migration `DropTglMulaiSelesaiFromTravelRequests`)
 - [x] Revisi: `travel_expenses` — ganti FK `travel_request_id` + `employee_id` → `travel_member_id`
 - [x] Revisi: `travel_completeness` — tambah kolom upload & verifikasi
 - [x] Revisi: `signatories` — ganti `role_type` ENUM → `jabatan` VARCHAR
@@ -640,29 +478,35 @@ stateDiagram-v2
 
 - [x] `TravelRequestController` — full CRUD (store, show, edit, update, destroy)
 - [x] Form input Surat Tugas (ST): create.php & edit.php
-  - Section 1: Data Dasar (no ST, tgl ST, provinsi/kota tujuan, tempat berangkat, tgl mulai/selesai)
+  - Section 1: Data Dasar (no ST, tgl ST, provinsi/kota tujuan, tempat berangkat, tgl berangkat/kembali)
   - Section 2: Surat Rujukan (nomor, tanggal, instansi, perihal, lokasi, beban anggaran, lampiran ST upload)
   - Section 3: Anggota Perjalanan (multi-select Tom Select + filter golongan/jurusan)
 - [x] Surat Tugas = lampiran upload (bukan dokumen generate). Field: `lampiran_path`, `lampiran_original_name`
 - [x] **ST selalu disimpan sebagai draft** — tidak ada tombol "Aktifkan Langsung". Redirect ke halaman detail setelah simpan.
 - [x] Role visibility:
-  - Admin/Superadmin: CRUD full, download SPPD (hanya jika status ≠ draft)
+  - Admin/Superadmin: CRUD full, download SPD (semua status)
   - Lecturer: View & download jika termasuk anggota
 - [x] `TravelMemberModel` — bridge table with employee join
 - [x] Status: `draft → active → completed → cancelled`
-- [x] Auto-calculate `duration_days` dari `tgl_mulai`/`tgl_selesai`
+- [x] Auto-calculate `duration_days` dari `departure_date`/`return_date`
 - [x] `TravelExpenseCalculator` — lookup tarif otomatis per anggota (tingkat_biaya dari golongan)
 - [x] Saat input ST: hanya hitung `uang_harian` + `uang_representasi`. Penginapan/tiket/transport = 0 (diisi saat kelengkapan)
 - [x] Detail page (show.php):
   - Info dokumen, surat rujukan, tujuan & jadwal (termasuk tempat berangkat), anggota tim + biaya
-  - Sidebar: download lampiran ST, download SPPD (hidden saat draft, tampil setelah active)
+  - Sidebar: download lampiran ST, download SPD (.docx) — selalu tersedia (termasuk saat draft)
   - Tombol "Lengkapi Data" (placeholder) menggantikan tombol "Aktifkan" — akan menuju form kelengkapan
   - Signatory selects (KPA/PPK) dihapus dari show.php — dipindah ke form kelengkapan
 
 ### PHASE 7: Document Generation (Partial) ✅
 
-- [x] Template **SPPD** → docx via PhpWord (SppdTemplate.php)
-  - Kop surat, tabel anggota, detail keperluan, tanda tangan PPK/KPA
+- [x] Template **SPD (Surat Perjalanan Dinas)** → docx via PhpWord (SppdTemplate.php)
+  - Format 10 baris numbered: PPK, Nama/NIP, Pangkat+Golongan+Jabatan+Tingkat Biaya, Maksud, Alat Angkutan, Tempat Berangkat/Tujuan, Waktu Perjalanan, Pengikut, Pembebanan Anggaran, Keterangan
+  - Satu halaman per anggota (multi-page jika banyak member)
+  - PPK auto-resolved dari signatories aktif (jabatan LIKE 'PPK')
+  - Tanggal format Indonesia (dd NamaBulan YYYY)
+  - Transport label: udara→Pesawat, darat→Mobil, laut→Kapal
+  - Tanda tangan PPK di kanan bawah (Dikeluarkan di, Pada Tanggal, Nama, NIP)
+  - SPD tersedia untuk download di semua status (termasuk draft)
 - [x] Download lampiran ST (uploaded file)
 - [ ] Template **Rincian Biaya Perjalanan Dinas with Kuitansi** → docx
 - [ ] Template **Surat Pernyataan** → docx
@@ -674,9 +518,9 @@ stateDiagram-v2
 **Sub-phase 8a: Form "Lengkapi Data" (draft → active)**
 - [ ] Buat route & controller method untuk form Lengkapi Data (diakses dari tombol "Lengkapi Data" di show.php)
 - [ ] Form mengisi `kode_golongan` & `nama_golongan` per anggota (dropdown: IV/e→Pembina Utama, IV/d→Pembina Utama Madya, III/d→Penata TK. I, dll)
-- [ ] Form memilih signatories untuk SPPD (PPK & KPA)
+- [ ] Form memilih signatories untuk SPD (PPK & KPA)
 - [ ] Submit form → status berubah dari `draft` → `active`
-- [ ] Setelah active: SPPD tersedia untuk download di halaman detail
+- [ ] Setelah active: SPD tersedia dengan data lengkap di halaman detail
 
 **Sub-phase 8b: Form Kelengkapan & Upload**
 - [ ] UI Keuangan/Verifikator: Buat Form Kelengkapan per travel_request
@@ -776,7 +620,7 @@ app/
     │   └── reports/
     └── pdf/
         ├── surat_tugas.php
-        ├── sppd.php
+        ├── spd.php
         ├── rincian_biaya.php
         ├── kuitansi.php
         └── surat_pernyataan.php
@@ -796,7 +640,7 @@ $routes->group('', ['filter' => 'session'], function ($routes) {
         $routes->get('/', 'TravelRequestController::index');
         $routes->get('(:num)', 'TravelRequestController::detail/$1');
         $routes->get('(:num)/print/st', 'DocumentController::printSuratTugas/$1');
-        $routes->get('(:num)/member/(:num)/print/sppd', 'DocumentController::printSPPD/$1/$2');
+        $routes->get('(:num)/spd', 'TravelRequestController::downloadSpd/$1');
     });
 
     // ═══ KEPEGAWAIAN — Input & Manage ST ═══
@@ -877,7 +721,7 @@ class TravelRequestModel extends Model
         'nomor_surat_rujukan', 'tgl_surat_rujukan',
         'instansi_pengirim_rujukan', 'perihal_surat_rujukan',
         'destination_province', 'destination_city', 'lokasi', 'departure_place',
-        'tgl_mulai', 'tgl_selesai', 'duration_days',
+        'departure_date', 'return_date', 'duration_days',
         'mak', 'budget_burden_by', 'total_budget', 'tahun_anggaran',
         'lampiran_path', 'lampiran_original_name',
         'status', 'created_by',
@@ -885,8 +729,8 @@ class TravelRequestModel extends Model
 
     protected $validationRules = [
         'destination_province' => 'required',
-        'tgl_mulai'            => 'required|valid_date',
-        'tgl_selesai'          => 'required|valid_date',
+        'departure_date'       => 'required|valid_date',
+        'return_date'          => 'required|valid_date',
         'departure_place'      => 'permit_empty|max_length[255]',
     ];
 }
@@ -981,110 +825,3 @@ if (! function_exists('terbilang')) {
     }
 }
 ```
-
----
-
-## 7. Security Hardening
-
-### Checklist Keamanan
-
-| Area | Implementasi | Priority |
-|---|---|---|
-| **CSRF** | Aktifkan `csrf` filter global di `Filters.php` | 🔴 Wajib |
-| **XSS** | Selalu gunakan `esc()` di Views | 🔴 Wajib |
-| **SQL Injection** | Gunakan Query Builder, jangan raw query | 🔴 Wajib |
-| **Password** | Gunakan mekanisme hash bawaan Shield | 🔴 Wajib |
-| **File Upload** | Validasi MIME type, extension, dan size | 🔴 Wajib |
-| **Session** | Database handler + secure cookie config | 🟡 Penting |
-| **Rate Limiting** | Throttle login attempts | 🟡 Penting |
-| **HTTPS** | Force redirect HTTP → HTTPS di production | 🟡 Penting |
-| **Input Sanitization** | `$this->request->getPost()` auto-filtered | 🟢 Default CI4 |
-| **Error Hiding** | `CI_ENVIRONMENT = production` di prod | 🟢 Basic |
-
-### CSRF di Form
-
-```php
-<!-- Setiap form HARUS include CSRF token -->
-<form method="post" action="<?= base_url('travel/store') ?>">
-    <?= csrf_field() ?>
-    <!-- ... form fields ... -->
-</form>
-```
-
-### Upload Validation
-
-```php
-$rules = [
-    'document' => [
-        'uploaded[document]',
-        'max_size[document,2048]',     // 2MB
-        'mime_in[document,image/jpeg,image/png,application/pdf]',
-        'ext_in[document,jpg,jpeg,png,pdf]',
-    ],
-];
-```
-
----
-
-## 8. Deployment Strategy
-
-### Development Workflow
-
-```bash
-# Setiap hari development:
-composer run dev           # Tailwind watch + php spark serve (1 command)
-
-# Sebelum commit:
-composer run css:build     # Build minified CSS
-php spark migrate:status   # Cek migration status
-```
-
-### Production (cPanel / VPS)
-
-```bash
-# 1. Set environment
-CI_ENVIRONMENT = production
-
-# 2. Optimize
-composer install --no-dev --optimize-autoloader
-
-# 3. Build CSS final
-composer run css:build
-
-# 4. Run migrations
-php spark migrate
-
-# 5. Set permissions
-chmod -R 755 writable/
-chmod -R 755 public/
-
-# 6. Point domain ke folder /public
-```
-
-### `.gitignore` Essentials
-
-```gitignore
-# CI4
-/vendor/
-/writable/logs/*
-/writable/cache/*
-/writable/session/*
-/writable/uploads/*
-.env
-
-# Node
-/node_modules/
-
-# IDE
-.idea/
-.vscode/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Build output (optional — bisa di-commit atau tidak)
-# /public/assets/css/app.css
-```
-
----

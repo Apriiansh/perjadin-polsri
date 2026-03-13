@@ -54,12 +54,12 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label mb-2 block">Tanggal Mulai Kegiatan <span class="text-red-500">*</span></label>
-                    <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-control" required>
+                    <label class="form-label mb-2 block">Tanggal Berangkat <span class="text-red-500">*</span></label>
+                    <input type="date" name="departure_date" id="departure_date" class="input-control" required>
                 </div>
                 <div>
-                    <label class="form-label mb-2 block">Tanggal Selesai Kegiatan <span class="text-red-500">*</span></label>
-                    <input type="date" name="tgl_selesai" id="tgl_selesai" class="input-control" required>
+                    <label class="form-label mb-2 block">Tanggal Kembali <span class="text-red-500">*</span></label>
+                    <input type="date" name="return_date" id="return_date" class="input-control" required>
                     <p class="mt-1 text-xs text-slate-400" id="duration-info"></p>
                 </div>
             </div>
@@ -190,8 +190,8 @@
 <script src="<?= base_url('assets/js/travel-members-select.js') ?>"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const tglMulai = document.getElementById('tgl_mulai');
-    const tglSelesai = document.getElementById('tgl_selesai');
+    const tglMulai = document.getElementById('departure_date');
+    const tglSelesai = document.getElementById('return_date');
     const durationInfo = document.getElementById('duration-info');
 
     function calcDuration() {

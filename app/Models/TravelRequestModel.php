@@ -29,12 +29,15 @@ class TravelRequestModel extends Model
         'duration_days',
         'total_budget',
         'budget_burden_by',
+        'mak',
         'tahun_anggaran',
-        'tgl_mulai',
-        'tgl_selesai',
         'lampiran_path',
         'lampiran_original_name',
         'status',
+        'ppk_id',
+        'kpa_id',
+        'bendahara_id',
+        'bpp_id',
         'created_by',
     ];
 
@@ -64,17 +67,19 @@ class TravelRequestModel extends Model
         'destination_city'            => 'required|string|max_length[100]',
         'lokasi'                      => 'permit_empty|string|max_length[255]',
         'departure_place'             => 'permit_empty|string|max_length[255]',
-        'departure_date'              => 'permit_empty|valid_date',
-        'return_date'                 => 'permit_empty|valid_date',
+        'departure_date'              => 'required|valid_date',
+        'return_date'                 => 'required|valid_date',
         'duration_days'               => 'permit_empty|integer',
         'total_budget'                => 'permit_empty|numeric',
         'budget_burden_by'            => 'required|string|max_length[100]',
         'tahun_anggaran'              => 'required|integer',
-        'tgl_mulai'                   => 'required|valid_date',
-        'tgl_selesai'                 => 'required|valid_date',
         'lampiran_path'               => 'permit_empty|string|max_length[255]',
         'lampiran_original_name'      => 'permit_empty|string|max_length[255]',
         'status'                      => 'permit_empty|in_list[draft,active,completed,cancelled]',
+        'ppk_id'                      => 'permit_empty|integer',
+        'kpa_id'                      => 'permit_empty|integer',
+        'bendahara_id'                => 'permit_empty|integer',
+        'bpp_id'                      => 'permit_empty|integer',
         'created_by'                  => 'permit_empty|integer',
     ];
 
@@ -111,13 +116,13 @@ class TravelRequestModel extends Model
         'tahun_anggaran' => [
             'required' => 'Tahun anggaran harus diisi.',
         ],
-        'tgl_mulai' => [
-            'required'   => 'Tanggal mulai kegiatan harus diisi.',
-            'valid_date' => 'Format tanggal mulai tidak valid.',
+        'departure_date' => [
+            'required'   => 'Tanggal berangkat harus diisi.',
+            'valid_date' => 'Format tanggal berangkat tidak valid.',
         ],
-        'tgl_selesai' => [
-            'required'   => 'Tanggal selesai kegiatan harus diisi.',
-            'valid_date' => 'Format tanggal selesai tidak valid.',
+        'return_date' => [
+            'required'   => 'Tanggal kembali harus diisi.',
+            'valid_date' => 'Format tanggal kembali tidak valid.',
         ],
     ];
     protected $skipValidation       = false;

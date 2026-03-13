@@ -9,10 +9,10 @@
     </div>
 
     <?php if ($isStaff ?? false): ?>
-    <a href="<?= base_url('travel/create') ?>" class="btn-primary inline-flex items-center gap-2 text-sm">
-        <i data-lucide="plus" class="w-4 h-4"></i>
-        Input Perjalanan Dinas
-    </a>
+        <a href="<?= base_url('travel/create') ?>" class="btn-primary inline-flex items-center gap-2 text-sm">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Input Perjalanan Dinas
+        </a>
     <?php endif; ?>
 </div>
 
@@ -90,19 +90,24 @@
                     </td>
                     <td class="text-center align-middle">
                         <div class="flex justify-center items-center gap-2">
+                            <?php if (auth()->user()->inGroup('superadmin') && $req->status === 'draft'): ?>
+                                <a href="<?= base_url('travel/' . $req->id . '/enrichment') ?>" class="btn-primary w-full justify-center shadow-md hover:shadow-lg transition-all inline-flex items-center gap-1">
+                                    <i data-lucide="clipboard-check" class="w-4 h-4"></i> Lengkapi
+                                </a>
+                            <?php endif; ?>
                             <a href="<?= base_url('travel/' . $req->id) ?>" class="rounded-md border p-1.5 text-blue-500 hover:bg-blue-50" title="Lihat Detail">
                                 <i data-lucide="eye" class="h-4 w-4"></i>
                             </a>
                             <?php if (($isStaff ?? false) && $req->status === 'draft'): ?>
-                            <a href="<?= base_url('travel/' . $req->id . '/edit') ?>" class="rounded-md border p-1.5 text-slate-500 hover:bg-slate-50" title="Edit">
-                                <i data-lucide="edit" class="h-4 w-4"></i>
-                            </a>
-                            <form action="<?= base_url('travel/' . $req->id . '/destroy') ?>" method="post" onsubmit="return confirm('Yakin hapus pengajuan <?= esc($req->no_surat_tugas ?? 'ini') ?>? Tindakan ini tidak dapat dibatalkan.')">
-                                <?= csrf_field() ?>
-                                <button type="submit" class="rounded-md border p-1.5 text-red-500 hover:bg-red-50" title="Hapus">
-                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
-                                </button>
-                            </form>
+                                <a href="<?= base_url('travel/' . $req->id . '/edit') ?>" class="rounded-md border p-1.5 text-slate-500 hover:bg-slate-50" title="Edit">
+                                    <i data-lucide="edit" class="h-4 w-4"></i>
+                                </a>
+                                <form action="<?= base_url('travel/' . $req->id . '/destroy') ?>" method="post" onsubmit="return confirm('Yakin hapus pengajuan <?= esc($req->no_surat_tugas ?? 'ini') ?>? Tindakan ini tidak dapat dibatalkan.')">
+                                    <?= csrf_field() ?>
+                                    <button type="submit" class="rounded-md border p-1.5 text-red-500 hover:bg-red-50" title="Hapus">
+                                        <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                    </button>
+                                </form>
                             <?php endif; ?>
                         </div>
                     </td>

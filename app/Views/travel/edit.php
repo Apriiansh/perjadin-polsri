@@ -54,12 +54,12 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label mb-2 block">Tanggal Mulai Kegiatan <span class="text-red-500">*</span></label>
-                    <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-control" value="<?= esc($travelRequest->tgl_mulai ?? '') ?>" required>
+                    <label class="form-label mb-2 block">Tanggal Berangkat <span class="text-red-500">*</span></label>
+                    <input type="date" name="departure_date" id="departure_date" class="input-control" value="<?= esc($travelRequest->departure_date ?? '') ?>" required>
                 </div>
                 <div>
-                    <label class="form-label mb-2 block">Tanggal Selesai Kegiatan <span class="text-red-500">*</span></label>
-                    <input type="date" name="tgl_selesai" id="tgl_selesai" class="input-control" value="<?= esc($travelRequest->tgl_selesai ?? '') ?>" required>
+                    <label class="form-label mb-2 block">Tanggal Kembali <span class="text-red-500">*</span></label>
+                    <input type="date" name="return_date" id="return_date" class="input-control" value="<?= esc($travelRequest->return_date ?? '') ?>" required>
                     <p class="mt-1 text-xs text-slate-400" id="duration-info"></p>
                 </div>
             </div>
@@ -209,11 +209,21 @@
 <?= $this->section('pageScripts') ?>
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.1/dist/js/tom-select.complete.min.js"></script>
 <script src="<?= base_url('assets/js/wilayah.js') ?>"></script>
+<?php
+$golData = [];
+foreach ($travelMembers as $tm) {
+    $golData[$tm->employee_id] = [
+        'kode_golongan' => $tm->kode_golongan ?? '',
+        'nama_golongan' => $tm->nama_golongan ?? '',
+    ];
+}
+?>
+<script>window.existingMemberGolongan = <?= json_encode($golData, JSON_HEX_TAG | JSON_HEX_AMP) ?>;</script>
 <script src="<?= base_url('assets/js/travel-members-select.js') ?>"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const tglMulai = document.getElementById('tgl_mulai');
-        const tglSelesai = document.getElementById('tgl_selesai');
+        const tglMulai = document.getElementById('departure_date');
+        const tglSelesai = document.getElementById('return_date');
         const durationInfo = document.getElementById('duration-info');
 
         function calcDuration() {
