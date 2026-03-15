@@ -114,6 +114,10 @@ class ReviewController extends BaseController
 
         $this->completenessModel->update($completenessId, $data);
 
+        // Check for completion
+        $item = $this->completenessModel->find($completenessId);
+        $this->checkAndCompleteTravel($item->travel_request_id);
+
         return $this->response->setJSON([
             'status' => 'success',
             'message' => 'Status berhasil diupdate.'
@@ -431,6 +435,8 @@ class ReviewController extends BaseController
             ])
             ->update();
 
+        $this->checkAndCompleteTravel($id);
+
         return $this->response->setJSON([
             'status' => 'success',
             'message' => 'Seluruh item berhasil diverifikasi.'
@@ -511,6 +517,8 @@ class ReviewController extends BaseController
             ])
             ->update();
 
+        $this->checkAndCompleteTravel($member->travel_request_id);
+
         return $this->response->setJSON([
             'status' => 'success',
             'message' => 'Seluruh item anggota berhasil diverifikasi.'
@@ -570,5 +578,27 @@ class ReviewController extends BaseController
             'status' => 'success',
             'message' => 'Seluruh item anggota berhasil ditolak.'
         ]);
+    }
+
+    /**
+     * Check if all items in a travel request are verified and complete the request
+     */
+    private function checkAndCompleteTravel(int $travelRequestId)
+    {
+        // Count all checklist items for this travel request
+        $totalItems = $this->completenessModel->where('travel_request_id', $travelRequestId)->countAllResults();
+        
+        // Count only verified items
+        $verifiedItems = $this->completenessModel->where('travel_request_id', $travelRequestId)
+            ->where('status', 'verified')
+            ->countAllResults();
+
+        // If everything is verified, set travel request status to 'completed'
+        if ($totalItems > 0 && $totalItems === $verifiedItems) {
+            $this->travelRequestModel->update($travelRequestId, [
+                'status'     => 'completed',
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+        }
     }
 }

@@ -80,7 +80,7 @@
                 </div>
                 <div>
                     <label class="form-label mb-2 block">Instansi Pengirim <span class="text-red-500">*</span></label>
-                    <input type="text" name="instansi_pengirim_rujukan" class="input-control" value="<?= esc($travelRequest->instansi_pengirim_rujukan ?? '') ?>" placeholder="Contoh: Kementerian ESDM" required>
+                    <input type="text" name="instansi_pengirim_rujukan" class="input-control" value="<?= esc($travelRequest->instansi_pengirim_rujukan ?? '') ?>" placeholder="Contoh: Kemdiktisaintek" required>
                 </div>
                 <div>
                     <label class="form-label mb-2 block">Tahun Anggaran <span class="text-red-500">*</span></label>
@@ -218,7 +218,9 @@ foreach ($travelMembers as $tm) {
     ];
 }
 ?>
-<script>window.existingMemberGolongan = <?= json_encode($golData, JSON_HEX_TAG | JSON_HEX_AMP) ?>;</script>
+<script>
+    window.existingMemberGolongan = <?= json_encode($golData, JSON_HEX_TAG | JSON_HEX_AMP) ?>;
+</script>
 <script src="<?= base_url('assets/js/travel-members-select.js') ?>"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {

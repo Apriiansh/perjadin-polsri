@@ -70,6 +70,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes): void {
 		$routes->post('(:num)/destroy', 'TravelRequestController::destroy/$1');
 		$routes->post('(:num)/submit', 'TravelRequestController::submit/$1');
 		$routes->post('(:num)/cancel', 'TravelRequestController::cancel/$1');
+		$routes->post('(:num)/complete', 'TravelRequestController::complete/$1');
 		    $routes->get('download/lampiran/(:num)', 'TravelRequestController::downloadLampiran/$1');
     $routes->get('download/file/(:num)', 'TravelRequestController::downloadFile/$1');
     $routes->get('download/spd/(:num)', 'TravelRequestController::downloadSpd/$1');

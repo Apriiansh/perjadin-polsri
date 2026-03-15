@@ -44,8 +44,17 @@ class TravelRequestController extends BaseController
      */
     public function index(): string|ResponseInterface
     {
-        if ($this->isStaff()) {
-            $travelRequests = $this->travelRequestModel->getAllRequests();
+        $statusFilter = $this->request->getGet('status');
+        $isVerificator = auth()->user()->inGroup('verificator');
+        $isStaff = $this->isStaff();
+
+        if ($isStaff || $isVerificator) {
+            // Staff and Verificators see all requests by default
+            if (!empty($statusFilter) && in_array($statusFilter, ['draft', 'active', 'completed', 'cancelled'])) {
+                $travelRequests = $this->travelRequestModel->where('status', $statusFilter)->orderBy('created_at', 'DESC')->findAll();
+            } else {
+                $travelRequests = $this->travelRequestModel->getAllRequests();
+            }
         } else {
             // Dosen only sees requests where they are a member
             $employee = $this->getCurrentEmployee();
@@ -61,9 +70,15 @@ class TravelRequestController extends BaseController
             $memberRows = $this->travelMemberModel->where('employee_id', $employee['id'])->findAll();
             $requestIds = array_unique(array_column($memberRows, 'travel_request_id'));
 
-            $travelRequests = !empty($requestIds)
-                ? $this->travelRequestModel->whereIn('id', $requestIds)->orderBy('created_at', 'DESC')->findAll()
-                : [];
+            if (empty($requestIds)) {
+                $travelRequests = [];
+            } else {
+                $query = $this->travelRequestModel->whereIn('id', $requestIds);
+                if (!empty($statusFilter) && in_array($statusFilter, ['draft', 'active', 'completed', 'cancelled'])) {
+                    $query->where('status', $statusFilter);
+                }
+                $travelRequests = $query->orderBy('created_at', 'DESC')->findAll();
+            }
         }
 
         // Attach members and documentation stats to each request
@@ -82,6 +97,7 @@ class TravelRequestController extends BaseController
             'travelRequests' => $travelRequests,
             'isStaff'        => $this->isStaff(),
             'stats'          => $stats,
+            'currentStatus'  => $statusFilter ?? 'all',
         ]);
     }
 
@@ -492,18 +508,43 @@ class TravelRequestController extends BaseController
      */
     public function cancel(int $id): ResponseInterface
     {
+        if (!$this->isStaff()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Akses ditolak.']);
+        }
+
         $travelRequest = $this->travelRequestModel->find($id);
         if (!$travelRequest) {
-            return redirect()->to('/travel')->with('error', 'Data tidak ditemukan.');
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Data tidak ditemukan.']);
+        }
+
+        // Only allow cancelling active or draft requests
+        if (!in_array($travelRequest->status, ['draft', 'active'])) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Hanya pengajuan berstatus draft atau aktif yang dapat dibatalkan.']);
+        }
+
+        $this->travelRequestModel->update($id, ['status' => 'cancelled']);
+
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Perjalanan dinas telah dibatalkan.']);
+    }
+
+    public function complete(int $id): ResponseInterface
+    {
+        if (!auth()->user()->inGroup('superadmin')) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Akses ditolak. Hanya Superadmin yang dapat melakukan tindakan ini.']);
+        }
+
+        $travelRequest = $this->travelRequestModel->find($id);
+        if (!$travelRequest) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Data tidak ditemukan.']);
         }
 
         if ($travelRequest->status !== 'active') {
-            return redirect()->to('/travel/' . $id)->with('error', 'Hanya pengajuan berstatus aktif yang dapat dikembalikan ke draft.');
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Hanya pengajuan berstatus aktif yang dapat ditandai selesai.']);
         }
 
-        $this->travelRequestModel->update($id, ['status' => 'draft']);
+        $this->travelRequestModel->update($id, ['status' => 'completed']);
 
-        return redirect()->to('/travel/' . $id)->with('success', 'Pengajuan berhasil dikembalikan menjadi draft.');
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Perjalanan dinas telah ditandai sebagai selesai.']);
     }
 
     /**
@@ -828,7 +869,7 @@ class TravelRequestController extends BaseController
 
                     $member->total_docs = count($memberItems);
                     // Use uploaded_docs for logic in view (including uploaded & verified for progress)
-                    $member->uploaded_docs = count(array_filter($memberItems, fn($i) => $i->status === 'uploaded' || $i->status === 'verified')); 
+                    $member->uploaded_docs = count(array_filter($memberItems, fn($i) => $i->status === 'uploaded' || $i->status === 'verified'));
                     $member->uploaded_count = count(array_filter($memberItems, fn($i) => $i->status === 'uploaded'));
                     $member->verified_docs = count(array_filter($memberItems, fn($i) => $i->status === 'verified'));
 

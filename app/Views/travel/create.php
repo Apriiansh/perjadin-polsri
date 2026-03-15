@@ -39,7 +39,7 @@
                 </div>
                 <div class="md:col-span-2">
                     <label class="form-label mb-2 block">Tempat Berangkat</label>
-                    <input type="text" name="departure_place" class="input-control" placeholder="Contoh: Palembang">
+                    <input type="text" name="departure_place" value="Palembang" class="input-control" placeholder="Contoh: Palembang">
                 </div>
                 <div>
                     <label class="form-label mb-2 block" for="destination_province">Provinsi Tujuan <span class="text-red-500">*</span></label>
@@ -80,11 +80,11 @@
                 </div>
                 <div>
                     <label class="form-label mb-2 block">Instansi Pengirim <span class="text-red-500">*</span></label>
-                    <input type="text" name="instansi_pengirim_rujukan" class="input-control" placeholder="Contoh: Kementerian ESDM" required>
+                    <input type="text" name="instansi_pengirim_rujukan" class="input-control" placeholder="Contoh: Kemdiktisaintek" required>
                 </div>
                 <div>
                     <label class="form-label mb-2 block">Tahun Anggaran <span class="text-red-500">*</span></label>
-                    <input type="number" name="tahun_anggaran" class="input-control" placeholder="<?= date('Y') ?>" min="2020" max="2099" required>
+                    <input type="number" value="<?= date('Y') ?>" name="tahun_anggaran" class="input-control" placeholder="<?= date('Y') ?>" min="2020" max="2099" required>
                 </div>
                 <div class="md:col-span-2">
                     <label class="form-label mb-2 block">Perihal Surat Rujukan <span class="text-red-500">*</span></label>
@@ -94,7 +94,7 @@
                     <label class="form-label mb-2 block">Lokasi / Venue <span class="text-xs text-slate-400 font-normal">(Opsional)</span></label>
                     <input type="text" name="lokasi" class="input-control" placeholder="Contoh: Hotel Grand Mercure, Jl. Sudirman No. 10">
                 </div>
-                
+
                 <div>
                     <label class="form-label mb-2 block">Beban Anggaran <span class="text-red-500">*</span></label>
                     <input type="text" name="budget_burden_by" class="input-control" placeholder="Contoh: DIPA Polsri 2026" required>
@@ -180,25 +180,25 @@
 <script src="<?= base_url('assets/js/wilayah.js') ?>"></script>
 <script src="<?= base_url('assets/js/travel-members-select.js') ?>"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const tglMulai = document.getElementById('departure_date');
-    const tglSelesai = document.getElementById('return_date');
-    const durationInfo = document.getElementById('duration-info');
+    document.addEventListener('DOMContentLoaded', function() {
+        const tglMulai = document.getElementById('departure_date');
+        const tglSelesai = document.getElementById('return_date');
+        const durationInfo = document.getElementById('duration-info');
 
-    function calcDuration() {
-        if (tglMulai.value && tglSelesai.value) {
-            const start = new Date(tglMulai.value);
-            const end = new Date(tglSelesai.value);
-            const days = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
-            durationInfo.textContent = days > 0 ? 'Durasi: ' + days + ' hari' : 'Tanggal selesai harus >= tanggal mulai';
-        } else {
-            durationInfo.textContent = '';
+        function calcDuration() {
+            if (tglMulai.value && tglSelesai.value) {
+                const start = new Date(tglMulai.value);
+                const end = new Date(tglSelesai.value);
+                const days = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+                durationInfo.textContent = days > 0 ? 'Durasi: ' + days + ' hari' : 'Tanggal selesai harus >= tanggal mulai';
+            } else {
+                durationInfo.textContent = '';
+            }
         }
-    }
 
-    tglMulai.addEventListener('change', calcDuration);
-    tglSelesai.addEventListener('change', calcDuration);
-});
+        tglMulai.addEventListener('change', calcDuration);
+        tglSelesai.addEventListener('change', calcDuration);
+    });
 </script>
 
 <?= $this->endSection() ?>

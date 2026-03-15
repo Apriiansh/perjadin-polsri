@@ -129,6 +129,7 @@ if ($memberStatus === 'verified') {
                         name="report_narrative"
                         rows="3"
                         class="form-input border-2 border-primary-400 p-4 w-full text-sm bg-white focus:border-primary-500 focus:ring-primary-500/90 transition-all rounded-xl shadow-inner-sm"
+                        <?= ($travelRequest->status === 'completed' && !auth()->user()->inGroup('superadmin')) ? 'readonly' : '' ?>
                         placeholder="Contoh: Telah dilaksanakan koordinasi dengan pihak terkait mengenai..."><?= esc((string) ($member->report_narrative ?? '')) ?></textarea>
                     <div class="mt-3 flex items-start gap-2 text-[10px] text-slate-500 italic px-1">
                         <i data-lucide="info" class="w-3.5 h-3.5 text-blue-500 mt-0.5"></i>
@@ -193,12 +194,14 @@ if ($memberStatus === 'verified') {
                                                                 </span>
                                                             </div>
                                                         </div>
-                                                        <button type="button"
-                                                            onclick="deleteFile(<?= $file->id ?>, this)"
-                                                            class="h-7 w-7 flex items-center justify-center text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover/file:opacity-100"
-                                                            title="Hapus File">
-                                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                                        </button>
+                                                        <?php if (!($travelRequest->status === 'completed' && !auth()->user()->inGroup('superadmin'))): ?>
+                                                            <button type="button"
+                                                                onclick="deleteFile(<?= $file->id ?>, this)"
+                                                                class="h-7 w-7 flex items-center justify-center text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover/file:opacity-100"
+                                                                title="Hapus File">
+                                                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                                            </button>
+                                                        <?php endif; ?>
                                                     </div>
                                                 <?php endforeach; ?>
                                             </div>
@@ -212,26 +215,28 @@ if ($memberStatus === 'verified') {
                                 </div>
 
                                 <!-- Upload Section -->
-                                <div class="w-full lg:w-72 p-5 bg-slate-50/30 group-hover:bg-white transition-colors">
-                                    <div class="relative h-full min-h-[100px]">
-                                        <input type="file"
-                                            name="documents_<?= $item->id ?>[]"
-                                            id="file_<?= $item->id ?>"
-                                            multiple
-                                            accept=".pdf,.docx,image/*"
-                                            class="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
-                                            onchange="updateFileNameDisplay(this, 'display_<?= $item->id ?>')">
-                                        <div class="h-full border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-4 gap-2 group-hover:border-amber-400 group-hover:bg-amber-50/30 transition-all bg-white/50">
-                                            <div class="h-10 w-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 group-hover:bg-amber-100 group-hover:text-amber-500 transition-all">
-                                                <i data-lucide="upload-cloud" class="w-5 h-5"></i>
-                                            </div>
-                                            <div class="text-center">
-                                                <p id="display_<?= $item->id ?>" class="text-[10px] font-black text-slate-500 truncate px-2 group-hover:text-amber-700">PILIH BERKAS</p>
-                                                <p class="text-[8px] text-slate-400 font-bold uppercase mt-0.5 group-hover:text-amber-500">Multifile supported</p>
+                                <?php if (!($travelRequest->status === 'completed' && !auth()->user()->inGroup('superadmin'))): ?>
+                                    <div class="w-full lg:w-72 p-5 bg-slate-50/30 group-hover:bg-white transition-colors">
+                                        <div class="relative h-full min-h-[100px]">
+                                            <input type="file"
+                                                name="documents_<?= $item->id ?>[]"
+                                                id="file_<?= $item->id ?>"
+                                                multiple
+                                                accept=".pdf,.docx,image/*"
+                                                class="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                                onchange="updateFileNameDisplay(this, 'display_<?= $item->id ?>')">
+                                            <div class="h-full border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-4 gap-2 group-hover:border-amber-400 group-hover:bg-amber-50/30 transition-all bg-white/50">
+                                                <div class="h-10 w-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 group-hover:bg-amber-100 group-hover:text-amber-500 transition-all">
+                                                    <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                                                </div>
+                                                <div class="text-center">
+                                                    <p id="display_<?= $item->id ?>" class="text-[10px] font-black text-slate-500 truncate px-2 group-hover:text-amber-700">PILIH BERKAS</p>
+                                                    <p class="text-[8px] text-slate-400 font-bold uppercase mt-0.5 group-hover:text-amber-500">Multifile supported</p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -262,12 +267,19 @@ if ($memberStatus === 'verified') {
                     </li>
                 </ul>
 
-                <button type="submit" class="btn-success w-full py-3 shadow-lg hover:shadow-primary-200/50 transition-all flex items-center justify-center gap-3">
-                    <i data-lucide="save" class="w-5 h-5"></i>
-                    <span class="uppercase font-black tracking-widest text-xs">Simpan Semua</span>
-                </button>
-
-                <p class="mt-4 text-[10px] text-center text-slate-400 italic">Pastikan seluruh berkas sudah benar sebelum dikirim untuk verifikasi.</p>
+                <?php if (!($travelRequest->status === 'completed' && !auth()->user()->inGroup('superadmin'))): ?>
+                    <button type="submit" class="btn-success w-full py-3 shadow-lg hover:shadow-primary-200/50 transition-all flex items-center justify-center gap-3">
+                        <i data-lucide="save" class="w-5 h-5"></i>
+                        <span class="uppercase font-black tracking-widest text-xs">Simpan Semua</span>
+                    </button>
+                    <p class="mt-4 text-[10px] text-center text-slate-400 italic">Pastikan seluruh berkas sudah benar sebelum dikirim untuk verifikasi.</p>
+                <?php else: ?>
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 text-center">
+                        <i data-lucide="lock" class="w-8 h-8 text-blue-400 mx-auto mb-2"></i>
+                        <p class="text-[11px] font-bold text-blue-700 uppercase tracking-widest">Dokumentasi Terkunci</p>
+                        <p class="text-[10px] text-blue-600 mt-1">Status perjalanan sudah selesai.</p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>

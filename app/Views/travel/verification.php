@@ -22,17 +22,24 @@
     </div>
 
     <div class="flex items-center gap-2 shrink-0">
-        <button type="button" onclick="verifyAll()"
-            class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow transition-all">
-            <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
-            Approve Semua
-        </button>
-        <button type="button" onclick="rejectAll()"
-            class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow transition-all">
-            <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
-            Reject Semua
-        </button>
-        <a href="<?= base_url('travel/active') ?>" class="btn-secondary inline-flex items-center gap-2 text-sm">
+        <?php if ($travelRequest->status === 'active' || (auth()->user()->inGroup('superadmin') && $travelRequest->status === 'completed')): ?>
+            <button type="button" onclick="verifyAll()"
+                class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow transition-all">
+                <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+                Approve Semua
+            </button>
+            <button type="button" onclick="rejectAll()"
+                class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow transition-all">
+                <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+                Reject Semua
+            </button>
+        <?php else: ?>
+            <span class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg text-xs font-black">
+                <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                VERIFIKASI TERKUNCI
+            </span>
+        <?php endif; ?>
+        <a href="<?= base_url('travel') ?>" class="btn-secondary inline-flex items-center gap-2 text-sm">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
             Kembali
         </a>
@@ -184,18 +191,20 @@
                         <p id="detail-member-nip" class="text-[10px] text-slate-400 font-medium uppercase mt-0.5"></p>
                     </div>
 
-                    <div class="flex items-center gap-1.5 shrink-0">
-                        <button type="button" onclick="verifyMember()"
-                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[10px] font-black shadow transition-all">
-                            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
-                            Approve
-                        </button>
-                        <button type="button" onclick="rejectMember()"
-                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-[10px] font-black shadow transition-all">
-                            <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
-                            Reject
-                        </button>
-                    </div>
+                    <?php if ($travelRequest->status === 'active' || (auth()->user()->inGroup('superadmin') && $travelRequest->status === 'completed')): ?>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button type="button" onclick="verifyMember()"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[10px] font-black shadow transition-all">
+                                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                                Approve
+                            </button>
+                            <button type="button" onclick="rejectMember()"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-[10px] font-black shadow transition-all">
+                                <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+                                Reject
+                            </button>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Narrative (conditional) -->

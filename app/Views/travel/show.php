@@ -5,11 +5,18 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
+
 <!-- Page header -->
 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
+        <div class="flex items-center gap-2 mb-1">
+            <a href="<?= base_url('travel') ?>" class="text-slate-400 hover:text-slate-600 transition-colors">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            </a>
+            <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Detail Perjalanan Dinas</span>
+        </div>
         <h1 class="text-2xl font-extrabold text-slate-900"><?= esc($title) ?></h1>
-        <p class="mt-1 text-sm text-slate-500">Nomor Surat Tugas: <?= esc($travelRequest->no_surat_tugas ?? 'Belum ada nomor') ?></p>
+        <p class="mt-0.5 text-sm text-slate-500">Nomor Surat Tugas: <span class="font-semibold text-slate-700"><?= esc($travelRequest->no_surat_tugas ?? 'Belum ada nomor') ?></span></p>
     </div>
 
     <?php
@@ -20,11 +27,6 @@
     ?>
 
     <div class="flex items-center gap-2">
-        <a href="<?= base_url('travel') ?>" class="btn-secondary inline-flex items-center gap-2 text-sm">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            Kembali
-        </a>
-
         <?php if (($isStaff ?? false) && $travelRequest->status === 'draft'): ?>
             <a href="<?= base_url('travel/' . $travelRequest->id . '/edit') ?>" class="btn-primary inline-flex items-center gap-2 text-sm">
                 <i data-lucide="edit" class="w-4 h-4"></i>
@@ -34,17 +36,19 @@
     </div>
 </div>
 
-<!-- Main Content Grid -->
+<!-- =========================================================
+     MAIN 2-COL GRID: Info (left) + Actions (right)
+     ========================================================= -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    <!-- Left Column: Primary Details -->
+    <!-- Left Column -->
     <div class="lg:col-span-2 space-y-6">
 
         <!-- Informasi Dokumen & Surat Rujukan -->
         <div class="card p-6 border-t-4 border-t-primary-500">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-100">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
+                    <div class="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
                         <i data-lucide="file-text" class="w-5 h-5 text-primary-600"></i>
                     </div>
                     <div>
@@ -119,14 +123,12 @@
                                     <?php endif; ?>
                                 </div>
                             <?php endif; ?>
-
                             <?php if (!empty($travelRequest->instansi_pengirim_rujukan)): ?>
                                 <div>
                                     <span class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Instansi Pengirim</span>
                                     <span class="text-sm font-medium text-slate-800"><?= esc($travelRequest->instansi_pengirim_rujukan) ?></span>
                                 </div>
                             <?php endif; ?>
-
                             <?php if (!empty($travelRequest->perihal_surat_rujukan)): ?>
                                 <div>
                                     <span class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Perihal</span>
@@ -151,20 +153,19 @@
             <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2 mb-4 pb-4 border-b border-slate-100">
                 <i data-lucide="map-pin" class="w-5 h-5 text-blue-500"></i>
                 Tujuan & Jadwal Kegiatan
-                <span class="text-[11px] font-bold text-blue-600 bg-blue-50/80 backdrop-blur-sm px-3 py-1 rounded-full border border-blue-100 shadow-sm whitespace-nowrap">
+                <span class="text-[11px] font-bold text-blue-600 bg-blue-50/80 px-3 py-1 rounded-full border border-blue-100 shadow-sm whitespace-nowrap ml-auto">
                     <i data-lucide="calendar-clock" class="w-3.5 h-3.5 inline mr-1 opacity-70"></i>
                     <?= esc($travelRequest->duration_days) ?> Hari
                 </span>
             </h3>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 mb-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">
                 <div>
                     <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tempat Berangkat</span>
                     <span class="text-sm font-medium text-slate-900"><?= esc($travelRequest->departure_place ?: '-') ?></span>
                 </div>
                 <div>
                     <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tempat Tujuan</span>
-                    <span class="text-sm font-medium text-slate-900"><?= esc($travelRequest->destination_province) ?> - <?= esc($travelRequest->destination_city ?: '-') ?></span>
+                    <span class="text-sm font-medium text-slate-900"><?= esc($travelRequest->destination_province) ?> – <?= esc($travelRequest->destination_city ?: '-') ?></span>
                 </div>
                 <div>
                     <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tanggal Berangkat</span>
@@ -177,11 +178,11 @@
             </div>
         </div>
 
+    </div><!-- /Left Column -->
 
-
-    </div>
-
-    <!-- Right Column: Sidebar Actions & Info -->
+    <!-- =====================================================
+         Right Column: Unduh + Tindakan (no Laporan here)
+         ===================================================== -->
     <div class="space-y-6">
 
         <!-- Unduh Dokumen -->
@@ -192,46 +193,41 @@
             </h3>
 
             <div class="space-y-4">
-                <!-- Lampiran Surat Tugas -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-2">Lampiran Surat Tugas</label>
                     <?php if (!empty($travelRequest->lampiran_path)): ?>
-                        <a href="<?= base_url('travel/' . $travelRequest->id . '/lampiran') ?>" class="btn-primary w-full justify-center inline-flex items-center gap-2 text-sm">
+                        <a href="<?= base_url('travel/download/lampiran/' . $travelRequest->id) ?>" class="btn-primary w-full justify-center inline-flex items-center gap-2 text-sm">
                             <i data-lucide="paperclip" class="w-4 h-4"></i>
                             <?= esc($travelRequest->lampiran_original_name ?: 'Download Lampiran') ?>
                         </a>
                     <?php else: ?>
-                        <p class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded border border-dashed border-slate-200 text-center">Belum ada lampiran ST yang diunggah.</p>
+                        <p class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-lg border border-dashed border-slate-200 text-center">Belum ada lampiran ST yang diunggah.</p>
                     <?php endif; ?>
                 </div>
 
                 <hr class="border-slate-100">
-                <div class="pt-2">
+
+                <div>
                     <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Dokumen Terbitan Sistem</label>
                     <?php if ($travelRequest->status !== 'draft'): ?>
                         <div class="grid <?= $isDosen ? 'grid-cols-1' : 'grid-cols-2' ?> gap-3">
-                            <!-- SPD Generate -->
-                            <a id="btn-download-spd" href="<?= base_url('travel/' . $travelRequest->id . '/spd') ?>"
-                                class="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-slate-100 bg-slate-50 hover:bg-white hover:border-primary-500 hover:text-primary-600 transition-all group gap-2 text-center">
+                            <a href="<?= base_url('travel/download/spd/' . $travelRequest->id) ?>"
+                                class="flex flex-col items-center justify-center p-4 rounded-lg border-2 border-slate-100 bg-slate-50 hover:bg-white hover:border-primary-500 hover:text-primary-600 transition-all group gap-2 text-center">
                                 <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:bg-primary-50">
                                     <i data-lucide="file-text" class="w-5 h-5 text-primary-500"></i>
                                 </div>
                                 <span class="text-xs font-bold">SPD <?= $isDosen ? 'Saya' : '' ?></span>
                             </a>
-
-                            <!-- Surat Pernyataan Generate -->
                             <a href="<?= base_url('travel/' . $travelRequest->id . '/statement') ?>"
-                                class="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-slate-100 bg-slate-50 hover:bg-white hover:border-emerald-500 hover:text-emerald-600 transition-all group gap-2 text-center">
+                                class="flex flex-col items-center justify-center p-4 rounded-lg border-2 border-slate-100 bg-slate-50 hover:bg-white hover:border-emerald-500 hover:text-emerald-600 transition-all group gap-2 text-center">
                                 <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:bg-emerald-50">
                                     <i data-lucide="file-check" class="w-5 h-5 text-emerald-500"></i>
                                 </div>
                                 <span class="text-xs font-bold"><?= $isDosen ? 'Pernyataan Saya' : ($isStaff ? 'Surat Pernyataan' : 'Pernyataan (.docx)') ?></span>
                             </a>
-
-                            <!-- Daftar Kontrol Generate (Admin/Staff only) -->
                             <?php if ($isStaff && !$isAdminKepegawaian): ?>
                                 <a href="<?= base_url('travel/' . $travelRequest->id . '/control-list') ?>"
-                                    class="col-span-2 flex items-center justify-between p-4 rounded-xl border-2 border-slate-100 bg-emerald-50/20 hover:bg-white hover:border-emerald-600 hover:text-emerald-700 transition-all group gap-3">
+                                    class="col-span-2 flex items-center justify-between p-4 rounded-lg border-2 border-slate-100 bg-emerald-50/20 hover:bg-white hover:border-emerald-600 hover:text-emerald-700 transition-all group gap-3">
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
                                             <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-600"></i>
@@ -246,26 +242,21 @@
                             <?php endif; ?>
                         </div>
                     <?php else: ?>
-                        <div class="bg-indigo-50/50 border border-dashed border-indigo-200 rounded-xl p-4 text-center">
+                        <div class="bg-indigo-50/50 border border-dashed border-indigo-200 rounded-lg p-4 text-center">
                             <div class="w-10 h-10 rounded-full bg-white mx-auto mb-3 flex items-center justify-center shadow-sm">
                                 <i data-lucide="lock" class="w-5 h-5 text-indigo-400"></i>
                             </div>
-                            <p class="text-[11px] font-medium text-indigo-600 leading-relaxed px-2">Dokumen (SPD & Pernyataan) otomatis terlampir setelah data dilengkapi Keuangan.</p>
+                            <p class="text-[11px] font-medium text-indigo-600 leading-relaxed px-2">Dokumen otomatis terlampir setelah data dilengkapi Keuangan.</p>
                         </div>
                     <?php endif; ?>
                 </div>
-
             </div>
         </div>
 
-        <!-- Action / Workflow Panel -->
+        <!-- Tindakan Administratif -->
         <?php if ($isStaff ?? false): ?>
             <div class="card p-6 border-t-4 border-t-amber-500 bg-amber-50/30 shadow-md">
                 <h3 class="font-bold text-xs uppercase tracking-wider text-amber-800 mb-4 pb-2 border-b border-amber-200/50">Tindakan Administratif</h3>
-
-                <!-- <p class="text-xs text-slate-600 mb-4 bg-white p-3 rounded border border-slate-200 shadow-sm">
-                    Status saat ini: <strong class="text-slate-800 font-black uppercase"><?= esc($statusLabel) ?></strong>
-                </p> -->
 
                 <div class="flex flex-col gap-3">
                     <?php if ($travelRequest->status === 'draft'): ?>
@@ -274,34 +265,52 @@
                                 <i data-lucide="clipboard-check" class="w-4 h-4"></i> Lengkapi Data
                             </a>
                             <p class="text-[10px] text-primary-600 bg-primary-50 p-2 rounded-lg leading-relaxed border border-primary-100">
-                                <strong>Status Draft:</strong> Menunggu pengisian rincian biaya riil dan penandatangan oleh bagian Keuangan sebelum dokumen dapat diterbitkan.
+                                <strong>Status Draft:</strong> Menunggu pengisian rincian biaya riil dan penandatangan oleh bagian Keuangan.
                             </p>
                         <?php else: ?>
                             <p class="text-[10px] text-slate-500 bg-slate-50 p-2 rounded-lg leading-relaxed border border-slate-200 italic">
                                 <strong>Status Draft:</strong> Pengajuan Anda sedang menunggu verifikasi dan pengisian rincian biaya oleh bagian Keuangan.
                             </p>
                         <?php endif; ?>
-
                         <form action="<?= base_url('travel/' . $travelRequest->id . '/destroy') ?>" method="POST">
                             <?= csrf_field() ?>
                             <button type="submit" class="btn-danger w-full justify-center shadow-md hover:shadow-lg transition-all" onclick="return confirm('Apakah Anda yakin ingin menghapus permintaan dinas ini secara permanen?')">
                                 <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i> Hapus
                             </button>
                         </form>
+
                     <?php elseif ($travelRequest->status === 'active'): ?>
-                        <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-100 text-[10px] text-emerald-700 leading-relaxed overflow-hidden relative group mb-1">
+                        <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-100 text-[10px] text-emerald-700 leading-relaxed relative overflow-hidden group mb-1">
                             <div class="absolute -right-2 -top-2 opacity-10 group-hover:opacity-20 transition-opacity">
                                 <i data-lucide="check-circle-2" class="w-12 h-12"></i>
                             </div>
-                            <strong>Status Aktif:</strong> Data Perjalanan Dinas sudah lengkap. Berkas sudah dapat diunduh.
+                            <strong>Status Aktif:</strong> Data sudah lengkap. Berkas siap diunduh.
                         </div>
-                        <a href="<?= base_url('travel/' . $travelRequest->id . '/enrichment') ?>" class="btn-warning w-full justify-center shadow-md hover:shadow-lg transition-all animate-in fade-in slide-in-from-bottom-2">
-                            <i data-lucide="edit-3" class="w-4 h-4 mr-2"></i> Edit Kelengkapan
-                        </a>
+                        <?php if ($travelRequest->status === 'active' || (auth()->user()->inGroup('superadmin') && $travelRequest->status === 'completed')): ?>
+                            <div class="flex flex-col gap-2">
+                                <a href="<?= base_url('travel/' . $travelRequest->id . '/enrichment') ?>" class="btn-warning w-full justify-center shadow-md hover:shadow-lg transition-all animate-in fade-in slide-in-from-bottom-2">
+                                    <i data-lucide="edit-3" class="w-4 h-4 mr-2"></i> Edit Kelengkapan
+                                </a>
+                                <div class="flex gap-2">
+                                    <?php if (auth()->user()->inGroup('superadmin') && $travelRequest->status === 'active'): ?>
+                                        <button type="button" onclick="completeTravel(<?= $travelRequest->id ?>)" class="btn-primary flex-1 justify-center shadow-md hover:shadow-lg transition-all animate-in fade-in slide-in-from-bottom-2">
+                                            <i data-lucide="check-circle-2" class="w-4 h-4 mr-2"></i> Tandai Selesai
+                                        </button>
+                                    <?php endif; ?>
+                                    <?php if (auth()->user()->inGroup('admin', 'superadmin')): ?>
+                                        <button type="button" onclick="cancelTravel(<?= $travelRequest->id ?>)" class="btn-danger px-4 justify-center shadow-sm hover:shadow-md transition-all animate-in fade-in slide-in-from-bottom-2">
+                                            <i data-lucide="x-circle" class="w-4 h-4 mr-2"></i> Batalkan
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
                     <?php elseif ($travelRequest->status === 'completed'): ?>
                         <p class="text-[10px] text-blue-600 bg-blue-50 p-2 rounded-lg leading-relaxed border border-blue-100 italic">
                             <strong>Status Selesai:</strong> Seluruh proses perjalanan dinas telah selesai dan diverifikasi.
                         </p>
+
                     <?php elseif ($travelRequest->status === 'cancelled'): ?>
                         <p class="text-[10px] text-red-600 bg-red-50 p-2 rounded-lg leading-relaxed border border-red-100 italic">
                             <strong>Status Dibatalkan:</strong> Pengajuan perjalanan dinas ini telah dibatalkan.
@@ -311,115 +320,116 @@
             </div>
         <?php endif; ?>
 
-        <!-- Laporan & Dokumentasi Anggota (Moved to Sidebar) -->
-        <?php
-        $hasAnyDoc = false;
-        foreach ($members as $m) {
-            if (!empty($m->report_narrative) || !empty($m->documentation_files)) {
-                $hasAnyDoc = true;
-                break;
-            }
-        }
-        // Always show the card if active to allow document management
-        if (($hasAnyDoc || $travelRequest->status === 'active') && !empty($members)):
-        ?>
-            <div class="card p-0 overflow-hidden border-t-4 border-t-blue-600 bg-white shadow-lg">
-                <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
-                    <h3 class="font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wider text-xs">
-                        <i data-lucide="file-text" class="w-4 h-4 text-blue-600"></i>
-                        Laporan & Dokumentasi
-                    </h3>
-
-                    <?php if ($travelRequest->status === 'active'): ?>
-                        <?php
-                        $isVerifOnly = auth()->user()->inGroup('verificator') && !auth()->user()->inGroup('superadmin', 'admin');
-                        $targetUrl = $isVerifOnly ? base_url('documentation/' . $travelRequest->id . '/verification') : base_url('documentation/' . $travelRequest->id);
-                        ?>
-                        <a href="<?= $targetUrl ?>"
-                            class="text-[10px] font-bold bg-blue-600 text-white px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5 hover:bg-blue-700 transition-all shadow-sm hover:shadow-md">
-                            <i data-lucide="upload-cloud" class="w-3 h-3"></i>
-                            <?= $isVerifOnly ? 'Verifikasi' : 'Kelola' ?>
-                        </a>
-                    <?php endif; ?>
-                </div>
-
-                <div class="divide-y divide-slate-100 max-h-[600px] overflow-y-auto custom-scrollbar">
-                    <?php foreach ($members as $member): ?>
-                        <?php
-                        // Dosen can only see their own documentation
-                        if ($isDosen && $member->user_id != auth()->id()) continue;
-                        ?>
-                        <div class="p-4 bg-white">
-                            <div class="flex items-center gap-2 mb-3">
-                                <div class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-[10px] border border-blue-100">
-                                    <?= substr($member->employee_name, 0, 1) ?>
-                                </div>
-                                <div class="min-w-0">
-                                    <h4 class="font-bold text-slate-900 text-[11px] truncate"><?= esc($member->employee_name) ?></h4>
-                                    <p class="text-[9px] text-slate-400 font-medium tracking-tight truncate"><?= esc($member->employee_nip) ?></p>
-                                </div>
-                            </div>
-
-                            <div class="space-y-3">
-                                <!-- Narrative section -->
-                                <?php if (!empty($member->report_narrative)): ?>
-                                    <div class="relative">
-                                        <div class="text-[10px] text-slate-600 leading-relaxed bg-slate-50/80 p-3 rounded-xl border border-slate-100 italic">
-                                            <?= nl2br(esc((string) $member->report_narrative)) ?>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-
-                                <!-- Files section grouped by Item -->
-                                <?php if (!empty($member->documentation_files)): ?>
-                                    <div class="grid grid-cols-2 gap-x-4 gap-y-3">
-                                        <?php
-                                        $groupedFiles = [];
-                                        foreach ($member->documentation_files as $f) {
-                                            $groupedFiles[$f->item_name][] = $f;
-                                        }
-                                        foreach ($groupedFiles as $itemName => $files): ?>
-                                            <div class="group/item min-w-0">
-                                                <div class="flex items-center gap-1.5 mb-1.5 px-0.5">
-                                                    <div class="w-0.5 h-2.5 rounded-full bg-blue-500 opacity-60"></div>
-                                                    <span class="text-[9px] font-extrabold text-slate-500 uppercase tracking-tighter truncate" title="<?= esc($itemName) ?>"><?= esc($itemName) ?></span>
-                                                </div>
-                                                <div class="grid grid-cols-2 gap-1.5">
-                                                    <?php foreach ($files as $index => $file): ?>
-                                                        <a href="<?= base_url('download/file/' . $file->id) ?>"
-                                                            target="_blank"
-                                                            title="Buka <?= esc($file->item_name) ?> #<?= ($index + 1) ?>"
-                                                            class="<?= (count($files) == 1) ? 'col-span-2' : '' ?> flex items-center justify-center p-1.5 rounded bg-slate-50 border border-slate-100 hover:border-blue-300 hover:bg-white transition-all group/file shadow-sm aspect-square sm:aspect-auto">
-                                                            <div class="flex items-center gap-1.5 min-w-0">
-                                                                <i data-lucide="file-text" class="w-3 h-3 text-slate-300 group-hover/file:text-blue-500"></i>
-                                                                <span class="text-[8px] font-black text-slate-400 group-hover/file:text-blue-600 truncate">
-                                                                    #<?= ($index + 1) ?>
-                                                                </span>
-                                                            </div>
-                                                        </a>
-                                                    <?php endforeach; ?>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php elseif (empty($member->report_narrative)): ?>
-                                    <div class="py-2 text-center border-t border-dashed border-slate-100 mt-2">
-                                        <span class="text-[9px] text-slate-300 italic">Belum ada laporan & dokumen</span>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        <?php endif; ?>
-
-    </div>
+    </div><!-- /Right Column -->
 </div>
 
-<!-- Anggota Tim & Rincian Biaya (Full Width) -->
+<!-- =========================================================
+     LAPORAN & DOKUMENTASI — Full Width (moved from sidebar)
+     ========================================================= -->
+<?php
+$hasAnyDoc = false;
+foreach ($members as $m) {
+    if (!empty($m->report_narrative) || !empty($m->documentation_files)) {
+        $hasAnyDoc = true;
+        break;
+    }
+}
+if (($hasAnyDoc || $travelRequest->status === 'active') && !empty($members)):
+?>
+    <div class="mt-6">
+        <div class="card p-0 overflow-hidden border-t-4 border-t-blue-600 bg-white shadow-lg">
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wider text-xs">
+                    <i data-lucide="file-text" class="w-4 h-4 text-blue-600"></i>
+                    Laporan & Dokumentasi
+                </h3>
+                <?php if ($travelRequest->status === 'active' || (auth()->user()->inGroup('superadmin') && $travelRequest->status === 'completed')): ?>
+                    <?php
+                    $isVerifOnly = auth()->user()->inGroup('verificator') && !auth()->user()->inGroup('superadmin', 'admin');
+                    $targetUrl = $isVerifOnly
+                        ? base_url('documentation/' . $travelRequest->id . '/verification')
+                        : base_url('documentation/' . $travelRequest->id);
+                    ?>
+                    <a href="<?= $targetUrl ?>"
+                        class="text-[10px] font-bold bg-blue-600 text-white px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5 hover:bg-blue-700 transition-all shadow-sm hover:shadow-md">
+                        <i data-lucide="upload-cloud" class="w-3 h-3"></i>
+                        <?= $isVerifOnly ? 'Verifikasi' : 'Kelola' ?>
+                    </a>
+                <?php endif; ?>
+            </div>
+
+            <!-- Member grid: 2 cols on larger screens -->
+            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+                <?php foreach ($members as $member): ?>
+                    <?php if ($isDosen && $member->user_id != auth()->id()) continue; ?>
+                    <div class="p-5 bg-white">
+                        <!-- Member header -->
+                        <div class="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+                            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm border border-blue-100 shrink-0">
+                                <?= strtoupper(substr($member->employee_name, 0, 2)) ?>
+                            </div>
+                            <div class="min-w-0">
+                                <h4 class="font-bold text-slate-900 text-sm truncate"><?= esc($member->employee_name) ?></h4>
+                                <p class="text-[9px] text-slate-400 font-medium tracking-tight truncate"><?= esc($member->employee_nip) ?></p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <!-- Narrative -->
+                            <?php if (!empty($member->report_narrative)): ?>
+                                <div class="text-[11px] text-slate-600 leading-relaxed bg-slate-50/80 p-3 rounded-lg border border-slate-100 italic">
+                                    <?= nl2br(esc((string) $member->report_narrative)) ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <!-- Files grouped by item -->
+                            <?php if (!empty($member->documentation_files)): ?>
+                                <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                    <?php
+                                    $groupedFiles = [];
+                                    foreach ($member->documentation_files as $f) {
+                                        $groupedFiles[$f->item_name][] = $f;
+                                    }
+                                    foreach ($groupedFiles as $itemName => $files): ?>
+                                        <div class="min-w-0">
+                                            <div class="flex items-center gap-1.5 mb-1.5 px-0.5">
+                                                <div class="w-0.5 h-2.5 rounded-full bg-blue-500 opacity-60"></div>
+                                                <span class="text-[9px] font-extrabold text-slate-500 uppercase tracking-tighter truncate" title="<?= esc($itemName) ?>"><?= esc($itemName) ?></span>
+                                            </div>
+                                            <div class="grid grid-cols-2 gap-1.5">
+                                                <?php foreach ($files as $index => $file): ?>
+                                                    <a href="<?= base_url('travel/download/file/' . $file->id) ?>"
+                                                        target="_blank"
+                                                        title="Buka <?= esc($file->item_name) ?> #<?= ($index + 1) ?>"
+                                                        class="<?= (count($files) == 1) ? 'col-span-2' : '' ?> flex items-center justify-center p-1.5 rounded bg-slate-50 border border-slate-100 hover:border-blue-300 hover:bg-white transition-all group/file shadow-sm">
+                                                        <div class="flex items-center gap-1.5">
+                                                            <i data-lucide="file-text" class="w-3 h-3 text-slate-300 group-hover/file:text-blue-500"></i>
+                                                            <span class="text-[8px] font-black text-slate-400 group-hover/file:text-blue-600">#<?= ($index + 1) ?></span>
+                                                        </div>
+                                                    </a>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php elseif (empty($member->report_narrative)): ?>
+                                <div class="py-3 text-center border border-dashed border-slate-200 rounded-lg">
+                                    <span class="text-[10px] text-slate-300 italic">Belum ada laporan & dokumen</span>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+
+<!-- =========================================================
+     ANGGOTA TIM & RINCIAN BIAYA — Full Width
+     ========================================================= -->
 <?php if ($isKeuangan): ?>
-    <div class="mt-8">
+    <div class="mt-6">
         <div class="card p-0 overflow-hidden border-t-4 border-t-emerald-500 shadow-md">
             <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-white">
                 <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
@@ -508,7 +518,6 @@
                                             </div>
                                         <?php endif; ?>
 
-                                        <!-- Itemized Expenses (Phase 8) -->
                                         <?php if (!empty($member->expense_items)): ?>
                                             <div class="mt-4 pt-4 border-t border-slate-100 text-left">
                                                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Rincian Biaya Riil:</div>
@@ -538,28 +547,23 @@
                     </tfoot>
                 </table>
             </div>
-
         </div>
     </div>
 <?php endif; ?>
 
 <!-- System Info -->
-<div class="text-xs text-center text-slate-400 space-y-2 mt-4">
+<div class="text-xs text-center text-slate-400 space-y-1 mt-6 pb-4">
     <p>Dibuat: <?= date('d M Y H:i', strtotime($travelRequest->created_at)) ?></p>
     <?php if ($travelRequest->updated_at && $travelRequest->updated_at !== $travelRequest->created_at): ?>
         <p>Terakhir Diubah: <?= date('d M Y H:i', strtotime($travelRequest->updated_at)) ?></p>
     <?php endif; ?>
 </div>
-</div>
-
-<?= $this->endSection() ?>
 
 <!-- Upload Modal -->
 <div id="uploadModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
     <div class="flex min-h-screen items-center justify-center p-4">
         <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="closeUploadModal()"></div>
-
-        <div class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all">
+        <div class="relative w-full max-w-md transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all">
             <div class="p-6">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-bold text-slate-900" id="modalTitle">Unggah Dokumen</h3>
@@ -567,24 +571,21 @@
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
                 </div>
-
                 <form id="uploadForm" class="space-y-6">
                     <input type="hidden" id="completenessId" name="completeness_id">
-
                     <div class="space-y-2">
                         <label class="block text-sm font-semibold text-slate-700">Pilih File (PDF/Gambar)</label>
                         <div class="relative group">
                             <input type="file" id="documentFile" name="document" accept=".pdf,image/*" required
                                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 onchange="handleFileSelect(this)">
-                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center group-hover:border-primary-400 transition-all bg-slate-50">
+                            <div class="border-2 border-dashed border-slate-200 rounded-lg p-8 text-center group-hover:border-primary-400 transition-all bg-slate-50">
                                 <i data-lucide="upload-cloud" class="w-10 h-10 text-slate-300 mx-auto mb-3 group-hover:text-primary-500 transition-colors"></i>
                                 <p class="text-sm text-slate-500 font-medium" id="fileNamePlaceholder">Klik atau seret file ke sini</p>
                                 <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-wider">Maksimum 5MB (PDF/JPG/PNG)</p>
                             </div>
                         </div>
                     </div>
-
                     <div id="uploadProgress" class="hidden">
                         <div class="flex justify-between mb-1">
                             <span class="text-xs font-bold text-primary-600 uppercase">Mengunggah...</span>
@@ -594,7 +595,6 @@
                             <div id="progressBar" class="h-full bg-primary-500 transition-all duration-300" style="width: 0%"></div>
                         </div>
                     </div>
-
                     <div class="flex gap-3 pt-2">
                         <button type="button" onclick="closeUploadModal()" class="btn-secondary flex-1 justify-center">Batal</button>
                         <button type="submit" id="btnSubmitUpload" class="btn-primary flex-1 justify-center shadow-lg shadow-primary-500/20">Unggah</button>
@@ -609,8 +609,7 @@
 <div id="verifyModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
     <div class="flex min-h-screen items-center justify-center p-4">
         <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="closeVerifyModal()"></div>
-
-        <div class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all">
+        <div class="relative w-full max-w-md transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all">
             <div class="p-6">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-bold text-slate-900" id="verifyModalTitle">Verifikasi Dokumen</h3>
@@ -618,23 +617,19 @@
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
                 </div>
-
                 <form id="verifyForm" class="space-y-6">
                     <input type="hidden" id="verifyCompletenessId" name="completeness_id">
-
                     <div class="space-y-2">
                         <label class="block text-sm font-semibold text-slate-700">Status Verifikasi</label>
-                        <select name="status" id="verifyStatus" class="form-input w-full rounded-xl border-slate-200" required onchange="handleVerifyStatusChange(this)">
+                        <select name="status" id="verifyStatus" class="form-input w-full rounded-lg border-slate-200" required onchange="handleVerifyStatusChange(this)">
                             <option value="verified">Sesuai (Verified)</option>
                             <option value="rejected">Tolak (Perlu Unggah Ulang)</option>
                         </select>
                     </div>
-
                     <div class="space-y-2">
                         <label class="block text-sm font-semibold text-slate-700">Catatan (Opsional)</label>
-                        <textarea name="note" id="verifyNote" rows="3" class="form-input w-full rounded-xl border-slate-200" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+                        <textarea name="note" id="verifyNote" rows="3" class="form-input w-full rounded-lg border-slate-200" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
                     </div>
-
                     <div class="flex gap-3 pt-2">
                         <button type="button" onclick="closeVerifyModal()" class="btn-secondary flex-1 justify-center">Batal</button>
                         <button type="submit" id="btnSubmitVerify" class="btn-primary flex-1 justify-center shadow-lg shadow-primary-500/20">Simpan Verifikasi</button>
@@ -645,9 +640,9 @@
     </div>
 </div>
 
+<?= $this->endSection() ?>
+
 <?= $this->section('pageScripts') ?>
-
-
 <script>
     let currentCompletenessId = null;
 
@@ -676,46 +671,39 @@
 
     document.getElementById('uploadForm').addEventListener('submit', function(e) {
         e.preventDefault();
-
         const formData = new FormData(this);
         const progressDiv = document.getElementById('uploadProgress');
         const progressBar = document.getElementById('progressBar');
         const percentageText = document.getElementById('progressPercentage');
         const btnSubmit = document.getElementById('btnSubmitUpload');
-
         progressDiv.classList.remove('hidden');
         btnSubmit.disabled = true;
-
         axios.post(`<?= base_url('travel/completeness') ?>/${currentCompletenessId}/upload`, formData, {
-                onUploadProgress: (progressEvent) => {
-                    const percentage = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                    progressBar.style.width = percentage + '%';
-                    percentageText.textContent = percentage + '%';
-                }
-            })
-            .then(response => {
-                Swal.fire({
+            onUploadProgress: (progressEvent) => {
+                const percentage = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                progressBar.style.width = percentage + '%';
+                percentageText.textContent = percentage + '%';
+            }
+        }).then(response => {
+            Swal.fire({
                     icon: 'success',
                     title: 'Berhasil!',
                     text: response.data.message,
                     timer: 2000,
                     showConfirmButton: false
-                }).then(() => {
-                    window.location.reload();
-                });
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: error.response?.data?.message || 'Terjadi kesalahan saat mengunggah.'
-                });
-                btnSubmit.disabled = false;
-                progressDiv.classList.add('hidden');
+                })
+                .then(() => window.location.reload());
+        }).catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: error.response?.data?.message || 'Terjadi kesalahan saat mengunggah.'
             });
+            btnSubmit.disabled = false;
+            progressDiv.classList.add('hidden');
+        });
     });
 
-    // Verification Logic
     function openVerifyModal(id, name) {
         document.getElementById('verifyCompletenessId').value = id;
         document.getElementById('verifyModalTitle').textContent = 'Verifikasi: ' + name;
@@ -747,26 +735,21 @@
 
     document.getElementById('verifyForm').addEventListener('submit', function(e) {
         e.preventDefault();
-
         const id = document.getElementById('verifyCompletenessId').value;
         const formData = new FormData(this);
         const btnSubmit = document.getElementById('btnSubmitVerify');
-
         btnSubmit.disabled = true;
-
         axios.post(`<?= base_url('travel/completeness') ?>/${id}/verify`, formData)
             .then(response => {
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: response.data.message,
-                    timer: 2000,
-                    showConfirmButton: false
-                }).then(() => {
-                    window.location.reload();
-                });
-            })
-            .catch(error => {
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: response.data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    })
+                    .then(() => window.location.reload());
+            }).catch(error => {
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
@@ -775,5 +758,81 @@
                 btnSubmit.disabled = false;
             });
     });
+
+    async function cancelTravel(id) {
+        const {
+            isConfirmed
+        } = await Swal.fire({
+            title: 'Batalkan Perjalanan Dinas?',
+            text: "Status perjalanan akan diubah menjadi 'Cancelled' dan proses akan dihentikan secara permanen.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Batalkan!',
+            cancelButtonText: 'Tutup'
+        });
+        if (isConfirmed) {
+            try {
+                const response = await axios.post(`<?= base_url('travel') ?>/${id}/cancel`, {}, {
+                    headers: {
+                        'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
+                    }
+                });
+                if (response.data.status === 'success') {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: response.data.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    window.location.reload();
+                } else {
+                    Swal.fire('Gagal', response.data.message, 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Terjadi kesalahan sistem saat membatalkan perjalanan.', 'error');
+            }
+        }
+    }
+
+    async function completeTravel(id) {
+        const {
+            isConfirmed
+        } = await Swal.fire({
+            title: 'Tandai Selesai?',
+            text: "Pengajuan akan ditandai sebagai 'Completed' dan akses edit akan dikunci untuk non-Superadmin.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Tandai Selesai!',
+            cancelButtonText: 'Batal'
+        });
+        if (isConfirmed) {
+            try {
+                const response = await axios.post(`<?= base_url('travel') ?>/${id}/complete`, {}, {
+                    headers: {
+                        'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
+                    }
+                });
+                if (response.data.status === 'success') {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: response.data.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    window.location.reload();
+                } else {
+                    Swal.fire('Gagal', response.data.message, 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Terjadi kesalahan sistem saat menandai perjalanan selesai.', 'error');
+            }
+        }
+    }
 </script>
 <?= $this->endSection() ?>

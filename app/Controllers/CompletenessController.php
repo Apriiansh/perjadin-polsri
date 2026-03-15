@@ -46,7 +46,8 @@ class CompletenessController extends BaseController
             return redirect()->to('/travel/requests')->with('error', 'Data perjalanan tidak ditemukan.');
         }
 
-        if ($request->status !== 'draft' && $request->status !== 'active') {
+        $isSuperadmin = auth()->user()->inGroup('superadmin');
+        if (!$isSuperadmin && $request->status !== 'draft' && $request->status !== 'active') {
             return redirect()->to("/travel/{$id}")->with('error', 'Data perjalanan tidak dapat diubah pada status ini.');
         }
 
@@ -106,8 +107,9 @@ class CompletenessController extends BaseController
         }
 
         $request = $this->travelRequestModel->find($id);
-        if (!$request || ($request->status !== 'draft' && $request->status !== 'active')) {
-            return redirect()->to('/travel')->with('error', 'Permintaan tidak valid.');
+        $isSuperadmin = auth()->user()->inGroup('superadmin');
+        if (!$request || (!$isSuperadmin && $request->status !== 'draft' && $request->status !== 'active')) {
+            return redirect()->to('/travel')->with('error', 'Permintaan tidak valid atau data sudah terkunci.');
         }
 
         $validation = $this->validate([
