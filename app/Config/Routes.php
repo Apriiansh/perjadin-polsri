@@ -87,6 +87,8 @@ $routes->group('', ['filter' => 'session'], static function ($routes): void {
 			$routes->post('(:num)/verify', 'ReviewController::verify/$1');
 			$routes->post('(:num)/verify-all', 'ReviewController::verifyAll/$1'); // Phase 20
 			$routes->post('(:num)/reject-all', 'ReviewController::rejectAll/$1'); // Phase 21
+			$routes->post('member/(:num)/verify', 'ReviewController::verifyMember/$1'); // Phase 31
+			$routes->post('member/(:num)/reject', 'ReviewController::rejectMember/$1'); // Phase 31
 		});
 	});
 

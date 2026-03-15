@@ -67,28 +67,13 @@ class TravelRequestController extends BaseController
         }
 
         // Attach members and documentation stats to each request
-        $completenessModel = new \App\Models\TravelCompletenessModel();
-        foreach ($travelRequests as &$req) {
-            $req->members = $this->travelMemberModel->getByRequestWithEmployee($req->id);
-            
-            // Only fetch stats if active/completed to optimize performance
-            if (in_array($req->status, ['active', 'completed'])) {
-                $items = $completenessModel->where('travel_request_id', $req->id)->findAll();
-                $req->total_docs = count($items);
-                $req->uploaded_docs = count(array_filter($items, fn($i) => $i->status === 'uploaded'));
-                $req->verified_docs = count(array_filter($items, fn($i) => $i->status === 'verified'));
-            } else {
-                $req->total_docs = 0;
-                $req->uploaded_docs = 0;
-                $req->verified_docs = 0;
-            }
-        }
+        $this->attachDocumentationStats($travelRequests);
 
         // Calculate summary stats
         $stats = [
             'total'     => count($travelRequests),
             'draft'     => count(array_filter($travelRequests, fn($r) => $r->status === 'draft')),
-            'pending'   => count(array_filter($travelRequests, fn($r) => $r->status === 'active' && $r->uploaded_docs > 0)),
+            'pending'   => count(array_filter($travelRequests, fn($r) => $r->status === 'active' && ($r->uploaded_docs ?? 0) > 0)),
             'completed' => count(array_filter($travelRequests, fn($r) => $r->status === 'completed')),
         ];
 
@@ -134,15 +119,7 @@ class TravelRequestController extends BaseController
         $title = $isVerifOnly ? 'Verifikasi Perdin' : 'Perjalanan Dinas Aktif';
 
         // Attach members and documentation stats to each request
-        $completenessModel = new \App\Models\TravelCompletenessModel();
-        foreach ($travelRequests as &$req) {
-            $req->members = $this->travelMemberModel->getByRequestWithEmployee($req->id);
-
-            $items = $completenessModel->where('travel_request_id', $req->id)->findAll();
-            $req->total_docs = count($items);
-            $req->uploaded_docs = count(array_filter($items, fn($i) => $i->status === 'uploaded'));
-            $req->verified_docs = count(array_filter($items, fn($i) => $i->status === 'verified'));
-        }
+        $this->attachDocumentationStats($travelRequests);
 
         return view('travel/index', [
             'title'          => $title,
@@ -290,20 +267,41 @@ class TravelRequestController extends BaseController
 
         $members = $this->travelExpenseModel->getByRequestWithMember($id);
 
-        // Fetch itemized expenses (Phase 8)
-        $expenseItemModel = new \App\Models\TravelExpenseItemModel();
-        foreach ($members as &$member) {
-            $member->expense_items = $expenseItemModel->where('travel_member_id', $member->travel_member_id)->findAll();
-        }
-
-        // Get completeness items
+        // Fetch models for files and completeness
         $completenessModel = model('TravelCompletenessModel');
         $fileModel = model('TravelCompletenessFileModel');
-        $completeness = $completenessModel->getByRequestId($id);
+        $expenseItemModel = new \App\Models\TravelExpenseItemModel();
 
-        foreach ($completeness as $item) {
+        foreach ($members as &$member) {
+            // Fetch itemized expenses (Phase 8)
+            $member->expense_items = $expenseItemModel->where('travel_member_id', $member->travel_member_id)->findAll();
+
+            // Fetch documentation files for this specific member
+            // Logic: files where member_id matches OR (member_id is NULL and uploaded_by matches this member's user_id)
+            $member->documentation_files = $fileModel->join('travel_completeness', 'travel_completeness.id = travel_completeness_files.completeness_id')
+                ->where('travel_completeness.travel_request_id', $id)
+                ->groupStart()
+                ->where('travel_completeness.member_id', $member->travel_member_id)
+                ->orGroupStart()
+                ->where('travel_completeness.member_id', null)
+                ->where('travel_completeness_files.uploaded_by', $member->user_id)
+                ->groupEnd()
+                ->groupEnd()
+                ->select('travel_completeness_files.*, travel_completeness.item_name')
+                ->findAll();
+        }
+
+        // Get global/legacy completeness items (where member_id is NULL)
+        $legacyCompleteness = $completenessModel->where('travel_request_id', $id)
+            ->where('member_id', null)
+            ->findAll();
+
+        foreach ($legacyCompleteness as $item) {
             $item->files = $fileModel->getByCompletenessId($item->id);
         }
+
+        // Legacy items go to global completeness display if needed
+        $completeness = $legacyCompleteness;
 
         return view('travel/show', [
             'title'          => 'Detail Perjalanan Dinas',
@@ -787,5 +785,72 @@ class TravelRequestController extends BaseController
         $sig->employee_name = $emp['name'] ?? 'Unknown';
         $sig->nip           = $emp['nip'] ?? '';
         return $sig;
+    }
+
+    /**
+     * Helper to attach documentation stats to each member in travel requests.
+     */
+    private function attachDocumentationStats(&$travelRequests)
+    {
+        $completenessModel = new \App\Models\TravelCompletenessModel();
+        $fileModel = new \App\Models\TravelCompletenessFileModel();
+        $currentUserId = auth()->id();
+
+        foreach ($travelRequests as &$req) {
+            $req->members = $this->travelMemberModel->getByRequestWithEmployee($req->id);
+
+            // Only fetch stats if active/completed to optimize performance
+            if (in_array($req->status, ['active', 'completed'])) {
+                $items = $completenessModel->where('travel_request_id', $req->id)->findAll();
+                $allFiles = $fileModel->whereIn('completeness_id', array_column($items, 'id') ?: [0])->findAll();
+
+                $req->total_docs = count($items);
+                $req->uploaded_docs = count(array_filter($items, fn($i) => $i->status === 'uploaded'));
+                $req->verified_docs = count(array_filter($items, fn($i) => $i->status === 'verified'));
+
+                // Calculate PER MEMBER stats
+                foreach ($req->members as &$member) {
+                    $mUserId = $member->user_id ?? -1;
+                    $memberItems = array_filter($items, function ($i) use ($member, $mUserId, $allFiles) {
+                        // 1. Direct match by member_id
+                        if ($i->member_id == $member->id) return true;
+
+                        // 2. Legacy check: member_id is null AND this user has files for this item
+                        if ($i->member_id == null) {
+                            foreach ($allFiles as $f) {
+                                if ($f->completeness_id == $i->id && $f->uploaded_by == $mUserId) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    });
+
+                    $member->total_docs = count($memberItems);
+                    // Use uploaded_docs for logic in view (including uploaded & verified for progress)
+                    $member->uploaded_docs = count(array_filter($memberItems, fn($i) => $i->status === 'uploaded' || $i->status === 'verified')); 
+                    $member->uploaded_count = count(array_filter($memberItems, fn($i) => $i->status === 'uploaded'));
+                    $member->verified_docs = count(array_filter($memberItems, fn($i) => $i->status === 'verified'));
+
+                    // If this is the current user, attach personal stats to request
+                    if ($mUserId == $currentUserId) {
+                        $req->personal_stats = [
+                            'total' => $member->total_docs,
+                            'uploaded' => $member->uploaded_count,
+                            'verified' => $member->verified_docs
+                        ];
+                    }
+                }
+            } else {
+                $req->total_docs = 0;
+                $req->uploaded_docs = 0;
+                $req->verified_docs = 0;
+                foreach ($req->members as &$member) {
+                    $member->total_docs = 0;
+                    $member->uploaded_docs = 0;
+                    $member->verified_docs = 0;
+                }
+            }
+        }
     }
 }

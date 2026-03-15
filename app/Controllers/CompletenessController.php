@@ -206,17 +206,20 @@ class CompletenessController extends BaseController
                 'status' => 'active'
             ]);
 
-            // 4. Create Checklist Items from the form
+            // 4. Create Checklist Items from the form (Per Member - Phase 28)
             $this->travelCompletenessModel->where('travel_request_id', $id)->delete();
             $checklistItems = $this->request->getPost('checklist');
             if ($checklistItems) {
-                foreach ($checklistItems as $itemName) {
-                    if (empty($itemName)) continue;
-                    $this->travelCompletenessModel->insert([
-                        'travel_request_id' => $id,
-                        'item_name' => $itemName,
-                        'status' => 'pending',
-                    ]);
+                foreach ($existingMembers as $member) {
+                    foreach ($checklistItems as $itemName) {
+                        if (empty($itemName)) continue;
+                        $this->travelCompletenessModel->insert([
+                            'travel_request_id' => $id,
+                            'member_id' => $member->id,
+                            'item_name' => $itemName,
+                            'status' => 'pending',
+                        ]);
+                    }
                 }
             }
 

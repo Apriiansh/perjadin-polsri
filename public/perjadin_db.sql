@@ -86,13 +86,19 @@ CREATE TABLE `tariffs` (
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `tariffs_unique_rate` (`province`,`city`,`tingkat_biaya`,`jenis_penginapan`,`tahun_berlaku`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO `tariffs` (`id`, `province`, `city`, `tingkat_biaya`, `uang_harian`, `uang_representasi`, `penginapan`, `jenis_penginapan`, `tahun_berlaku`, `is_active`, `created_at`, `updated_at`) VALUES
+(2,	'DKI JAKARTA',	'KOTA JAKARTA SELATAN',	'A',	500000.00,	200000.00,	800000.00,	'Hotel Bintang 4',	2026,	1,	'2026-03-08 04:41:51',	'2026-03-08 04:41:51'),
+(3,	'DKI JAKARTA',	'KOTA JAKARTA SELATAN',	'B',	120000.00,	100000.00,	800000.00,	'Hotel Bintang 4',	2026,	1,	'2026-03-09 04:55:36',	'2026-03-09 04:55:36'),
+(4,	'ACEH',	'KABUPATEN SIMEULUE',	'A',	1200000.00,	1000000.00,	1500000.00,	'Hotel',	2026,	1,	'2026-03-13 17:55:34',	'2026-03-13 17:55:34'),
+(5,	'ACEH',	'KABUPATEN SIMEULUE',	'B',	1000000.00,	800000.00,	800000.00,	'Hotel',	2026,	1,	'2026-03-13 17:56:01',	'2026-03-13 17:56:01');
 
 DROP TABLE IF EXISTS `travel_completeness`;
 CREATE TABLE `travel_completeness` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `travel_request_id` bigint(20) unsigned NOT NULL,
+  `member_id` int(11) unsigned DEFAULT NULL,
   `item_name` varchar(255) NOT NULL COMMENT 'e.g., Tiket Pesawat PP, Nota Hotel',
   `payment_method` enum('reimbursement','vendor','non_reimbursement') DEFAULT NULL,
   `remark` text DEFAULT NULL,
@@ -110,8 +116,35 @@ CREATE TABLE `travel_completeness` (
   PRIMARY KEY (`id`),
   KEY `travel_completeness_travel_request_id_foreign` (`travel_request_id`),
   CONSTRAINT `travel_completeness_travel_request_id_foreign` FOREIGN KEY (`travel_request_id`) REFERENCES `travel_requests` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO `travel_completeness` (`id`, `travel_request_id`, `member_id`, `item_name`, `payment_method`, `remark`, `document_path`, `original_name`, `file_size`, `uploaded_by`, `uploaded_at`, `status`, `verified_by`, `verified_at`, `verification_note`, `created_at`, `updated_at`) VALUES
+(15,	7,	NULL,	'Laporan Perjalanan',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	'uploaded',	NULL,	NULL,	NULL,	'2026-03-14 15:20:57',	'2026-03-15 06:22:27'),
+(16,	7,	NULL,	'Dokumentasi Kegiatan',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	'uploaded',	NULL,	NULL,	NULL,	'2026-03-14 15:20:57',	'2026-03-15 06:22:27'),
+(17,	7,	NULL,	'Tiket & Boarding Pass',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	'uploaded',	NULL,	NULL,	NULL,	'2026-03-14 15:20:57',	'2026-03-15 06:22:27'),
+(18,	7,	NULL,	'Daftar Pengeluaran Riil',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	'uploaded',	NULL,	NULL,	NULL,	'2026-03-14 15:20:57',	'2026-03-15 06:22:27');
+
+DROP TABLE IF EXISTS `travel_completeness_files`;
+CREATE TABLE `travel_completeness_files` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `completeness_id` bigint(20) unsigned NOT NULL,
+  `file_path` varchar(255) NOT NULL,
+  `original_name` varchar(255) NOT NULL,
+  `file_size` int(11) NOT NULL,
+  `uploaded_by` int(11) unsigned NOT NULL,
+  `created_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `travel_completeness_files_completeness_id_foreign` (`completeness_id`),
+  CONSTRAINT `travel_completeness_files_completeness_id_foreign` FOREIGN KEY (`completeness_id`) REFERENCES `travel_completeness` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `travel_completeness_files` (`id`, `completeness_id`, `file_path`, `original_name`, `file_size`, `uploaded_by`, `created_at`) VALUES
+(36,	15,	'completeness/7/laporan-perjalanan-11-1-4b4de649.pdf',	'Laporan Perjalanan - 1.pdf',	12604,	13,	'2026-03-15 06:22:27'),
+(37,	16,	'completeness/7/dokumentasi-kegiatan-11-1-743ee9b8.pdf',	'Dokumentasi Kegiatan - 1.pdf',	12604,	13,	'2026-03-15 06:22:27'),
+(38,	17,	'completeness/7/tiket-boarding-pass-11-1-3fd7622b.pdf',	'Tiket & Boarding Pass - 1.pdf',	12604,	13,	'2026-03-15 06:22:27'),
+(39,	18,	'completeness/7/daftar-pengeluaran-riil-11-1-1ab3f226.pdf',	'Daftar Pengeluaran Riil - 1.pdf',	12604,	13,	'2026-03-15 06:22:27'),
+(40,	15,	'completeness/7/laporan-perjalanan-user13-mbr11-2-1756e09a.pdf',	'Laporan Perjalanan - 2.pdf',	12604,	13,	'2026-03-15 06:35:42'),
+(41,	17,	'completeness/7/tiket-boarding-pass-user13-mbr11-2-dd4201f0.png',	'Tiket & Boarding Pass - 2.png',	112299,	13,	'2026-03-15 07:07:53');
 
 DROP TABLE IF EXISTS `travel_expenses`;
 CREATE TABLE `travel_expenses` (
@@ -132,8 +165,11 @@ CREATE TABLE `travel_expenses` (
   KEY `travel_expenses_travel_member_id_foreign` (`travel_member_id`),
   CONSTRAINT `travel_expenses_tariff_id_foreign` FOREIGN KEY (`tariff_id`) REFERENCES `tariffs` (`id`) ON DELETE CASCADE ON UPDATE SET NULL,
   CONSTRAINT `travel_expenses_travel_member_id_foreign` FOREIGN KEY (`travel_member_id`) REFERENCES `travel_members` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO `travel_expenses` (`id`, `travel_member_id`, `tariff_id`, `uang_harian`, `uang_representasi`, `tiket`, `penginapan`, `transport_darat`, `transport_lokal`, `total_biaya`, `created_at`, `updated_at`) VALUES
+(30,	11,	NULL,	12000000.00,	5000000.00,	1200000.00,	0.00,	0.00,	300000.00,	18500000.00,	'2026-03-14 15:19:02',	'2026-03-14 15:20:57'),
+(31,	12,	NULL,	10000000.00,	4000000.00,	1200000.00,	0.00,	0.00,	40000.00,	15240000.00,	'2026-03-14 15:19:02',	'2026-03-14 15:20:57');
 
 DROP TABLE IF EXISTS `travel_expense_items`;
 CREATE TABLE `travel_expense_items` (
@@ -147,8 +183,13 @@ CREATE TABLE `travel_expense_items` (
   PRIMARY KEY (`id`),
   KEY `travel_expense_items_travel_member_id_foreign` (`travel_member_id`),
   CONSTRAINT `travel_expense_items_travel_member_id_foreign` FOREIGN KEY (`travel_member_id`) REFERENCES `travel_members` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO `travel_expense_items` (`id`, `travel_member_id`, `category`, `item_name`, `amount`, `created_at`, `updated_at`) VALUES
+(19,	11,	'tiket',	'Tiket Pesawat',	1200000.00,	'2026-03-14 15:20:57',	'2026-03-14 15:20:57'),
+(20,	11,	'transport_lokal',	'Angkot',	300000.00,	'2026-03-14 15:20:57',	'2026-03-14 15:20:57'),
+(21,	12,	'tiket',	'Tiket Pesawait',	1200000.00,	'2026-03-14 15:20:57',	'2026-03-14 15:20:57'),
+(22,	12,	'transport_lokal',	'Bentor',	40000.00,	'2026-03-14 15:20:57',	'2026-03-14 15:20:57');
 
 DROP TABLE IF EXISTS `travel_members`;
 CREATE TABLE `travel_members` (
@@ -160,6 +201,7 @@ CREATE TABLE `travel_members` (
   `no_sppd` varchar(100) DEFAULT NULL,
   `tgl_sppd` date DEFAULT NULL,
   `keterangan` varchar(255) DEFAULT NULL,
+  `report_narrative` text DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -167,8 +209,11 @@ CREATE TABLE `travel_members` (
   KEY `travel_members_employee_id_foreign` (`employee_id`),
   CONSTRAINT `travel_members_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `travel_members_travel_request_id_foreign` FOREIGN KEY (`travel_request_id`) REFERENCES `travel_requests` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO `travel_members` (`id`, `travel_request_id`, `employee_id`, `kode_golongan`, `nama_golongan`, `no_sppd`, `tgl_sppd`, `keterangan`, `report_narrative`, `created_at`, `updated_at`) VALUES
+(11,	7,	21,	'IV/d',	'Pembina Utama Madya',	NULL,	NULL,	NULL,	'Telak dilaksanakan anu anuan di tempatnya si anu',	'2026-03-14 15:19:02',	'2026-03-15 07:07:53'),
+(12,	7,	50,	'IV/c',	'Pembina Utama Muda',	NULL,	NULL,	NULL,	NULL,	'2026-03-14 15:19:02',	'2026-03-14 15:20:57');
 
 DROP TABLE IF EXISTS `travel_requests`;
 CREATE TABLE `travel_requests` (
@@ -197,10 +242,24 @@ CREATE TABLE `travel_requests` (
   `updated_at` datetime DEFAULT NULL,
   `budget_burden_by` varchar(100) NOT NULL,
   `tahun_anggaran` year(4) DEFAULT NULL,
+  `ppk_id` bigint(20) unsigned DEFAULT NULL,
+  `kpa_id` bigint(20) unsigned DEFAULT NULL,
+  `bpp_id` bigint(20) unsigned DEFAULT NULL,
+  `bendahara_id` bigint(20) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `no_surat_tugas` (`no_surat_tugas`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  UNIQUE KEY `no_surat_tugas` (`no_surat_tugas`),
+  KEY `travel_requests_ppk_id_foreign` (`ppk_id`),
+  KEY `travel_requests_kpa_id_foreign` (`kpa_id`),
+  KEY `travel_requests_bendahara_id_foreign` (`bendahara_id`),
+  KEY `travel_requests_bpp_id_foreign` (`bpp_id`),
+  CONSTRAINT `travel_requests_bendahara_id_foreign` FOREIGN KEY (`bendahara_id`) REFERENCES `signatories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `travel_requests_bpp_id_foreign` FOREIGN KEY (`bpp_id`) REFERENCES `signatories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `travel_requests_kpa_id_foreign` FOREIGN KEY (`kpa_id`) REFERENCES `signatories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `travel_requests_ppk_id_foreign` FOREIGN KEY (`ppk_id`) REFERENCES `signatories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO `travel_requests` (`id`, `no_surat_tugas`, `tgl_surat_tugas`, `nomor_surat_rujukan`, `tgl_surat_rujukan`, `instansi_pengirim_rujukan`, `perihal_surat_rujukan`, `mak`, `transportation_type`, `destination_province`, `destination_city`, `lokasi`, `departure_place`, `departure_date`, `return_date`, `duration_days`, `total_budget`, `lampiran_path`, `lampiran_original_name`, `status`, `created_by`, `created_at`, `updated_at`, `budget_burden_by`, `tahun_anggaran`, `ppk_id`, `kpa_id`, `bpp_id`, `bendahara_id`) VALUES
+(7,	'12490-81123/123123/2026',	'2026-03-16',	'123414/12412/2025',	'2026-03-05',	'Kementrian HAM',	'Pigai mencekam',	'',	NULL,	'KEPULAUAN RIAU',	'KABUPATEN NATUNA',	'Hotel b5 di Riau',	'Palembang',	'2026-03-17',	'2026-03-16',	2,	33740000.00,	'travel/1773501542_aaa64e8bac2398ee854d.pdf',	'test-2-1.pdf',	'active',	1,	'2026-03-14 15:19:02',	'2026-03-14 15:20:57',	'Anggaran',	'2026',	3,	2,	4,	1);
 
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
@@ -215,7 +274,15 @@ CREATE TABLE `users` (
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO `users` (`id`, `username`, `status`, `status_message`, `active`, `last_active`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1,	'superadmin',	NULL,	NULL,	1,	'2026-03-15 07:03:52',	'2026-03-07 04:43:44',	'2026-03-07 04:45:45',	NULL),
+(2,	'admin',	NULL,	NULL,	1,	'2026-03-07 17:15:19',	'2026-03-07 04:43:44',	'2026-03-07 04:45:46',	NULL),
+(4,	'verificator',	NULL,	NULL,	1,	'2026-03-15 07:16:53',	'2026-03-07 04:45:46',	'2026-03-07 04:45:46',	NULL),
+(5,	'lecturer',	NULL,	NULL,	1,	'2026-03-13 09:01:25',	'2026-03-07 04:45:46',	'2026-03-07 04:45:46',	NULL),
+(11,	'abdul_tekkim1057',	NULL,	NULL,	1,	NULL,	'2026-03-07 17:14:09',	'2026-03-07 17:14:09',	NULL),
+(12,	'ade_maninf2032',	NULL,	NULL,	1,	'2026-03-13 17:45:58',	'2026-03-13 09:01:51',	'2026-03-13 09:01:51',	NULL),
+(13,	'asnaini_tekkom2001',	NULL,	NULL,	1,	'2026-03-15 07:14:55',	'2026-03-15 06:04:43',	'2026-03-15 06:04:43',	NULL);
 
--- 2026-03-13 08:24:15
+-- 2026-03-15 07:17:38

@@ -14,6 +14,7 @@ class TravelCompletenessModel extends Model
     protected $protectFields    = true;
     protected $allowedFields    = [
         'travel_request_id',
+        'member_id',
         'item_name',
         'payment_method',
         'remark',

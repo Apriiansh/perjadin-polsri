@@ -12,6 +12,13 @@
         <p class="mt-1 text-sm text-slate-500">Nomor Surat Tugas: <?= esc($travelRequest->no_surat_tugas ?? 'Belum ada nomor') ?></p>
     </div>
 
+    <?php
+    $user = auth()->user();
+    $isDosen = $user->inGroup('lecturer');
+    $isAdminKepegawaian = $user->inGroup('admin');
+    $isKeuangan = $user->inGroup('superadmin', 'verificator');
+    ?>
+
     <div class="flex items-center gap-2">
         <a href="<?= base_url('travel') ?>" class="btn-secondary inline-flex items-center gap-2 text-sm">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
@@ -33,13 +40,18 @@
     <!-- Left Column: Primary Details -->
     <div class="lg:col-span-2 space-y-6">
 
-        <!-- Document & Maksud Perjalanan -->
+        <!-- Informasi Dokumen & Surat Rujukan -->
         <div class="card p-6 border-t-4 border-t-primary-500">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-100">
-                <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
-                    <i data-lucide="file-text" class="w-5 h-5 text-primary-500"></i>
-                    Informasi Dokumen
-                </h3>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
+                        <i data-lucide="file-text" class="w-5 h-5 text-primary-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-800">Informasi Dokumen</h3>
+                        <p class="text-[10px] text-slate-400 font-medium uppercase tracking-tight">Detail Surat Tugas & Rujukan</p>
+                    </div>
+                </div>
 
                 <?php
                 $statusColors = [
@@ -57,70 +69,82 @@
                 $statusClass = $statusColors[$travelRequest->status] ?? $statusColors['draft'];
                 $statusLabel = $statusLabels[$travelRequest->status] ?? $travelRequest->status;
                 ?>
-                <span class="px-3 py-1 text-xs font-bold rounded shadow-sm uppercase tracking-wider <?= $statusClass ?>">
+                <span class="px-3 py-1.5 text-xs font-bold rounded-lg shadow-sm uppercase tracking-wider <?= $statusClass ?> border border-current opacity-80">
                     <?= esc($statusLabel) ?>
                 </span>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">
-                <div>
-                    <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Nomor Surat Tugas</span>
-                    <span class="text-sm font-medium text-slate-900"><?= esc($travelRequest->no_surat_tugas ?: '-') ?></span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Group 1: Surat Tugas -->
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 gap-y-4">
+                        <div>
+                            <span class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Nomor Surat Tugas</span>
+                            <span class="text-sm font-bold text-slate-900"><?= esc($travelRequest->no_surat_tugas ?: '-') ?></span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <span class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Tgl Surat Tugas</span>
+                                <span class="text-sm font-medium text-slate-800"><?= esc($travelRequest->tgl_surat_tugas ? date('d F Y', strtotime($travelRequest->tgl_surat_tugas)) : '-') ?></span>
+                            </div>
+                            <div>
+                                <span class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Tahun</span>
+                                <span class="text-sm font-medium text-slate-800"><?= esc($travelRequest->tahun_anggaran ?: '-') ?></span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Beban Anggaran</span>
+                            <span class="text-sm font-medium text-slate-800"><?= esc($travelRequest->budget_burden_by ?: '-') ?></span>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Lokasi / Venue</span>
+                            <div class="flex items-center gap-2 text-sm font-medium text-slate-800">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i>
+                                <?= esc($travelRequest->lokasi ?: '-') ?>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tgl Surat Tugas</span>
-                    <span class="text-sm font-medium text-slate-900"><?= esc($travelRequest->tgl_surat_tugas ? date('d F Y', strtotime($travelRequest->tgl_surat_tugas)) : '-') ?></span>
-                </div>
-                <div>
-                    <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Beban Anggaran</span>
-                    <span class="text-sm font-medium text-slate-900"><?= esc($travelRequest->budget_burden_by ?: '-') ?></span>
-                </div>
-                <div>
-                    <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tahun Anggaran</span>
-                    <span class="text-sm font-medium text-slate-900"><?= esc($travelRequest->tahun_anggaran ?: '-') ?></span>
-                </div>
-                <div>
-                    <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Lokasi / Venue</span>
-                    <span class="text-sm font-medium text-slate-900"><?= esc($travelRequest->lokasi ?: '-') ?></span>
+
+                <!-- Group 2: Surat Rujukan -->
+                <div class="space-y-4 md:border-l md:border-slate-100 md:pl-8">
+                    <?php if (!empty($travelRequest->nomor_surat_rujukan) || !empty($travelRequest->instansi_pengirim_rujukan) || !empty($travelRequest->perihal_surat_rujukan)): ?>
+                        <div class="grid grid-cols-1 gap-y-4">
+                            <?php if (!empty($travelRequest->nomor_surat_rujukan)): ?>
+                                <div>
+                                    <span class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Surat Rujukan</span>
+                                    <div class="text-sm font-bold text-slate-900"><?= esc($travelRequest->nomor_surat_rujukan) ?></div>
+                                    <?php if (!empty($travelRequest->tgl_surat_rujukan)): ?>
+                                        <div class="text-xs text-slate-500 mt-0.5"><?= date('d F Y', strtotime($travelRequest->tgl_surat_rujukan)) ?></div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($travelRequest->instansi_pengirim_rujukan)): ?>
+                                <div>
+                                    <span class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Instansi Pengirim</span>
+                                    <span class="text-sm font-medium text-slate-800"><?= esc($travelRequest->instansi_pengirim_rujukan) ?></span>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($travelRequest->perihal_surat_rujukan)): ?>
+                                <div>
+                                    <span class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Perihal</span>
+                                    <p class="text-xs text-slate-600 italic leading-relaxed bg-slate-50 p-2.5 rounded-lg border border-slate-100 mt-1">
+                                        <?= nl2br(esc((string) $travelRequest->perihal_surat_rujukan)) ?>
+                                    </p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="h-full flex flex-col items-center justify-center text-center opacity-40 py-8">
+                            <i data-lucide="mail-search" class="w-10 h-10 text-slate-300 mb-2"></i>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tidak ada surat rujukan</p>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
-
-        <!-- Surat Rujukan -->
-        <?php if (!empty($travelRequest->nomor_surat_rujukan) || !empty($travelRequest->instansi_pengirim_rujukan) || !empty($travelRequest->perihal_surat_rujukan)): ?>
-            <div class="card p-6 border-t-4 border-t-violet-500">
-                <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2 mb-4 pb-4 border-b border-slate-100">
-                    <i data-lucide="mail" class="w-5 h-5 text-violet-500"></i>
-                    Surat Rujukan
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">
-                    <?php if (!empty($travelRequest->nomor_surat_rujukan)): ?>
-                        <div>
-                            <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Nomor Surat</span>
-                            <span class="text-sm font-medium text-slate-900"><?= esc($travelRequest->nomor_surat_rujukan) ?></span>
-                        </div>
-                    <?php endif; ?>
-                    <?php if (!empty($travelRequest->tgl_surat_rujukan)): ?>
-                        <div>
-                            <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tanggal Surat</span>
-                            <span class="text-sm font-medium text-slate-900"><?= date('d F Y', strtotime($travelRequest->tgl_surat_rujukan)) ?></span>
-                        </div>
-                    <?php endif; ?>
-                    <?php if (!empty($travelRequest->instansi_pengirim_rujukan)): ?>
-                        <div class="md:col-span-2">
-                            <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Instansi Pengirim</span>
-                            <span class="text-sm font-medium text-slate-900"><?= esc($travelRequest->instansi_pengirim_rujukan) ?></span>
-                        </div>
-                    <?php endif; ?>
-                    <?php if (!empty($travelRequest->perihal_surat_rujukan)): ?>
-                        <div class="md:col-span-2">
-                            <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Perihal</span>
-                            <p class="text-sm text-slate-800 bg-slate-50 p-3 rounded-md border border-slate-100"><?= nl2br(esc((string) $travelRequest->perihal_surat_rujukan)) ?></p>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-        <?php endif; ?>
 
         <!-- Tujuan & Jadwal -->
         <div class="card p-6 border-t-4 border-t-blue-500">
@@ -153,140 +177,6 @@
             </div>
         </div>
 
-        <!-- Narasi Laporan (Phase 27) -->
-        <?php if (!empty($travelRequest->report_narrative)): ?>
-            <div class="card p-6 border-t-4 border-t-blue-600 bg-blue-50/10">
-                <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-4 pb-4 border-b border-slate-100 uppercase tracking-wider text-sm">
-                    <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i>
-                    Narasi Laporan / Dokumentasi
-                </h3>
-                <div class="text-sm text-slate-700 leading-relaxed bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-                    <?= nl2br(esc((string) $travelRequest->report_narrative)) ?>
-                </div>
-            </div>
-        <?php endif; ?>
-
-        <!-- Anggota Tim & Rincian Biaya -->
-        <div class="card p-0 overflow-hidden border-t-4 border-t-emerald-500 shadow-md">
-            <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-white">
-                <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
-                    <i data-lucide="users" class="w-5 h-5 text-emerald-500"></i>
-                    Anggota Tim & Rincian
-                </h3>
-                <span class="text-xs font-bold bg-slate-100 px-2 py-1.5 rounded-md border border-slate-200 text-slate-700 shadow-sm">
-                    <?= count($members) ?> Pegawai
-                </span>
-            </div>
-
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left">
-                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
-                        <tr>
-                            <th class="px-5 py-3.5 font-semibold">Nama / NIP</th>
-                            <th class="px-5 py-3.5 font-semibold">Tingkat</th>
-                            <th class="px-5 py-3.5 font-semibold text-right">Harian</th>
-                            <th class="px-5 py-3.5 font-semibold text-right">Representasi</th>
-                            <th class="px-5 py-3.5 font-semibold text-right">Penginapan</th>
-                            <th class="px-5 py-3.5 font-semibold text-right">Transport/Lainnya</th>
-                            <th class="px-5 py-3.5 font-semibold text-right text-emerald-700">Total Biaya</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 bg-white">
-                        <?php if (empty($members)): ?>
-                            <tr>
-                                <td colspan="7" class="px-5 py-8 text-center text-slate-400 italic bg-slate-50">Belum ada anggota tim yang didaftarkan.</td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($members as $member): ?>
-                                <tr class="hover:bg-emerald-50/30 transition-colors">
-                                    <td class="px-5 py-4">
-                                        <div class="font-bold text-slate-800"><?= esc($member->employee_name) ?></div>
-                                        <div class="text-xs text-slate-500 font-mono mt-0.5"><?= esc($member->employee_nip) ?></div>
-                                        <?php if (!empty($member->kode_golongan)): ?>
-                                            <div class="text-[10px] text-slate-400 mt-1 uppercase tracking-wider"><?= esc($member->kode_golongan) ?> — <?= esc($member->nama_golongan ?? '') ?></div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="px-5 py-4 align-top pt-5">
-                                        <?php
-                                        $tingkat = '-';
-                                        $golSrc = $member->kode_golongan ?: ($member->employee_golongan ?? '');
-                                        if ($golSrc) {
-                                            $gol = strtoupper($golSrc);
-                                            if (strpos($gol, 'IV') !== false) $tingkat = 'A';
-                                            elseif (strpos($gol, 'III') !== false) $tingkat = 'B';
-                                            elseif (strpos($gol, 'II') !== false && strpos($gol, 'III') === false) $tingkat = 'C';
-                                            elseif (strpos($gol, 'I') !== false && strpos($gol, 'II') === false && strpos($gol, 'III') === false && strpos($gol, 'IV') === false) $tingkat = 'D';
-                                        }
-                                        ?>
-                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 shadow-sm"><?= $tingkat ?></span>
-                                    </td>
-                                    <td class="px-5 py-4 text-right align-top pt-5">
-                                        <?php if (($member->uang_harian ?? 0) > 0): ?>
-                                            <div class="text-slate-700 font-medium"><?= number_format($member->uang_harian ?? 0, 0, ',', '.') ?></div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="px-5 py-4 text-right align-top pt-5">
-                                        <?php if (($member->uang_representasi ?? 0) > 0): ?>
-                                            <div class="text-slate-700 font-medium"><?= number_format($member->uang_representasi ?? 0, 0, ',', '.') ?></div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="px-5 py-4 text-right align-top pt-5 text-slate-700 font-medium">
-                                        <?= number_format($member->penginapan ?? 0, 0, ',', '.') ?>
-                                    </td>
-                                    <td class="px-5 py-4 text-right align-top pt-4">
-                                        <?php $lainnya = ($member->tiket ?? 0) + ($member->transport_darat ?? 0) + ($member->transport_lokal ?? 0); ?>
-                                        <div class="text-slate-700 font-medium"><?= number_format($lainnya, 0, ',', '.') ?></div>
-                                        <?php if ($lainnya > 0): ?>
-                                            <div class="text-[10px] text-slate-400 mt-1">Tiket/Trans Darat/Lokal</div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="px-5 py-4 text-right align-top pt-5 font-bold text-emerald-700 whitespace-nowrap bg-emerald-50/10">
-                                        <?= number_format($member->total_biaya ?? 0, 0, ',', '.') ?>
-
-                                        <?php
-                                        $isOwnMember = (auth()->user()->employee_id == $member->employee_id);
-                                        if (($isStaff || $isOwnMember) && $travelRequest->status !== 'draft'):
-                                        ?>
-                                            <div class="mt-2 pt-2 border-t border-emerald-100">
-                                                <a href="<?= base_url('travel/' . $travelRequest->id . '/statement?member_id=' . $member->travel_member_id) ?>" class="text-[10px] text-emerald-600 hover:text-emerald-800 flex items-center justify-end gap-1">
-                                                    <i data-lucide="file-check" class="w-3 h-3"></i>
-                                                    Surat Pernyataan
-                                                </a>
-                                            </div>
-                                        <?php endif; ?>
-
-                                        <!-- Itemized Expenses (Phase 8) -->
-                                        <?php if (!empty($member->expense_items)): ?>
-                                            <div class="mt-4 pt-4 border-t border-slate-100 text-left">
-                                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Rincian Biaya Riil:</div>
-                                                <div class="space-y-1.5">
-                                                    <?php foreach ($member->expense_items as $item): ?>
-                                                        <div class="flex justify-between items-center bg-slate-50/50 p-2 rounded border border-slate-100">
-                                                            <div class="flex flex-col">
-                                                                <span class="text-[11px] font-bold text-slate-700"><?= esc($item->item_name) ?></span>
-                                                                <span class="text-[9px] text-slate-400 uppercase"><?= esc($item->category) ?></span>
-                                                            </div>
-                                                            <span class="text-[11px] font-mono font-medium text-slate-600">Rp <?= number_format($item->amount, 0, ',', '.') ?></span>
-                                                        </div>
-                                                    <?php endforeach; ?>
-                                                </div>
-                                            </div>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                    <tfoot class="bg-slate-800 border-t border-slate-700">
-                        <tr>
-                            <td colspan="6" class="px-5 py-4 text-right font-bold text-slate-200 text-sm tracking-wide">GRAND TOTAL BIAYA PERJALANAN</td>
-                            <td class="px-5 py-4 text-right font-black text-xl text-emerald-400 whitespace-nowrap">Rp <?= number_format($travelRequest->total_budget ?? 0, 0, ',', '.') ?></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-
 
 
     </div>
@@ -306,7 +196,7 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-2">Lampiran Surat Tugas</label>
                     <?php if (!empty($travelRequest->lampiran_path)): ?>
-                        <a href="<?= base_url('travel/' . $travelRequest->id . '/lampiran') ?>" class="btn-accent w-full justify-center inline-flex items-center gap-2 text-sm">
+                        <a href="<?= base_url('travel/' . $travelRequest->id . '/lampiran') ?>" class="btn-primary w-full justify-center inline-flex items-center gap-2 text-sm">
                             <i data-lucide="paperclip" class="w-4 h-4"></i>
                             <?= esc($travelRequest->lampiran_original_name ?: 'Download Lampiran') ?>
                         </a>
@@ -319,14 +209,14 @@
                 <div class="pt-2">
                     <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Dokumen Terbitan Sistem</label>
                     <?php if ($travelRequest->status !== 'draft'): ?>
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid <?= $isDosen ? 'grid-cols-1' : 'grid-cols-2' ?> gap-3">
                             <!-- SPD Generate -->
                             <a id="btn-download-spd" href="<?= base_url('travel/' . $travelRequest->id . '/spd') ?>"
                                 class="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-slate-100 bg-slate-50 hover:bg-white hover:border-primary-500 hover:text-primary-600 transition-all group gap-2 text-center">
                                 <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:bg-primary-50">
                                     <i data-lucide="file-text" class="w-5 h-5 text-primary-500"></i>
                                 </div>
-                                <span class="text-xs font-bold">SPD</span>
+                                <span class="text-xs font-bold">SPD <?= $isDosen ? 'Saya' : '' ?></span>
                             </a>
 
                             <!-- Surat Pernyataan Generate -->
@@ -335,11 +225,11 @@
                                 <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:bg-emerald-50">
                                     <i data-lucide="file-check" class="w-5 h-5 text-emerald-500"></i>
                                 </div>
-                                <span class="text-xs font-bold"><?= $isStaff ? 'Surat Pernyataan' : 'Pernyataan (.docx)' ?></span>
+                                <span class="text-xs font-bold"><?= $isDosen ? 'Pernyataan Saya' : ($isStaff ? 'Surat Pernyataan' : 'Pernyataan (.docx)') ?></span>
                             </a>
 
                             <!-- Daftar Kontrol Generate (Admin/Staff only) -->
-                            <?php if ($isStaff): ?>
+                            <?php if ($isStaff && !$isAdminKepegawaian): ?>
                                 <a href="<?= base_url('travel/' . $travelRequest->id . '/control-list') ?>"
                                     class="col-span-2 flex items-center justify-between p-4 rounded-xl border-2 border-slate-100 bg-emerald-50/20 hover:bg-white hover:border-emerald-600 hover:text-emerald-700 transition-all group gap-3">
                                     <div class="flex items-center gap-3">
@@ -421,140 +311,248 @@
             </div>
         <?php endif; ?>
 
-        <!-- Document Completeness Checklist (Phase 8) -->
-        <?php if ($travelRequest->status !== 'draft' && !empty($completeness)): ?>
-            <div class="card p-0 overflow-hidden border-t-4 border-t-amber-500 shadow-lg mt-6">
-                <div class="p-4 border-b border-slate-100 bg-white/50 backdrop-blur-sm">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-black text-sm uppercase tracking-wider text-slate-800 flex items-center gap-2">
-                            <i data-lucide="check-check" class="w-4 h-4 text-amber-500"></i>
-                            Kelengkapan Berkas
-                        </h3>
-                        <?php
-                        $total = count($completeness);
-                        $verified = count(array_filter($completeness, fn($c) => $c->status === 'verified'));
-                        $progress = ($total > 0) ? ($verified / $total) * 100 : 0;
-                        ?>
-                        <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
-                                <?= $verified ?>/<?= $total ?>
-                            </span>
-                            <?php if ($travelRequest->status === 'active'): ?>
-                                <?php
-                                    $isVerifOnly = auth()->user()->inGroup('verificator') && !auth()->user()->inGroup('superadmin', 'admin');
-                                    $targetUrl = $isVerifOnly ? base_url('documentation/' . $travelRequest->id . '/verification') : base_url('documentation/' . $travelRequest->id);
-                                ?>
-                                <a href="<?= $targetUrl ?>"
-                                   class="text-[10px] font-bold bg-amber-500 text-white px-3 py-1 rounded inline-flex items-center gap-1 hover:bg-amber-600 transition-colors shadow-sm">
-                                    <i data-lucide="upload-cloud" class="w-3 h-3"></i> Kelola
-                                </a>
-                            <?php endif; ?>
-                        </div>
-                    </div>
+        <!-- Laporan & Dokumentasi Anggota (Moved to Sidebar) -->
+        <?php
+        $hasAnyDoc = false;
+        foreach ($members as $m) {
+            if (!empty($m->report_narrative) || !empty($m->documentation_files)) {
+                $hasAnyDoc = true;
+                break;
+            }
+        }
+        // Always show the card if active to allow document management
+        if (($hasAnyDoc || $travelRequest->status === 'active') && !empty($members)):
+        ?>
+            <div class="card p-0 overflow-hidden border-t-4 border-t-blue-600 bg-white shadow-lg">
+                <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wider text-xs">
+                        <i data-lucide="file-text" class="w-4 h-4 text-blue-600"></i>
+                        Laporan & Dokumentasi
+                    </h3>
 
-                    <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div class="h-full bg-amber-400 transition-all duration-700 ease-out" style="width: <?= $progress ?>%"></div>
-                    </div>
+                    <?php if ($travelRequest->status === 'active'): ?>
+                        <?php
+                        $isVerifOnly = auth()->user()->inGroup('verificator') && !auth()->user()->inGroup('superadmin', 'admin');
+                        $targetUrl = $isVerifOnly ? base_url('documentation/' . $travelRequest->id . '/verification') : base_url('documentation/' . $travelRequest->id);
+                        ?>
+                        <a href="<?= $targetUrl ?>"
+                            class="text-[10px] font-bold bg-blue-600 text-white px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5 hover:bg-blue-700 transition-all shadow-sm hover:shadow-md">
+                            <i data-lucide="upload-cloud" class="w-3 h-3"></i>
+                            <?= $isVerifOnly ? 'Verifikasi' : 'Kelola' ?>
+                        </a>
+                    <?php endif; ?>
                 </div>
 
-                <div class="p-4 space-y-3">
-                    <?php foreach ($completeness as $item): ?>
-                        <div class="group relative flex flex-col p-3 rounded-xl border transition-all duration-300 <?= ($item->status === 'verified') ? 'border-emerald-100 bg-emerald-50/20' : 'border-slate-100 bg-white hover:border-amber-200 hover:shadow-sm' ?>">
-
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="flex items-start gap-3">
-                                    <div class="mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center shrink-0 <?= ($item->status === 'verified') ? 'bg-emerald-500 text-white' : ($item->status === 'uploaded' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400') ?>">
-                                        <?php if ($item->status === 'verified'): ?>
-                                            <i data-lucide="check" class="w-4 h-4"></i>
-                                        <?php elseif ($item->status === 'uploaded'): ?>
-                                            <i data-lucide="file-up" class="w-4 h-4 pulse"></i>
-                                        <?php else: ?>
-                                            <i data-lucide="clock" class="w-4 h-4"></i>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <div class="min-w-0">
-                                        <div class="font-bold text-xs text-slate-800 truncate" title="<?= esc($item->item_name) ?>">
-                                            <?= esc($item->item_name) ?>
-                                        </div>
-
-                                        <div class="flex items-center gap-2 mt-1">
-                                            <?php
-                                            $statusMap = [
-                                                'pending'  => ['bg-slate-100 text-slate-500', 'Menunggu'],
-                                                'uploaded' => ['bg-amber-100 text-amber-700', 'Unggah'],
-                                                'verified' => ['bg-emerald-100 text-emerald-700', 'Sesuai'],
-                                                'rejected' => ['bg-rose-100 text-rose-700', 'Ditolak'],
-                                            ];
-                                            $s = $statusMap[$item->status] ?? $statusMap['pending'];
-                                            ?>
-                                            <span class="text-[9px] font-black uppercase tracking-tighter py-0.5 px-1.5 rounded <?= $s[0] ?>">
-                                                <?= $s[1] ?>
-                                            </span>
-
-                                            <?php if ($item->status === 'verified' && !empty($item->verified_at)): ?>
-                                                <span class="text-[9px] text-slate-400 font-medium whitespace-nowrap">
-                                                    <?= date('d/m H:i', strtotime($item->verified_at)) ?>
-                                                </span>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
+                <div class="divide-y divide-slate-100 max-h-[600px] overflow-y-auto custom-scrollbar">
+                    <?php foreach ($members as $member): ?>
+                        <?php
+                        // Dosen can only see their own documentation
+                        if ($isDosen && $member->user_id != auth()->id()) continue;
+                        ?>
+                        <div class="p-4 bg-white">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-[10px] border border-blue-100">
+                                    <?= substr($member->employee_name, 0, 1) ?>
                                 </div>
-
-                                <div class="flex items-center gap-1 shrink-0">
-                                    <?php if (!empty($item->files)): ?>
-                                        <div class="flex -space-x-2 mr-2">
-                                            <?php foreach ($item->files as $fileIdx => $file): ?>
-                                                <a href="<?= base_url('download/file/' . $file->id) ?>"
-                                                    class="w-7 h-7 flex items-center justify-center rounded-full bg-white text-blue-500 hover:bg-blue-50 transition-all border border-blue-100 shadow-sm"
-                                                    title="<?= esc($file->original_name) ?>" target="_blank">
-                                                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
-                                                </a>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    <?php elseif (!empty($item->document_path)): ?>
-                                        <a href="<?= base_url('travel/completeness/' . $item->id . '/download') ?>"
-                                            class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-50 text-slate-500 hover:bg-primary-50 hover:text-primary-600 transition-colors border border-slate-200"
-                                            title="Lihat Dokumen" target="_blank">
-                                            <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-                                        </a>
-                                    <?php endif; ?>
-
-                                    <!-- Verify Button -->
-                                    <?php if (auth()->user()->inGroup('superadmin', 'verificator') && $item->status === 'uploaded'): ?>
-                                        <button class="w-7 h-7 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all border border-emerald-200"
-                                            title="Verifikasi"
-                                            onclick="openVerifyModal(<?= $item->id ?>, '<?= esc($item->item_name) ?>')">
-                                            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
-                                        </button>
-                                    <?php endif; ?>
+                                <div class="min-w-0">
+                                    <h4 class="font-bold text-slate-900 text-[11px] truncate"><?= esc($member->employee_name) ?></h4>
+                                    <p class="text-[9px] text-slate-400 font-medium tracking-tight truncate"><?= esc($member->employee_nip) ?></p>
                                 </div>
                             </div>
 
-                            <?php if (!empty($item->verification_note)): ?>
-                                <div class="mt-2 text-[10px] text-slate-500 bg-slate-50/50 p-2 rounded-lg border border-slate-100 italic leading-relaxed">
-                                    "<?= esc($item->verification_note) ?>"
-                                </div>
-                            <?php endif; ?>
+                            <div class="space-y-3">
+                                <!-- Narrative section -->
+                                <?php if (!empty($member->report_narrative)): ?>
+                                    <div class="relative">
+                                        <div class="text-[10px] text-slate-600 leading-relaxed bg-slate-50/80 p-3 rounded-xl border border-slate-100 italic">
+                                            <?= nl2br(esc((string) $member->report_narrative)) ?>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+
+                                <!-- Files section grouped by Item -->
+                                <?php if (!empty($member->documentation_files)): ?>
+                                    <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                        <?php
+                                        $groupedFiles = [];
+                                        foreach ($member->documentation_files as $f) {
+                                            $groupedFiles[$f->item_name][] = $f;
+                                        }
+                                        foreach ($groupedFiles as $itemName => $files): ?>
+                                            <div class="group/item min-w-0">
+                                                <div class="flex items-center gap-1.5 mb-1.5 px-0.5">
+                                                    <div class="w-0.5 h-2.5 rounded-full bg-blue-500 opacity-60"></div>
+                                                    <span class="text-[9px] font-extrabold text-slate-500 uppercase tracking-tighter truncate" title="<?= esc($itemName) ?>"><?= esc($itemName) ?></span>
+                                                </div>
+                                                <div class="grid grid-cols-2 gap-1.5">
+                                                    <?php foreach ($files as $index => $file): ?>
+                                                        <a href="<?= base_url('download/file/' . $file->id) ?>"
+                                                            target="_blank"
+                                                            title="Buka <?= esc($file->item_name) ?> #<?= ($index + 1) ?>"
+                                                            class="<?= (count($files) == 1) ? 'col-span-2' : '' ?> flex items-center justify-center p-1.5 rounded bg-slate-50 border border-slate-100 hover:border-blue-300 hover:bg-white transition-all group/file shadow-sm aspect-square sm:aspect-auto">
+                                                            <div class="flex items-center gap-1.5 min-w-0">
+                                                                <i data-lucide="file-text" class="w-3 h-3 text-slate-300 group-hover/file:text-blue-500"></i>
+                                                                <span class="text-[8px] font-black text-slate-400 group-hover/file:text-blue-600 truncate">
+                                                                    #<?= ($index + 1) ?>
+                                                                </span>
+                                                            </div>
+                                                        </a>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php elseif (empty($member->report_narrative)): ?>
+                                    <div class="py-2 text-center border-t border-dashed border-slate-100 mt-2">
+                                        <span class="text-[9px] text-slate-300 italic">Belum ada laporan & dokumen</span>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
             </div>
         <?php endif; ?>
 
-        <!-- System Info -->
-        <div class="text-xs text-center text-slate-400 space-y-1">
-            <p>Dibuat: <?= date('d M Y H:i', strtotime($travelRequest->created_at)) ?></p>
-            <?php if ($travelRequest->updated_at && $travelRequest->updated_at !== $travelRequest->created_at): ?>
-                <p>Terakhir Diubah: <?= date('d M Y H:i', strtotime($travelRequest->updated_at)) ?></p>
-            <?php endif; ?>
-        </div>
-
     </div>
 </div>
 
-<?= $this->endSection() ?>
+<!-- Anggota Tim & Rincian Biaya (Full Width) -->
+<?php if ($isKeuangan): ?>
+    <div class="mt-8">
+        <div class="card p-0 overflow-hidden border-t-4 border-t-emerald-500 shadow-md">
+            <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-white">
+                <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                    <i data-lucide="users" class="w-5 h-5 text-emerald-500"></i>
+                    Anggota Tim & Rincian Biaya
+                </h3>
+                <span class="text-xs font-bold bg-slate-100 px-2 py-1.5 rounded-md border border-slate-200 text-slate-700 shadow-sm">
+                    <?= count($members) ?> Pegawai
+                </span>
+            </div>
 
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                        <tr>
+                            <th class="px-5 py-3.5 font-semibold">Nama / NIP</th>
+                            <th class="px-5 py-3.5 font-semibold">Tingkat</th>
+                            <th class="px-5 py-3.5 font-semibold text-right">Harian</th>
+                            <th class="px-5 py-3.5 font-semibold text-right">Representasi</th>
+                            <th class="px-5 py-3.5 font-semibold text-right">Penginapan</th>
+                            <th class="px-5 py-3.5 font-semibold text-right">Transport/Lainnya</th>
+                            <th class="px-5 py-3.5 font-semibold text-right text-emerald-700">Total Biaya</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 bg-white">
+                        <?php if (empty($members)): ?>
+                            <tr>
+                                <td colspan="7" class="px-5 py-8 text-center text-slate-400 italic bg-slate-50">Belum ada anggota tim yang didaftarkan.</td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($members as $member): ?>
+                                <tr class="hover:bg-emerald-50/30 transition-colors">
+                                    <td class="px-5 py-4">
+                                        <div class="font-bold text-slate-800"><?= esc($member->employee_name) ?></div>
+                                        <div class="text-xs text-slate-500 font-mono mt-0.5"><?= esc($member->employee_nip) ?></div>
+                                        <?php if (!empty($member->kode_golongan)): ?>
+                                            <div class="text-[10px] text-slate-400 mt-1 uppercase tracking-wider"><?= esc($member->kode_golongan) ?> — <?= esc($member->nama_golongan ?? '') ?></div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="px-5 py-4 align-top pt-5">
+                                        <?php
+                                        $tingkat = '-';
+                                        $golSrc = $member->kode_golongan ?: ($member->employee_golongan ?? '');
+                                        if ($golSrc) {
+                                            $gol = strtoupper($golSrc);
+                                            if (strpos($gol, 'IV') !== false) $tingkat = 'A';
+                                            elseif (strpos($gol, 'III') !== false) $tingkat = 'B';
+                                            elseif (strpos($gol, 'II') !== false && strpos($gol, 'III') === false) $tingkat = 'C';
+                                            elseif (strpos($gol, 'I') !== false && strpos($gol, 'II') === false && strpos($gol, 'III') === false && strpos($gol, 'IV') === false) $tingkat = 'D';
+                                        }
+                                        ?>
+                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 shadow-sm"><?= $tingkat ?></span>
+                                    </td>
+                                    <td class="px-5 py-4 text-right align-top pt-5">
+                                        <?php if (($member->uang_harian ?? 0) > 0): ?>
+                                            <div class="text-slate-700 font-medium"><?= number_format($member->uang_harian ?? 0, 0, ',', '.') ?></div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="px-5 py-4 text-right align-top pt-5">
+                                        <?php if (($member->uang_representasi ?? 0) > 0): ?>
+                                            <div class="text-slate-700 font-medium"><?= number_format($member->uang_representasi ?? 0, 0, ',', '.') ?></div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="px-5 py-4 text-right align-top pt-5 text-slate-700 font-medium">
+                                        <?= number_format($member->penginapan ?? 0, 0, ',', '.') ?>
+                                    </td>
+                                    <td class="px-5 py-4 text-right align-top pt-4">
+                                        <?php $lainnya = ($member->tiket ?? 0) + ($member->transport_darat ?? 0) + ($member->transport_lokal ?? 0); ?>
+                                        <div class="text-slate-700 font-medium"><?= number_format($lainnya, 0, ',', '.') ?></div>
+                                        <?php if ($lainnya > 0): ?>
+                                            <div class="text-[10px] text-slate-400 mt-1">Tiket/Trans Darat/Lokal</div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="px-5 py-4 text-right align-top pt-5 font-bold text-emerald-700 whitespace-nowrap bg-emerald-50/10">
+                                        <?= number_format($member->total_biaya ?? 0, 0, ',', '.') ?>
+
+                                        <?php
+                                        $isOwnMember = ($member->user_id == auth()->id());
+                                        if (($isStaff || $isOwnMember) && $travelRequest->status !== 'draft'):
+                                        ?>
+                                            <div class="mt-2 pt-2 border-t border-emerald-100">
+                                                <a href="<?= base_url('travel/' . $travelRequest->id . '/statement?member_id=' . $member->travel_member_id) ?>" class="text-[10px] text-emerald-600 hover:text-emerald-800 flex items-center justify-end gap-1">
+                                                    <i data-lucide="file-check" class="w-3 h-3"></i>
+                                                    Surat Pernyataan
+                                                </a>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <!-- Itemized Expenses (Phase 8) -->
+                                        <?php if (!empty($member->expense_items)): ?>
+                                            <div class="mt-4 pt-4 border-t border-slate-100 text-left">
+                                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Rincian Biaya Riil:</div>
+                                                <div class="space-y-1.5">
+                                                    <?php foreach ($member->expense_items as $item): ?>
+                                                        <div class="flex justify-between items-center bg-slate-50/50 p-2 rounded border border-slate-100">
+                                                            <div class="flex flex-col">
+                                                                <span class="text-[11px] font-bold text-slate-700"><?= esc($item->item_name) ?></span>
+                                                                <span class="text-[9px] text-slate-400 uppercase"><?= esc($item->category) ?></span>
+                                                            </div>
+                                                            <span class="text-[11px] font-mono font-medium text-slate-600">Rp <?= number_format($item->amount, 0, ',', '.') ?></span>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                    <tfoot class="bg-slate-800 border-t border-slate-700">
+                        <tr>
+                            <td colspan="6" class="px-5 py-4 text-right font-bold text-slate-200 text-sm tracking-wide">GRAND TOTAL BIAYA PERJALANAN</td>
+                            <td class="px-5 py-4 text-right font-black text-xl text-emerald-400 whitespace-nowrap">Rp <?= number_format($travelRequest->total_budget ?? 0, 0, ',', '.') ?></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+        </div>
+    </div>
+<?php endif; ?>
+
+<!-- System Info -->
+<div class="text-xs text-center text-slate-400 space-y-2 mt-4">
+    <p>Dibuat: <?= date('d M Y H:i', strtotime($travelRequest->created_at)) ?></p>
+    <?php if ($travelRequest->updated_at && $travelRequest->updated_at !== $travelRequest->created_at): ?>
+        <p>Terakhir Diubah: <?= date('d M Y H:i', strtotime($travelRequest->updated_at)) ?></p>
+    <?php endif; ?>
+</div>
+</div>
+
+<?= $this->endSection() ?>
 
 <!-- Upload Modal -->
 <div id="uploadModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
