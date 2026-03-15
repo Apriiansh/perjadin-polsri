@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Libraries\TravelExpenseCalculator;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class TravelRequestController extends BaseController
@@ -13,7 +12,6 @@ class TravelRequestController extends BaseController
     protected $travelExpenseModel;
     protected $employeeModel;
     protected $signatoryModel;
-    protected $tariffModel;
 
     public function __construct()
     {
@@ -22,7 +20,6 @@ class TravelRequestController extends BaseController
         $this->travelExpenseModel = model('TravelExpenseModel');
         $this->employeeModel      = model('EmployeeModel');
         $this->signatoryModel     = model('SignatoriesModel');
-        $this->tariffModel        = model('TariffModel');
     }
 
     /**
@@ -69,15 +66,37 @@ class TravelRequestController extends BaseController
                 : [];
         }
 
-        // Attach members to each request
+        // Attach members and documentation stats to each request
+        $completenessModel = new \App\Models\TravelCompletenessModel();
         foreach ($travelRequests as &$req) {
             $req->members = $this->travelMemberModel->getByRequestWithEmployee($req->id);
+            
+            // Only fetch stats if active/completed to optimize performance
+            if (in_array($req->status, ['active', 'completed'])) {
+                $items = $completenessModel->where('travel_request_id', $req->id)->findAll();
+                $req->total_docs = count($items);
+                $req->uploaded_docs = count(array_filter($items, fn($i) => $i->status === 'uploaded'));
+                $req->verified_docs = count(array_filter($items, fn($i) => $i->status === 'verified'));
+            } else {
+                $req->total_docs = 0;
+                $req->uploaded_docs = 0;
+                $req->verified_docs = 0;
+            }
         }
+
+        // Calculate summary stats
+        $stats = [
+            'total'     => count($travelRequests),
+            'draft'     => count(array_filter($travelRequests, fn($r) => $r->status === 'draft')),
+            'pending'   => count(array_filter($travelRequests, fn($r) => $r->status === 'active' && $r->uploaded_docs > 0)),
+            'completed' => count(array_filter($travelRequests, fn($r) => $r->status === 'completed')),
+        ];
 
         return view('travel/index', [
             'title'          => 'Pengajuan Perdin',
             'travelRequests' => $travelRequests,
             'isStaff'        => $this->isStaff(),
+            'stats'          => $stats,
         ]);
     }
 
@@ -144,7 +163,8 @@ class TravelRequestController extends BaseController
         return view('travel/create', [
             'title'     => 'Input Data Perjalanan Dinas',
             'employees' => $this->employeeModel->findAll(),
-            'tariffs'   => $this->tariffModel->findAll(),
+            'title'     => 'Input Data Perjalanan Dinas',
+            'employees' => $this->employeeModel->findAll(),
         ]);
     }
 
@@ -201,12 +221,10 @@ class TravelRequestController extends BaseController
 
         $requestId = $this->travelRequestModel->insertID();
 
-        // Process members: create travel_members first, then calculate expenses
+        // Process members: create travel_members first
         $memberIds = $this->request->getPost('members');
         $memberGolongan = $this->request->getPost('member_golongan') ?? [];
-        $calculator = new TravelExpenseCalculator();
         $totalBudgetAll = 0;
-        $errors = [];
 
         if (!empty($memberIds) && is_array($memberIds)) {
             foreach ($memberIds as $empId) {
@@ -225,11 +243,9 @@ class TravelRequestController extends BaseController
                 ]);
                 $memberId = $this->travelMemberModel->insertID();
 
-                // Use kode_golongan from form for tingkat biaya, fallback to employee API data
-                $golForTingkat = $kodeGol ?: ($emp['pangkat_golongan'] ?? '');
-                $tingkatBiaya = $this->getTingkatBiayaFromGolongan($golForTingkat);
-
-                $biaya = [
+                // Initialize empty expenses. Will be filled during enrichment (CompletenessController).
+                $this->travelExpenseModel->insert([
+                    'travel_member_id'  => $memberId,
                     'uang_harian'       => 0,
                     'uang_representasi' => 0,
                     'penginapan'        => 0,
@@ -238,45 +254,13 @@ class TravelRequestController extends BaseController
                     'transport_lokal'   => 0,
                     'total_biaya'       => 0,
                     'tariff_id'         => null,
-                ];
-
-                try {
-                    $biaya = $calculator->calculate(
-                        $dataRequest['destination_province'],
-                        $dataRequest['destination_city'] ?? null,
-                        $tingkatBiaya,
-                        $dataRequest['duration_days'] ?? 0
-                    );
-                } catch (\Exception $e) {
-                    $errors[] = $emp['name'] . ' - ' . $e->getMessage();
-                }
-
-                // Saat input ST, hanya uang_harian & uang_representasi yang dihitung.
-                // Penginapan, tiket, transport diisi saat kelengkapan.
-                $subtotal = $biaya['uang_harian'] + $biaya['uang_representasi'];
-
-                $this->travelExpenseModel->insert([
-                    'travel_member_id'  => $memberId,
-                    'uang_harian'       => $biaya['uang_harian'],
-                    'uang_representasi' => $biaya['uang_representasi'],
-                    'penginapan'        => 0,
-                    'tiket'             => 0,
-                    'transport_darat'   => 0,
-                    'transport_lokal'   => 0,
-                    'total_biaya'       => $subtotal,
-                    'tariff_id'         => $biaya['tariff_id'],
                 ]);
-                $totalBudgetAll += $subtotal;
             }
         }
 
-        $this->travelRequestModel->update($requestId, ['total_budget' => $totalBudgetAll]);
+        $this->travelRequestModel->update($requestId, ['total_budget' => 0]);
 
-        $successMsg = 'Pengajuan perjalanan dinas berhasil disimpan. Silahkan lengkapi data Perjalanan Dinas di halaman Detail.';
-
-        if (!empty($errors)) {
-            return redirect()->to('/travel/' . $requestId)->with('warning', $successMsg . '<br>Tetapi ada tarif yang belum diatur:<br>' . implode('<br>', $errors));
-        }
+        $successMsg = 'Pengajuan perjalanan dinas berhasil disimpan. Silahkan lengkapi rincian biaya di halaman Lengkapi Data.';
 
         return redirect()->to('/travel/' . $requestId)->with('success', $successMsg);
     }
@@ -350,7 +334,6 @@ class TravelRequestController extends BaseController
             'travelRequest'  => $travelRequest,
             'travelMembers'  => $this->travelMemberModel->where('travel_request_id', $id)->findAll(),
             'employees'      => $this->employeeModel->findAll(),
-            'tariffs'        => $this->tariffModel->findAll(),
         ]);
     }
 
@@ -420,12 +403,9 @@ class TravelRequestController extends BaseController
         // Delete old members (cascade deletes travel_expenses via FK)
         $this->travelMemberModel->where('travel_request_id', $id)->delete();
 
-        // Re-create members and recalculate expenses
+        // Re-create members
         $memberIds = $this->request->getPost('members');
         $memberGolongan = $this->request->getPost('member_golongan') ?? [];
-        $calculator = new TravelExpenseCalculator();
-        $totalBudgetAll = 0;
-        $errors = [];
 
         if (!empty($memberIds) && is_array($memberIds)) {
             foreach ($memberIds as $empId) {
@@ -443,10 +423,9 @@ class TravelRequestController extends BaseController
                 ]);
                 $memberId = $this->travelMemberModel->insertID();
 
-                $golForTingkat = $kodeGol ?: ($emp['pangkat_golongan'] ?? '');
-                $tingkatBiaya = $this->getTingkatBiayaFromGolongan($golForTingkat);
-
-                $biaya = [
+                // Initialize empty expenses.
+                $this->travelExpenseModel->insert([
+                    'travel_member_id'  => $memberId,
                     'uang_harian'       => 0,
                     'uang_representasi' => 0,
                     'penginapan'        => 0,
@@ -455,47 +434,13 @@ class TravelRequestController extends BaseController
                     'transport_lokal'   => 0,
                     'total_biaya'       => 0,
                     'tariff_id'         => null,
-                ];
-
-                try {
-                    $biaya = $calculator->calculate(
-                        $data['destination_province'],
-                        $data['destination_city'] ?? null,
-                        $tingkatBiaya,
-                        $data['duration_days'] ?? 0
-                    );
-                } catch (\Exception $e) {
-                    $errors[] = $emp['name'] . ' - ' . $e->getMessage();
-                }
-
-                // Saat input ST, hanya uang_harian & uang_representasi yang dihitung.
-                // Penginapan, tiket, transport diisi saat kelengkapan.
-                $subtotal = $biaya['uang_harian'] + $biaya['uang_representasi'];
-
-                $this->travelExpenseModel->insert([
-                    'travel_member_id'  => $memberId,
-                    'uang_harian'       => $biaya['uang_harian'],
-                    'uang_representasi' => $biaya['uang_representasi'],
-                    'penginapan'        => 0,
-                    'tiket'             => 0,
-                    'transport_darat'   => 0,
-                    'transport_lokal'   => 0,
-                    'total_biaya'       => $subtotal,
-                    'tariff_id'         => $biaya['tariff_id'],
                 ]);
-                $totalBudgetAll += $subtotal;
             }
         }
 
-        $this->travelRequestModel->update($id, ['total_budget' => $totalBudgetAll]);
+        $this->travelRequestModel->update($id, ['total_budget' => 0]);
 
-        $successMsg = 'Data berhasil diubah. Silahkan lengkapi data Perjalanan Dinas di halaman Detail.';
-
-        if (!empty($errors)) {
-            return redirect()->to('/travel/' . $id)->with('warning', $successMsg . '<br>Tetapi ada tarif yang belum diatur:<br>' . implode('<br>', $errors));
-        }
-
-        return redirect()->to('/travel/' . $id)->with('success', $successMsg);
+        return redirect()->to('/travel/' . $id)->with('success', 'Perubahan berhasil disimpan.');
     }
 
     /**
@@ -595,45 +540,11 @@ class TravelRequestController extends BaseController
     }
 
     /**
-     * API: Real-time tariff check
+     * API: Real-time tariff check (Deprecated - No longer used)
      */
     public function checkTariff(): ResponseInterface
     {
-        $province = $this->request->getPost('province');
-        $city = $this->request->getPost('city');
-        $memberIds = $this->request->getPost('members');
-
-        if (is_string($memberIds)) {
-            $memberIds = json_decode($memberIds, true);
-        }
-
-        if (empty($province) || empty($memberIds)) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid parameters']);
-        }
-
-        $calculator = new TravelExpenseCalculator();
-        $missing = [];
-        $success = [];
-
-        foreach ($memberIds as $memberId) {
-            $emp = $this->employeeModel->find($memberId);
-            if (!$emp) continue;
-
-            $tingkatBiaya = $this->getTingkatBiayaFromGolongan($emp['pangkat_golongan'] ?? '');
-
-            try {
-                $calculator->calculate($province, $city, $tingkatBiaya, 1);
-                $success[] = ['name' => $emp['name'], 'tingkat_biaya' => $tingkatBiaya];
-            } catch (\Exception $e) {
-                $missing[] = ['name' => $emp['name'], 'tingkat_biaya' => $tingkatBiaya, 'error' => $e->getMessage()];
-            }
-        }
-
-        return $this->response->setJSON([
-            'status'          => 'success',
-            'missing_tariffs' => $missing,
-            'success_tariffs' => $success,
-        ]);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Manual input enabled']);
     }
 
     /**

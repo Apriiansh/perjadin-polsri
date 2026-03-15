@@ -75,11 +75,6 @@ $isLecturerOnly = in_array('lecturer', $userGroups) && !$isAdmin && !$isVerifica
         Manage User
       </a>
 
-      <a href="<?= base_url('admin/tariffs') ?>" class="sidebar-link group <?= str_starts_with($current, 'admin/tariffs') ? 'active' : '' ?>">
-        <i data-lucide="banknote" class="sidebar-icon"></i>
-        Tarif Biaya
-      </a>
-
       <a href="<?= base_url('admin/signatories') ?>" class="sidebar-link group <?= str_starts_with($current, 'admin/signatories') ? 'active' : '' ?>">
         <i data-lucide="pen-tool" class="sidebar-icon"></i>
         Penandatangan

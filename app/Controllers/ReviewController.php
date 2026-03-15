@@ -219,8 +219,14 @@ class ReviewController extends BaseController
             }
         }
 
-        if ($filesUploaded > 0) {
-            return redirect()->to(base_url('travel/' . $id))->with('success', $filesUploaded . ' file berhasil diunggah.');
+        // Handle narrative field (Phase 27)
+        $narrative = $this->request->getPost('report_narrative');
+        if ($narrative !== null) {
+            $this->travelRequestModel->update($id, ['report_narrative' => $narrative]);
+        }
+
+        if ($filesUploaded > 0 || ($narrative !== null && !empty($narrative))) {
+            return redirect()->to(base_url('travel/' . $id))->with('success', 'Dokumentasi berhasil diperbarui.');
         }
 
         return redirect()->to(base_url('travel/' . $id))->with('error', 'Tidak ada file yang diunggah atau file tidak valid.');

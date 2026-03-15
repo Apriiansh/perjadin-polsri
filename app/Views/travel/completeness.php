@@ -58,7 +58,7 @@
                     <?php 
                     $itemsToDisplay = !empty($existingChecklist) 
                         ? array_column($existingChecklist, 'item_name') 
-                        : ['Laporan Perjalanan', 'Dokumentasi Kegiatan', 'Tiket & Boarding Pass', 'Daftar Pengeluaran Riil']; 
+                        : ['Laporan Perjalanan', 'Dokumentasi Kegiatan', 'File Presentasi', 'Daftar Pengeluaran Riil', 'Tiket & Boarding Pass']; 
                     ?>
                     <?php foreach ($itemsToDisplay as $item): ?>
                         <div class="flex items-center gap-2 bg-slate-50 p-2 rounded border border-slate-200">
@@ -149,7 +149,7 @@
 
             <?php foreach ($members as $member): ?>
                 <div class="card member-card border-l-4 border-l-secondary-500 p-6 overflow-hidden">
-                    <div class="flex items-start justify-between mb-6 pb-4 border-b border-slate-100">
+                    <div class="flex items-start justify-between mb-4 pb-4 border-b border-slate-100">
                         <div>
                             <h4 class="font-bold text-slate-900 text-lg"><?= esc($member->employee_name) ?></h4>
                             <p class="text-xs text-slate-500 font-mono"><?= esc($member->employee_nip) ?></p>
@@ -159,6 +159,30 @@
                             <div class="flex gap-2">
                                 <input type="text" name="members[<?= $member->id ?>][kode_golongan]" value="<?= esc($member->kode_golongan ?: $member->employee_golongan) ?>" placeholder="Gol" class="input-control text-[11px] py-1 px-2 w-16 text-center" required>
                                 <input type="text" name="members[<?= $member->id ?>][nama_golongan]" value="<?= esc($member->nama_golongan) ?>" placeholder="Pangkat" class="input-control text-[11px] py-1 px-2 flex-1" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Standard Expenses (Manual Input) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 pt-2">
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 block italic">Uang Harian (Total)</label>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-bold text-slate-400 font-mono">Rp</span>
+                                <input type="text" name="std_costs[<?= $member->id ?>][uang_harian]" 
+                                    value="<?= number_format($expenses[$member->id]->uang_harian ?? 0, 0, ',', '.') ?>" 
+                                    class="bg-transparent border-none p-0 focus:ring-0 text-lg font-black text-slate-800 w-full number-input" 
+                                    placeholder="0" oninput="formatNumber(this)">
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 block italic">Uang Representasi (Total)</label>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-bold text-slate-400 font-mono">Rp</span>
+                                <input type="text" name="std_costs[<?= $member->id ?>][uang_representasi]" 
+                                    value="<?= number_format($expenses[$member->id]->uang_representasi ?? 0, 0, ',', '.') ?>" 
+                                    class="bg-transparent border-none p-0 focus:ring-0 text-lg font-black text-slate-800 w-full number-input" 
+                                    placeholder="0" oninput="formatNumber(this)">
                             </div>
                         </div>
                     </div>

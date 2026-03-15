@@ -31,6 +31,7 @@ class TravelRequestModel extends Model
         'budget_burden_by',
         'mak',
         'tahun_anggaran',
+        'report_narrative',
         'lampiran_path',
         'lampiran_original_name',
         'status',

@@ -30,7 +30,20 @@
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-200px)] min-h-[600px]">
     <!-- Left Sidebar: Checklist Items -->
     <div class="lg:col-span-4 flex flex-col gap-4 overflow-hidden">
-        <div class="card flex flex-col h-full border-t-4 border-t-primary-500">
+        <!-- Narrative Report (Phase 27) -->
+        <?php if (!empty($travelRequest->report_narrative)): ?>
+            <div class="card p-4 border-l-4 border-l-blue-500 bg-blue-50/30">
+                <h3 class="font-bold text-slate-800 text-[10px] uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-3 h-3 text-blue-500"></i>
+                    Narasi Laporan / Catatan Dosen
+                </h3>
+                <div class="text-[11px] text-slate-600 italic leading-relaxed line-clamp-4 hover:line-clamp-none transition-all cursor-pointer" title="Klik untuk lihat selengkapnya">
+                    <?= nl2br(esc((string) $travelRequest->report_narrative)) ?>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <div class="card flex flex-col h-full border-t-4 border-t-primary-500 max-h-[calc(100vh-350px)]">
             <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wider">Checklist Berkas</h3>
                 <span class="text-[10px] font-black bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">
@@ -329,7 +342,7 @@
 
         const isPdf = file.file_path.toLowerCase().endsWith('.pdf');
         const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(file.file_path);
-        
+
         const loader = document.getElementById('preview-loading');
         const pdfViewer = document.getElementById('pdf-viewer');
         const imgViewer = document.getElementById('image-viewer');
@@ -344,7 +357,7 @@
         imgViewer.classList.add('hidden');
         expandBtn.classList.add('hidden');
         noPreview.classList.add('hidden');
-        
+
         // Update download links (use original download route)
         const downloadUrl = '<?= base_url('documentation/download') ?>/' + file.id;
         downloadBtn.href = downloadUrl;

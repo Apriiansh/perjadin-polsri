@@ -7,8 +7,12 @@
 
 ## 📋 Table of Contents
 
-
-
+1. [Prasyarat & Environment Setup](#1-prasyarat--environment-setup)
+2. [Database Design (v3)](#4-database-design-revised-v3--current-implementation)
+3. [System Workflow & Business Process](#5-system-workflow--business-process)
+4. [Development Phases & Checklist](#5b-development-phases--checklist-revised)
+5. [Architecture & Best Practices](#6-architecture--best-practices)
+6. [Routes Implementation](#routes--shield-group_authorization-revised)
 ---
 
 ## 1. Prasyarat & Environment Setup
@@ -513,40 +517,119 @@ stateDiagram-v2
 - [ ] Template **Daftar Kontrol Pembayaran (Nominatif)** → Excel
 - [ ] **Signatories selection saat export**: UI dropdown KPA/PPK dipindah ke form kelengkapan (Phase 8)
 
-### PHASE 8: Lengkapi Data & Kelengkapan Perjadin ⭐ NEXT
+### PHASE 8: Lengkapi Data & Kelengkapan Perjadin ✅
 
 **Sub-phase 8a: Form "Lengkapi Data" (draft → active)**
-- [ ] Buat route & controller method untuk form Lengkapi Data (diakses dari tombol "Lengkapi Data" di show.php)
-- [ ] Form mengisi `kode_golongan` & `nama_golongan` per anggota (dropdown: IV/e→Pembina Utama, IV/d→Pembina Utama Madya, III/d→Penata TK. I, dll)
-- [ ] Form memilih signatories untuk SPD (PPK & KPA)
-- [ ] Submit form → status berubah dari `draft` → `active`
-- [ ] Setelah active: SPD tersedia dengan data lengkap di halaman detail
+- [x] Route & Controller method untuk form Lengkapi Data (`CompletenessController::enrichment`)
+- [x] Form mengisi `kode_golongan` & `nama_golongan` per anggota
+- [x] Form memilih signatories untuk SPD (PPK & KPA)
+- [x] Submit form → status berubah dari `draft` → `active`
+- [x] Update `TravelRequestController::submit` flow
 
 **Sub-phase 8b: Form Kelengkapan & Upload**
-- [ ] UI Keuangan/Verifikator: Buat Form Kelengkapan per travel_request
-  - Add checklist item (nama item, metode bayar, keterangan)
-  - Filter: reimbursement / vendor / non_reimbursement
-- [ ] Saat kelengkapan: isi penginapan (at cost, max pagu), tiket, transport darat/lokal
-- [ ] UI Dosen: Lihat & print form kelengkapan
-- [ ] UI Dosen: Upload dokumen per checklist item
-- [ ] UI Keuangan: Verifikasi dokumen upload (approve/reject per item)
-- [ ] Simpan file ke `writable/uploads/completeness/{travel_request_id}/`
+- [x] UI Keuangan/Verifikator: Buat Form Kelengkapan per travel_request
+- [x] Add checklist item (nama item, metode bayar, keterangan)
+- [x] Filter: reimbursement / vendor / non_reimbursement
 
-### PHASE 9: Reporting & Dashboard
+### PHASE 9: Detail & Document Improvements ✅
+
+- [x] UI Detail Page (show.php) improvement
+- [x] View anggota dengan status detail
+- [x] Tampilan progress kelengkapan dokumen
+
+### PHASE 10: Finance Document Generation (Docx & Excel) ✅
+
+- [x] Template **Surat Pernyataan** → docx via PhpWord
+- [x] Template **Perhitungan SPPD Rampung / Rincian Biaya** → docx
+- [x] Template **Daftar Kontrol Pembayaran (Nominatif)** → docx (sebagai basis kontrol)
+- [x] Integrasi download di detail page
+
+### PHASE 11: Cancellation & Security Logic ✅
+
+- [x] Implementasi `cancel` logic untuk membatalkan pengajuan
+- [x] Proteksi status: hanya draft yang bisa di-update/delete
+
+### PHASE 12: Documentation Submission System ✅
+
+- [x] View `travel/documentation.php`: UI Dosen untuk melihat checklist item
+- [x] Implementasi dropzone/file input untuk upload berkas dokumentasi
+- [x] Preview file yang sudah diunggah di sisi Dosen
+
+### PHASE 13: Documentation Backend Logic ✅
+
+- [x] Handle multi-file upload & storage
+- [x] Map file ke `travel_completeness` record
+- [x] Status update: `pending` → `uploaded`
+
+### PHASE 14: Verification Module ✅
+
+- [x] View `travel/verification.php`: Interface khusus Verifikator/Keuangan
+- [x] Perbandingan status item: Pending, Uploaded, Verified, Rejected
+- [x] Form verifikasi per item (Approve/Reject dengan catatan)
+
+### PHASE 15: File Preview Integration ✅
+
+- [x] Implementasi `ReviewController::viewFile()` untuk file preview di browser
+- [x] Support PDF, Image (JPG/PNG) preview inline
+- [x] Header management (`Content-Disposition: inline`)
+
+### PHASE 16: File Download Management ✅
+
+- [x] Implementasi `ReviewController::downloadFile()` untuk download berkas resmi
+- [x] Route khusus `documentation/download/(:num)`
+
+### PHASE 17: UI/UX Global Optimization ✅
+
+- [x] Global dependency: Axios & SweetAlert2 di `main.php` layout
+- [x] Skeleton loader & Toast notifications logic
+- [x] Standardisasi modal styling
+
+### PHASE 18: File Naming Standardization ✅
+
+- [x] Organisasi nama file fisik: `slug-nama-item-sequence-random.ext`
+- [x] Organisasi nama file display: `Nama Item - Sequence.ext`
+
+### PHASE 19: File Management Improvements ✅
+
+- [x] Fitur hapus file dokumentasi saat edit (Dosen)
+- [x] Fix pratinjau agar tidak langsung mengunduh
+- [x] Validasi tipe file dokumentasi (PDF, DOCX, Img)
+
+### PHASE 20: Bulk Verification (Verify All) ✅
+
+- [x] Tombol "Verifikasi Semua" di halaman verifikasi
+- [x] Backend logic `ReviewController::verifyAll()`
+- [x] Dialog konfirmasi massal
+
+### PHASE 21: Bulk Rejection (Reject All) ✅
+
+- [x] Tombol "Tolak Semua" dengan mandatory reason modal
+- [x] Backend logic `ReviewController::rejectAll()`
+- [x] Penyeragaman catatan penolakan ke seluruh item massal
+
+### PHASE 22: Sidebar Refactor & Consolidation ✅
+
+- [x] Konsolidasi menu: Gabung "Perjadin Aktif" & "Verifikasi Perdin"
+- [x] Optimasi Superadmin: Sembunyikan link redundan (akses via master list)
+- [x] Role-aware dynamic menu labels
+
+### PHASE 24: Indeks Perjalanan Interaktif ✅
+
+- [x] Dashboard-style Stats Cards di halaman indeks (Total, Draft, Pending Verif, Selesai)
+- [x] Smart Action Buttons: Tombol berubah otomatis (Verifikasi/Dokumentasi/Lengkapi) sesuai konteks status & role
+- [x] Visual Refinement: Spacing table premium, hover effects, dan detail status micro-stats
+
+### PHASE 25: Refinemen Tombol Aksi Kontekstual ✅
+
+- [x] Sembunyikan tombol Dokumentasi/Bantu Upload jika sudah terverifikasi penuh
+- [x] Labeling cerdas: "Terverifikasi", "Menunggu Checklist", "Lihat Detail"
+- [x] Optimasi status awareness berdasarkan progres berkas
+
+### PHASE 23: Dashboard & Final Reporting ⭐ NEXT
 
 - [ ] Dashboard statistik: total perjalanan per bulan/tahun, total anggaran
 - [ ] Rekapan Keuangan: filter by reimburse/vendor/non
 - [ ] Export rekap ke Excel & PDF
-
-### PHASE 10: Polish & Testing
-
-- [ ] End-to-end testing per role
-- [ ] Input validation (server + client)
-- [ ] Error handling & custom error pages
-- [ ] Activity logging
-- [ ] Responsive design check
-- [ ] Performance optimization
-- [ ] Dokumentasi
 
 ---
 
@@ -635,60 +718,83 @@ service('auth')->routes($routes);
 $routes->group('', ['filter' => 'session'], function ($routes) {
     $routes->get('dashboard', 'DashboardController::index');
 
-    // ═══ TRAVEL — View & Print (semua role kecuali detil tertentu) ═══
-    $routes->group('travel', function ($routes) {
-        $routes->get('/', 'TravelRequestController::index');
-        $routes->get('(:num)', 'TravelRequestController::detail/$1');
-        $routes->get('(:num)/print/st', 'DocumentController::printSuratTugas/$1');
-        $routes->get('(:num)/spd', 'TravelRequestController::downloadSpd/$1');
-    });
-
-    // ═══ KEPEGAWAIAN — Input & Manage ST ═══
-    $routes->group('admin/travel', ['filter' => 'group:admin,superadmin'], function ($routes) {
-        $routes->get('create', 'TravelRequestController::create');
-        $routes->post('store', 'TravelRequestController::store');
-        $routes->get('(:num)/edit', 'TravelRequestController::edit/$1');
-        $routes->put('(:num)', 'TravelRequestController::update/$1');
-        $routes->delete('(:num)', 'TravelRequestController::delete/$1');
-        $routes->post('(:num)/activate', 'TravelRequestController::activate/$1');
-    });
-
-    // ═══ KEUANGAN (superadmin only) — Kalkulasi & Dokumen ═══
-    $routes->group('keuangan', ['filter' => 'group:superadmin'], function ($routes) {
-        // Kalkulasi biaya (hanya superadmin/Keuangan)
-        $routes->get('travel/(:num)/expenses', 'TravelExpenseController::index/$1');
-        $routes->post('travel/(:num)/expenses/calculate', 'TravelExpenseController::calculate/$1');
-
-        // Print dokumen keuangan (pilih signatories saat export)
-        $routes->get('travel/(:num)/member/(:num)/print/rincian', 'DocumentController::printRincianBiaya/$1/$2');
-        $routes->get('travel/(:num)/member/(:num)/print/kuitansi', 'DocumentController::printKuitansi/$1/$2');
-        $routes->get('travel/(:num)/member/(:num)/print/pernyataan', 'DocumentController::printSuratPernyataan/$1/$2');
-        $routes->get('travel/(:num)/print/nominatif', 'DocumentController::printNominatif/$1');
-    });
-
-    // ═══ VERIFIKATOR — Kelengkapan & Verifikasi ═══
-    $routes->group('verification', ['filter' => 'group:verificator,superadmin'], function ($routes) {
-        $routes->get('travel/(:num)/completeness', 'CompletenessController::index/$1');
-        $routes->post('travel/(:num)/completeness', 'CompletenessController::store/$1');
-        $routes->delete('completeness/(:num)', 'CompletenessController::delete/$1');
-        $routes->post('completeness/(:num)/verify', 'CompletenessController::verify/$1');
-        $routes->post('completeness/(:num)/reject', 'CompletenessController::reject/$1');
-    });
-
-    // ═══ DOSEN — Upload & View ═══
-    $routes->group('dosen', ['filter' => 'group:lecturer,superadmin'], function ($routes) {
-        $routes->get('travel', 'UploadController::myTravel');
-        $routes->get('travel/(:num)/completeness', 'UploadController::completeness/$1');
-        $routes->post('completeness/(:num)/upload', 'UploadController::upload/$1');
-    });
-
     // ═══ ADMIN — Master Data ═══
     $routes->group('admin', ['filter' => 'group:admin,superadmin'], function ($routes) {
-        $routes->resource('tariffs', ['controller' => 'Admin\TariffController']);
-        $routes->resource('signatories', ['controller' => 'Admin\SignatoryController']);
         $routes->get('employees', 'Admin\EmployeeController::index');
-        $routes->get('reports', 'Admin\ReportController::index');
-        $routes->post('sync', 'Api\SyncController::sync');
+        $routes->post('employees/sync', 'Admin\EmployeeController::sync');
+
+        $routes->group('signatories', function ($routes) {
+            $routes->get('/', 'Admin\SignatoriesController::index');
+            $routes->get('create', 'Admin\SignatoriesController::create');
+            $routes->post('store', 'Admin\SignatoriesController::store');
+            $routes->get('(:num)/edit', 'Admin\SignatoriesController::edit/$1');
+            $routes->post('(:num)/update', 'Admin\SignatoriesController::update/$1');
+            $routes->post('(:num)/destroy', 'Admin\SignatoriesController::destroy/$1');
+        });
+
+        $routes->group('users', function ($routes) {
+            $routes->get('/', 'Admin\UserController::index');
+            $routes->get('create/(:num)', 'Admin\UserController::create/$1');
+            $routes->post('store', 'Admin\UserController::store');
+            $routes->get('credential', 'Admin\UserController::showCredential');
+            $routes->get('(:num)/edit', 'Admin\UserController::edit/$1');
+            $routes->post('(:num)/update', 'Admin\UserController::update/$1');
+            $routes->post('(:num)/reset-password', 'Admin\UserController::resetPassword/$1');
+            $routes->post('(:num)/toggle-active', 'Admin\UserController::toggleActive/$1');
+            $routes->post('(:num)/destroy', 'Admin\UserController::destroy/$1');
+        });
+
+        $routes->group('tariffs', function ($routes) {
+            $routes->get('/', 'Admin\TariffController::index');
+            $routes->get('create', 'Admin\TariffController::create');
+            $routes->post('store', 'Admin\TariffController::store');
+            $routes->get('(:num)/edit', 'Admin\TariffController::edit/$1');
+            $routes->post('(:num)/update', 'Admin\TariffController::update/$1');
+            $routes->post('(:num)/destroy', 'Admin\TariffController::destroy/$1');
+        });
+    });
+
+    // ═══ TRAVEL — Core Workflow ═══
+    $routes->group('travel', ['filter' => 'group:admin,superadmin,lecturer,verificator'], function ($routes) {
+        $routes->get('', 'TravelRequestController::index');
+        $routes->get('active', 'TravelRequestController::active');
+        $routes->get('create', 'TravelRequestController::create');
+        $routes->post('store', 'TravelRequestController::store');
+        $routes->get('(:num)', 'TravelRequestController::show/$1');
+        $routes->get('(:num)/edit', 'TravelRequestController::edit/$1');
+        $routes->post('(:num)/update', 'TravelRequestController::update/$1');
+        $routes->post('(:num)/destroy', 'TravelRequestController::destroy/$1');
+        $routes->post('(:num)/submit', 'TravelRequestController::submit/$1');
+        $routes->post('(:num)/cancel', 'TravelRequestController::cancel/$1');
+        
+        // Downloads
+        $routes->get('download/lampiran/(:num)', 'TravelRequestController::downloadLampiran/$1');
+        $routes->get('download/file/(:num)', 'TravelRequestController::downloadFile/$1');
+        $routes->get('download/spd/(:num)', 'TravelRequestController::downloadSpd/$1');
+        $routes->get('(:num)/statement', 'TravelRequestController::downloadStatement/$1');
+        $routes->get('(:num)/control-list', 'TravelRequestController::downloadControlList/$1');
+
+        // Data Enrichment & Completeness (Phase 8)
+        $routes->get('(:num)/enrichment', 'CompletenessController::enrichment/$1');
+        $routes->post('(:num)/enrichment', 'CompletenessController::storeEnrichment/$1');
+        
+        $routes->group('completeness', function ($routes) {
+            $routes->post('(:num)/upload', 'ReviewController::upload/$1');
+            $routes->get('(:num)/download', 'ReviewController::download/$1');
+            $routes->post('(:num)/verify', 'ReviewController::verify/$1');
+            $routes->post('(:num)/verify-all', 'ReviewController::verifyAll/$1');
+            $routes->post('(:num)/reject-all', 'ReviewController::rejectAll/$1');
+        });
+    });
+
+    // ═══ DOCUMENTATION & VERIFICATION ═══
+    $routes->group('documentation', function($routes) {
+        $routes->get('(:num)', 'ReviewController::documentation/$1');
+        $routes->post('(:num)', 'ReviewController::submitDocumentation/$1');
+        $routes->delete('file/(:num)', 'ReviewController::deleteFile/$1');
+        $routes->get('file/(:num)', 'ReviewController::viewFile/$1');
+        $routes->get('download/(:num)', 'ReviewController::downloadFile/$1');
+        $routes->get('(:num)/verification', 'ReviewController::verification/$1', ['filter' => 'group:superadmin,verificator']);
     });
 });
 ```

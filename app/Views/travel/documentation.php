@@ -87,6 +87,22 @@
                     <?php endforeach; ?>
                 </div>
             </div>
+
+            <!-- Narrative Report (Phase 27) -->
+            <div class="card p-6 border-t-4 border-t-blue-500">
+                <div class="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
+                    <i data-lucide="file-text" class="w-5 h-5 text-blue-500"></i>
+                    <h3 class="font-bold text-slate-800 uppercase tracking-wider text-sm">Narasi Laporan / Catatan</h3>
+                </div>
+                <div>
+                    <textarea 
+                        name="report_narrative" 
+                        rows="6" 
+                        class="form-input text-sm" 
+                        placeholder="Berikan narasi singkat mengenai pelaksanaan perjalanan dinas Anda..."><?= esc((string) $travelRequest->report_narrative) ?></textarea>
+                    <p class="mt-2 text-[10px] text-slate-400 italic">Narasi ini akan muncul di laporan akhir dan dapat dilihat oleh verifikator.</p>
+                </div>
+            </div>
         </div>
 
         <!-- Right Side: Info & Submit -->

@@ -133,7 +133,7 @@
                 </span>
             </h3>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 mb-2">
                 <div>
                     <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tempat Berangkat</span>
                     <span class="text-sm font-medium text-slate-900"><?= esc($travelRequest->departure_place ?: '-') ?></span>
@@ -152,6 +152,19 @@
                 </div>
             </div>
         </div>
+
+        <!-- Narasi Laporan (Phase 27) -->
+        <?php if (!empty($travelRequest->report_narrative)): ?>
+            <div class="card p-6 border-t-4 border-t-blue-600 bg-blue-50/10">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-4 pb-4 border-b border-slate-100 uppercase tracking-wider text-sm">
+                    <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i>
+                    Narasi Laporan / Dokumentasi
+                </h3>
+                <div class="text-sm text-slate-700 leading-relaxed bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                    <?= nl2br(esc((string) $travelRequest->report_narrative)) ?>
+                </div>
+            </div>
+        <?php endif; ?>
 
         <!-- Anggota Tim & Rincian Biaya -->
         <div class="card p-0 overflow-hidden border-t-4 border-t-emerald-500 shadow-md">

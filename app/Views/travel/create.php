@@ -162,15 +162,6 @@
                 </div>
             </div>
 
-            <!-- Dynamic Tariff Warning Container -->
-            <div id="tariff-warning-container" class="hidden mb-6 items-start gap-3 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800" style="display: none;">
-                <i data-lucide="triangle-alert" class="mt-0.5 h-5 w-5 shrink-0 text-amber-500"></i>
-                <div class="flex-1">
-                    <p class="font-semibold mb-1">Peringatan: Beberapa tarif tujuan tidak ditemukan</p>
-                    <ul id="tariff-warning-list" class="list-disc list-inside text-xs space-y-1"></ul>
-                    <p class="mt-2 text-xs opacity-80">Anggota di atas tetap akan disimpan, namun komponen biaya otomatis (Uang Harian, Penginapan, Representasi) akan diset Rp 0.</p>
-                </div>
-            </div>
         </div>
 
         <div class="pt-6 border-t border-slate-200 flex justify-end gap-3">

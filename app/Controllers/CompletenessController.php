@@ -54,8 +54,10 @@ class CompletenessController extends BaseController
         
         // Fetch existing data for Edit mode
         $expenseItems = [];
+        $expenses = [];
         foreach ($members as $member) {
             $expenseItems[$member->id] = $this->travelExpenseItemModel->getByMember($member->id);
+            $expenses[$member->id] = $this->travelExpenseModel->where('travel_member_id', $member->id)->first();
         }
         
         $existingChecklist = $this->travelCompletenessModel->getByRequestId($id);
@@ -87,6 +89,7 @@ class CompletenessController extends BaseController
             'request' => $request,
             'members' => $members,
             'expenseItems' => $expenseItems,
+            'expenses' => $expenses,
             'existingChecklist' => $existingChecklist,
             'groupedSignatories' => $groupedSignatories,
             'title' => 'Lengkapi Data Perjalanan',
@@ -144,12 +147,17 @@ class CompletenessController extends BaseController
                 ]);
             }
 
-            // 3. Process Itemized Expenses
+            // 3. Process Itemized Expenses & Standard Costs
             $existingMembers = $this->travelMemberModel->where('travel_request_id', $id)->findAll();
             $expenseItems = $this->request->getPost('expense_items');
+            $stdCosts = $this->request->getPost('std_costs') ?? []; // New manual costs
             $totalRequestBudget = 0;
 
             foreach ($existingMembers as $member) {
+                // Get manual standard costs or default to 0
+                $uangHarian = (float) str_replace(['.', ','], ['', '.'], $stdCosts[$member->id]['uang_harian'] ?? '0');
+                $uangRepresentasi = (float) str_replace(['.', ','], ['', '.'], $stdCosts[$member->id]['uang_representasi'] ?? '0');
+
                 $items = $expenseItems[$member->id] ?? [];
                 $categoryTotals = [
                     'tiket' => 0,
@@ -178,8 +186,10 @@ class CompletenessController extends BaseController
                 // Update the main TravelExpense record for this member
                 $expense = $this->travelExpenseModel->where('travel_member_id', $member->id)->first();
                 if ($expense) {
-                    $newTotal = $expense->uang_harian + $expense->uang_representasi + array_sum($categoryTotals);
+                    $newTotal = $uangHarian + $uangRepresentasi + array_sum($categoryTotals);
                     $this->travelExpenseModel->update($expense->id, [
+                        'uang_harian' => $uangHarian,
+                        'uang_representasi' => $uangRepresentasi,
                         'tiket' => $categoryTotals['tiket'],
                         'penginapan' => $categoryTotals['penginapan'],
                         'transport_darat' => $categoryTotals['transport_darat'],
