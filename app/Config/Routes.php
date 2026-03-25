@@ -76,6 +76,8 @@ $routes->group('', ['filter' => 'session'], static function ($routes): void {
     $routes->get('download/spd/(:num)', 'TravelRequestController::downloadSpd/$1');
 		$routes->get('(:num)/statement', 'TravelRequestController::downloadStatement/$1');
 		$routes->get('(:num)/control-list', 'TravelRequestController::downloadControlList/$1');
+		$routes->get('(:num)/nominative-list', 'TravelRequestController::downloadNominativeList/$1');
+		$routes->get('(:num)/bundle-excel', 'TravelRequestController::downloadBundleExcel/$1');
 
 		// Data Enrichment (Phase 8)
 		$routes->get('(:num)/enrichment', 'CompletenessController::enrichment/$1');

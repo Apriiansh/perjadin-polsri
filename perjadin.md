@@ -216,6 +216,7 @@ erDiagram
         timestamps created_updated
     }
 
+    travel_members ||--o{ travel_expense_items : "has breakdown"
     travel_expenses {
         bigint id PK
         bigint travel_member_id FK
@@ -227,6 +228,14 @@ erDiagram
         decimal transport_darat "diisi saat kelengkapan"
         decimal transport_lokal "diisi saat kelengkapan"
         decimal total_biaya
+        timestamps created_updated
+    }
+
+    travel_expense_items {
+        bigint id PK
+        bigint travel_request_id FK
+        varchar item_name "e.g. Taksi Bandara, Tol, dll"
+        decimal amount
         timestamps created_updated
     }
 
@@ -284,7 +293,8 @@ Berdasarkan format surat real dari Polsri:
 | **Kuitansi** | `travel_expenses` + `travel_members` + signatories | 1 per anggota |
 | **Perhitungan SPPD Rampung** | `travel_expenses` | 1 per anggota |
 | **Surat Pernyataan** | `travel_members` + `travel_requests` + signatories | 1 per anggota |
-| **Daftar Kontrol Pembayaran (Nominatif)** | ALL `travel_members` + `travel_expenses` | 1 per perjalanan (summary) |
+| **Daftar Kontrol** | ALL `travel_members` + `travel_expenses` + extra columns | 1 per perjalanan (summary) |
+| **Daftar Nominatif** | ALL `travel_members` + `travel_expenses` (original format) | 1 per perjalanan (rekap arsip) |
 
 ### Migrations Order (Revised)
 
@@ -365,16 +375,19 @@ flowchart LR
 
 ### Status Flow — Travel Request
 
-> **Catatan**: ST selalu disimpan sebagai **draft** terlebih dahulu. Perubahan status `draft → active` dilakukan melalui fitur **"Lengkapi Data"** di halaman detail, bukan saat input ST.
+> **Catatan**: 
+> - ST selalu disimpan sebagai **draft** terlebih dahulu. Perubahan status `draft → active` dilakukan melalui fitur **"Lengkapi Data"** di halaman detail.
+> - Status `completed` tercapai otomatis saat semua berkas terverifikasi, atau manual oleh Superadmin (Finance).
+> - Status `completed` mengunci (Read-Only) akses pengunggahan berkas dan verifikasi bagi non-Superadmin.
 
 ```mermaid
 stateDiagram-v2
     [*] --> draft : Admin (Kepegawaian) input ST → selalu draft
     draft --> active : Admin lengkapi data (kode golongan, signatories, dll)
-    active --> completed : Semua kelengkapan terverifikasi
+    active --> completed : Verifikasi penuh (Auto) / Tandai Selesai (Manual)
     active --> cancelled : Perjalanan dibatalkan
     draft --> cancelled : Dibatalkan sebelum terbit
-    completed --> [*]
+    completed --> [*] : Locked for non-Superadmin
     cancelled --> [*]
 ```
 
@@ -404,14 +417,17 @@ stateDiagram-v2
 | View Form Kelengkapan | ✅ | ✅ | ✅ | ✅ |
 | Upload dokumentasi | ❌ | ❌ | ❌ | ✅ |
 | Verifikasi dokumen | ✅ | ❌ | ✅ | ❌ |
-| Pilih Signatories (saat export) | ✅ | ❌ | ❌ | ❌ |
+| Pilih Signatories (saat enrichment) | ✅ | ❌ | ❌ | ❌ |
 | CRUD Tariffs | ✅ | ✅ | ❌ | ❌ |
 | CRUD Signatories | ✅ | ✅ | ❌ | ❌ |
 | CRUD Employees | ✅ | ✅ | ❌ | ❌ |
 | Sync API Pegawai | ✅ | ✅ | ❌ | ❌ |
-| Print Daftar Nominatif | ✅ | ❌ | ✅ | ❌ |
+| Print **Daftar Kontrol** | ✅ | ❌ | ✅ | ❌ |
+| Print **Daftar Nominatif** | ✅ | ❌ | ✅ | ❌ |
 | Print Rincian Biaya | ✅ | ❌ | ✅ | ✅ |
 | Print Kuitansi | ✅ | ❌ | ✅ | ❌ |
+| Batal Perjalanan (Cancel) | ✅ | ✅ | ❌ | ❌ |
+| Tandai Selesai (Manual Complete) | ✅ | ❌ | ❌ | ❌ |
 | Dashboard & Reporting | ✅ | ✅ | ✅ | ❌ |
 
 ### Catatan Penting dari Meet Wadir 1
@@ -619,13 +635,16 @@ stateDiagram-v2
 - [x] Smart Action Buttons: Tombol berubah otomatis (Verifikasi/Dokumentasi/Lengkapi) sesuai konteks status & role
 - [x] Visual Refinement: Spacing table premium, hover effects, dan detail status micro-stats
 
-### PHASE 25: Refinemen Tombol Aksi Kontekstual ✅
+### PHASE 23: Advanced Control & Exports (Fix MAK & New Excel) ✅
 
-- [x] Sembunyikan tombol Dokumentasi/Bantu Upload jika sudah terverifikasi penuh
-- [x] Labeling cerdas: "Terverifikasi", "Menunggu Checklist", "Lihat Detail"
-- [x] Optimasi status awareness berdasarkan progres berkas
+- [x] Implementasi **Daftar Nominatif** (Versi Arsip tanpa kolom extra)
+- [x] Penambahan kolom "Dibayar ke Pegawai" & "Dibayar ke Pihak Lain" di **Daftar Kontrol**
+- [x] Perbaikan Display **MAK (Mata Anggaran Kegiatan)** di show view & export Excel
+- [x] Penanganan multi-file upload & isolation per-member (Private documentation)
+- [x] Fitur **Tandai Selesai (Manual Complete)** & **Batalkan (Cancel)** khusus Superadmin
+- [x] Auto-Lock ketersediaan edit jika status `completed`
 
-### PHASE 23: Dashboard & Final Reporting ⭐ NEXT
+### PHASE 24: Dashboard & Final Reporting ⭐ NEXT
 
 - [ ] Dashboard statistik: total perjalanan per bulan/tahun, total anggaran
 - [ ] Rekapan Keuangan: filter by reimburse/vendor/non
@@ -773,6 +792,9 @@ $routes->group('', ['filter' => 'session'], function ($routes) {
         $routes->get('download/spd/(:num)', 'TravelRequestController::downloadSpd/$1');
         $routes->get('(:num)/statement', 'TravelRequestController::downloadStatement/$1');
         $routes->get('(:num)/control-list', 'TravelRequestController::downloadControlList/$1');
+        $routes->get('(:num)/nominative-list', 'TravelRequestController::downloadNominativeList/$1');
+
+        $routes->post('(:num)/complete', 'TravelRequestController::complete/$1');
 
         // Data Enrichment & Completeness (Phase 8)
         $routes->get('(:num)/enrichment', 'CompletenessController::enrichment/$1');

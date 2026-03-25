@@ -58,7 +58,7 @@
 	}
 
 	.sidebar-icon {
-		@apply h-4.5 w-4.5 shrink-0 text-slate-400 transition-colors;
+		@apply h-5 w-5 shrink-0 text-slate-400 transition-colors;
 	}
 
 	.sidebar-link:hover .sidebar-icon {

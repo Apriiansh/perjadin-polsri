@@ -24,6 +24,25 @@
     $isDosen = $user->inGroup('lecturer');
     $isAdminKepegawaian = $user->inGroup('admin');
     $isKeuangan = $user->inGroup('superadmin', 'verificator');
+    $isStaff = $user->inGroup('admin', 'superadmin');
+
+    // Find my member ID if lecturer/member to ensure individual download only
+    $myMemberId = null;
+    if ($isDosen) {
+        $currentEmp = model('App\Models\EmployeeModel')->where('user_id', auth()->id())->first();
+        if ($currentEmp) {
+            foreach ($members as $m) {
+                // Check if $m is array or object
+                $mId = is_array($m) ? $m['employee_id'] : $m->employee_id;
+                $empId = is_array($currentEmp) ? $currentEmp['id'] : $currentEmp->id;
+
+                if ($mId == $empId) {
+                    $myMemberId = is_array($m) ? $m['travel_member_id'] : $m->travel_member_id;
+                    break;
+                }
+            }
+        }
+    }
     ?>
 
     <div class="flex items-center gap-2">
@@ -97,8 +116,15 @@
                             </div>
                         </div>
                         <div>
-                            <span class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Beban Anggaran</span>
-                            <span class="text-sm font-medium text-slate-800"><?= esc($travelRequest->budget_burden_by ?: '-') ?></span>
+                            <span class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Beban Anggaran / MAK</span>
+                            <div class="space-y-1">
+                                <span class="text-sm font-medium text-slate-800 block"><?= esc($travelRequest->budget_burden_by ?: '-') ?></span>
+                                <?php if (!empty($travelRequest->mak)): ?>
+                                    <span class="text-[11px] font-mono font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded inline-block border border-slate-200">
+                                        MAK: <?= esc($travelRequest->mak) ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <div>
                             <span class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Lokasi / Venue</span>
@@ -192,64 +218,128 @@
                 <i data-lucide="download" class="w-4 h-4 text-slate-400"></i>
             </h3>
 
-            <div class="space-y-4">
+            <div class="space-y-5">
+
+                <!-- Lampiran Surat Tugas -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-2">Lampiran Surat Tugas</label>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Lampiran Surat Tugas</p>
                     <?php if (!empty($travelRequest->lampiran_path)): ?>
-                        <a href="<?= base_url('travel/download/lampiran/' . $travelRequest->id) ?>" class="btn-primary w-full justify-center inline-flex items-center gap-2 text-sm">
+                        <a href="<?= base_url('travel/download/lampiran/' . $travelRequest->id) ?>"
+                            class="btn-primary w-full justify-center inline-flex items-center gap-2 text-sm">
                             <i data-lucide="paperclip" class="w-4 h-4"></i>
                             <?= esc($travelRequest->lampiran_original_name ?: 'Download Lampiran') ?>
                         </a>
                     <?php else: ?>
-                        <p class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-lg border border-dashed border-slate-200 text-center">Belum ada lampiran ST yang diunggah.</p>
+                        <p class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-lg border border-dashed border-slate-200 text-center">
+                            Belum ada lampiran yang diunggah.
+                        </p>
                     <?php endif; ?>
                 </div>
 
                 <hr class="border-slate-100">
 
+                <!-- Dokumen Terbitan Sistem -->
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Dokumen Terbitan Sistem</label>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Dokumen Terbitan Sistem</p>
+
                     <?php if ($travelRequest->status !== 'draft'): ?>
-                        <div class="grid <?= $isDosen ? 'grid-cols-1' : 'grid-cols-2' ?> gap-3">
-                            <a href="<?= base_url('travel/download/spd/' . $travelRequest->id) ?>"
-                                class="flex flex-col items-center justify-center p-4 rounded-lg border-2 border-slate-100 bg-slate-50 hover:bg-white hover:border-primary-500 hover:text-primary-600 transition-all group gap-2 text-center">
-                                <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:bg-primary-50">
-                                    <i data-lucide="file-text" class="w-5 h-5 text-primary-500"></i>
-                                </div>
-                                <span class="text-xs font-bold">SPD <?= $isDosen ? 'Saya' : '' ?></span>
-                            </a>
-                            <a href="<?= base_url('travel/' . $travelRequest->id . '/statement') ?>"
-                                class="flex flex-col items-center justify-center p-4 rounded-lg border-2 border-slate-100 bg-slate-50 hover:bg-white hover:border-emerald-500 hover:text-emerald-600 transition-all group gap-2 text-center">
-                                <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:bg-emerald-50">
-                                    <i data-lucide="file-check" class="w-5 h-5 text-emerald-500"></i>
-                                </div>
-                                <span class="text-xs font-bold"><?= $isDosen ? 'Pernyataan Saya' : ($isStaff ? 'Surat Pernyataan' : 'Pernyataan (.docx)') ?></span>
-                            </a>
-                            <?php if ($isStaff && !$isAdminKepegawaian): ?>
-                                <a href="<?= base_url('travel/' . $travelRequest->id . '/control-list') ?>"
-                                    class="col-span-2 flex items-center justify-between p-4 rounded-lg border-2 border-slate-100 bg-emerald-50/20 hover:bg-white hover:border-emerald-600 hover:text-emerald-700 transition-all group gap-3">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
-                                            <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-600"></i>
+                        <div class="flex flex-col gap-2">
+
+                            <!-- Row 1: SPD + Surat Pernyataan -->
+                            <div class="grid grid-cols-2 gap-2">
+                                <?php if ($isStaff || $isKeuangan): ?>
+                                    <a href="<?= base_url('travel/download/spd/' . $travelRequest->id) ?>"
+                                        class="flex flex-col items-center justify-center p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-primary-400 hover:text-primary-600 transition-all group gap-1 text-center">
+                                        <div class="w-7 h-7 rounded-md bg-white shadow-sm flex items-center justify-center group-hover:bg-primary-50">
+                                            <i data-lucide="layers" class="w-3.5 h-3.5 text-primary-500"></i>
                                         </div>
-                                        <div class="text-left">
-                                            <span class="block text-xs font-bold uppercase tracking-tight">Daftar Kontrol Pembayaran</span>
-                                            <span class="text-[9px] text-slate-400 font-medium uppercase">Export Format Excel (.xlsx)</span>
+                                        <div class="flex flex-col items-center">
+                                            <span class="text-[10px] font-bold leading-none">SPD</span>
+                                            <span class="text-[9px] text-slate-400 leading-none">.docx</span>
+                                        </div>
+                                    </a>
+                                <?php else: ?>
+                                    <a href="<?= base_url('travel/download/spd/' . $travelRequest->id . ($myMemberId ? '?member_id=' . $myMemberId : '')) ?>"
+                                        class="flex flex-col items-center justify-center p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-primary-400 hover:text-primary-600 transition-all group gap-1 text-center">
+                                        <div class="w-7 h-7 rounded-md bg-white shadow-sm flex items-center justify-center group-hover:bg-primary-50">
+                                            <i data-lucide="file-text" class="w-3.5 h-3.5 text-primary-500"></i>
+                                        </div>
+                                        <div class="flex flex-col items-center">
+                                            <span class="text-[10px] font-bold leading-none">SPD Saya</span>
+                                            <span class="text-[9px] text-slate-400 leading-none">.docx</span>
+                                        </div>
+                                    </a>
+                                <?php endif; ?>
+
+                                <a href="<?= base_url('travel/' . $travelRequest->id . '/statement' . ($myMemberId ? '?member_id=' . $myMemberId : '')) ?>"
+                                    class="flex flex-col items-center justify-center p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-emerald-400 hover:text-emerald-600 transition-all group gap-1 text-center">
+                                    <div class="w-7 h-7 rounded-md bg-white shadow-sm flex items-center justify-center group-hover:bg-emerald-50">
+                                        <i data-lucide="file-check" class="w-3.5 h-3.5 text-emerald-500"></i>
+                                    </div>
+                                    <div class="flex flex-col items-center">
+                                        <span class="text-[10px] font-bold leading-none">Pernyataan<?= $isStaff ? '' : ' Saya' ?></span>
+                                        <span class="text-[9px] text-slate-400 leading-none">.docx</span>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <?php if ($isStaff && !$isAdminKepegawaian): ?>
+                                <!-- Row 2: Daftar Kontrol + Daftar Nominatif -->
+                                <div class="grid grid-cols-2 gap-2">
+                                    <a href="<?= base_url('travel/' . $travelRequest->id . '/control-list') ?>"
+                                        class="flex flex-col items-center justify-center p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-emerald-400 hover:text-emerald-700 transition-all group gap-1 text-center">
+                                        <div class="w-7 h-7 rounded-md bg-white shadow-sm flex items-center justify-center group-hover:bg-emerald-50">
+                                            <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+                                        </div>
+                                        <div class="flex flex-col items-center">
+                                            <span class="text-[10px] font-bold leading-none">Daftar Kontrol</span>
+                                            <span class="text-[9px] text-slate-400 leading-none">.xlsx</span>
+                                        </div>
+                                    </a>
+
+                                    <a href="<?= base_url('travel/' . $travelRequest->id . '/nominative-list') ?>"
+                                        class="flex flex-col items-center justify-center p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-blue-400 hover:text-blue-700 transition-all group gap-1 text-center">
+                                        <div class="w-7 h-7 rounded-md bg-white shadow-sm flex items-center justify-center group-hover:bg-blue-50">
+                                            <i data-lucide="table" class="w-3.5 h-3.5 text-blue-600"></i>
+                                        </div>
+                                        <div class="flex flex-col items-center">
+                                            <span class="text-[10px] font-bold leading-none">Daftar Nominatif</span>
+                                            <span class="text-[9px] text-slate-400 leading-none">.xlsx</span>
+                                        </div>
+                                    </a>
+                                </div>
+
+                                <hr class="border-slate-100 my-2">
+
+                                <!-- Row 3: Bundle full width -->
+                                <a href="<?= base_url('travel/' . $travelRequest->id . '/bundle-excel') ?>"
+                                    class="flex items-center justify-between p-3 rounded-lg border border-amber-200 bg-amber-50/40 hover:bg-white hover:border-amber-400 transition-all group gap-3">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-8 h-8 rounded-md bg-white shadow-sm flex items-center justify-center shrink-0 group-hover:bg-amber-50">
+                                            <i data-lucide="package" class="w-4 h-4 text-amber-500"></i>
+                                        </div>
+                                        <div class="min-w-0 flex flex-col">
+                                            <span class="text-[10px] font-bold text-slate-700 leading-none">Seluruh Dokumen</span>
+                                            <span class="text-[9px] text-slate-400 leading-none mt-0.5">SPD · Rincian Biaya · Pernyataan · Kontrol · Nominatif</span>
                                         </div>
                                     </div>
-                                    <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i>
+                                    <i data-lucide="download" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
                                 </a>
                             <?php endif; ?>
+
                         </div>
                     <?php else: ?>
                         <div class="bg-indigo-50/50 border border-dashed border-indigo-200 rounded-lg p-4 text-center">
                             <div class="w-10 h-10 rounded-full bg-white mx-auto mb-3 flex items-center justify-center shadow-sm">
                                 <i data-lucide="lock" class="w-5 h-5 text-indigo-400"></i>
                             </div>
-                            <p class="text-[11px] font-medium text-indigo-600 leading-relaxed px-2">Dokumen otomatis terlampir setelah data dilengkapi Keuangan.</p>
+                            <p class="text-[11px] font-medium text-indigo-600 leading-relaxed px-2">
+                                Dokumen otomatis terlampir setelah data dilengkapi Keuangan.
+                            </p>
                         </div>
                     <?php endif; ?>
                 </div>
+
             </div>
         </div>
 
@@ -293,7 +383,7 @@
                                 </a>
                                 <div class="flex gap-2">
                                     <?php if (auth()->user()->inGroup('superadmin') && $travelRequest->status === 'active'): ?>
-                                        <button type="button" onclick="completeTravel(<?= $travelRequest->id ?>)" class="btn-primary flex-1 justify-center shadow-md hover:shadow-lg transition-all animate-in fade-in slide-in-from-bottom-2">
+                                        <button type="button" onclick="completeTravel(<?= $travelRequest->id ?>)" class="btn-success flex-1 justify-center shadow-md hover:shadow-lg transition-all animate-in fade-in slide-in-from-bottom-2">
                                             <i data-lucide="check-circle-2" class="w-4 h-4 mr-2"></i> Tandai Selesai
                                         </button>
                                     <?php endif; ?>

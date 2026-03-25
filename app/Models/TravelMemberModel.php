@@ -60,7 +60,7 @@ class TravelMemberModel extends Model
      */
     public function getByRequestWithEmployee(int $travelRequestId): array
     {
-        return $this->select('travel_members.*, employees.name as employee_name, employees.nip as employee_nip, employees.user_id, employees.pangkat_golongan as employee_golongan, travel_members.kode_golongan, travel_members.nama_golongan')
+        return $this->select('travel_members.*, employees.name as employee_name, employees.nik as employee_nik, employees.nip as employee_nip, employees.user_id, employees.pangkat_golongan as employee_golongan, travel_members.kode_golongan, travel_members.nama_golongan')
             ->join('employees', 'employees.id = travel_members.employee_id')
             ->where('travel_members.travel_request_id', $travelRequestId)
             ->findAll();

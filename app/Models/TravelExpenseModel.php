@@ -60,7 +60,7 @@ class TravelExpenseModel extends Model
 
     public function getByRequestWithMember(int $travelRequestId): array
     {
-        return $this->select('travel_expenses.*, travel_members.employee_id, travel_members.no_sppd, travel_members.tgl_sppd, travel_members.kode_golongan, travel_members.nama_golongan, travel_members.report_narrative, employees.user_id, employees.name as employee_name, employees.nip as employee_nip, employees.pangkat_golongan as employee_golongan, employees.jabatan as employee_jabatan, employees.rekening_bank, tariffs.tingkat_biaya')
+        return $this->select('travel_expenses.*, travel_members.employee_id, travel_members.no_sppd, travel_members.tgl_sppd, travel_members.kode_golongan, travel_members.nama_golongan, travel_members.report_narrative, employees.user_id, employees.name as employee_name, employees.nik as employee_nik, employees.nip as employee_nip, employees.pangkat_golongan as employee_golongan, employees.jabatan as employee_jabatan, employees.rekening_bank, tariffs.tingkat_biaya')
             ->join('travel_members', 'travel_members.id = travel_expenses.travel_member_id')
             ->join('employees', 'employees.id = travel_members.employee_id')
             ->join('tariffs', 'tariffs.id = travel_expenses.tariff_id', 'left')

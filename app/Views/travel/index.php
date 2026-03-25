@@ -1,15 +1,14 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
-<!-- Page header -->
-<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-    <div>
-        <h1 class="text-2xl font-extrabold text-slate-900"><?= esc($title ?? 'Pengajuan Perdin') ?></h1>
-        <p class="mt-1 text-sm text-slate-500"><?= ($isStaff ?? false) ? 'Kelola data perjalanan dinas pegawai.' : 'Daftar perjalanan dinas Anda.' ?></p>
+<div class="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+    <div class="space-y-1">
+        <h1 class="text-3xl font-extrabold tracking-tight text-slate-900"><?= esc($title ?? 'Pengajuan Perdin') ?></h1>
+        <p class="text-sm font-medium text-slate-500"><?= ($isStaff ?? false) ? 'Kelola data perjalanan dinas pegawai secara efisien.' : 'Daftar riwayat perjalanan dinas Anda.' ?></p>
     </div>
 
     <?php if ($isStaff ?? false): ?>
-        <a href="<?= base_url('travel/create') ?>" class="btn-primary inline-flex items-center gap-2 text-sm">
+        <a href="<?= base_url('travel/create') ?>" class="btn-primary inline-flex h-11 items-center gap-2 px-5 text-sm font-bold shadow-lg shadow-primary-500/20 active:scale-95 transition-all">
             <i data-lucide="plus" class="w-4 h-4"></i>
             Input Perjalanan Dinas
         </a>
@@ -77,8 +76,8 @@
     </div>
 <?php endif; ?>
 
-<!-- Status Tabs -->
-<div class="flex items-center gap-1 mb-6 p-1 bg-slate-100/50 rounded-xl w-fit border border-slate-200/60 sticky top-0 z-10 backdrop-blur-md">
+<!-- Status Tabs (Floating) -->
+<div class="sticky top-16 z-20 flex items-center gap-1 mb-8 p-1.5 bg-white/60 backdrop-blur-xl rounded-2xl w-fit border border-slate-200/60 shadow-sm">
     <?php
     $tabs = [
         'all'       => ['label' => 'Semua', 'icon' => 'layers'],
@@ -98,17 +97,17 @@
     <?php endforeach; ?>
 </div>
 
-<div class="card overflow-hidden p-0 border-none shadow-premium bg-white/80 backdrop-blur-md">
+<div class="card overflow-visible p-0 border-none shadow-premium bg-white">
     <div class="overflow-x-auto">
         <table id="travelTable" class="w-full text-sm">
-            <thead class="bg-slate-50 text-slate-600">
+            <thead class="bg-slate-50/80 text-slate-500 border-b border-slate-100">
                 <tr>
-                    <th class="px-5 py-4 text-left font-bold uppercase tracking-wider text-[10px]">No</th>
-                    <th class="px-5 py-4 text-left font-bold uppercase tracking-wider text-[10px]">Pegawai & Dokumentasi</th>
-                    <th class="px-5 py-4 text-left font-bold uppercase tracking-wider text-[10px]">Informasi Surat Tugas</th>
-                    <th class="px-5 py-4 text-left font-bold uppercase tracking-wider text-[10px]">Tujuan & Perihal</th>
-                    <th class="px-5 py-4 text-center font-bold uppercase tracking-wider text-[10px]">Status</th>
-                    <th class="px-5 py-4 text-center font-bold uppercase tracking-wider text-[10px]">Aksi</th>
+                    <th class="px-5 py-5 text-left font-bold uppercase tracking-wider text-[10px]">No</th>
+                    <th class="px-5 py-5 text-left font-bold uppercase tracking-wider text-[10px]">Pegawai & Dokumentasi</th>
+                    <th class="px-5 py-5 text-left font-bold uppercase tracking-wider text-[10px]">Informasi Surat Tugas</th>
+                    <th class="px-5 py-5 text-left font-bold uppercase tracking-wider text-[10px]">Tujuan & Perihal</th>
+                    <th class="px-5 py-5 text-center font-bold uppercase tracking-wider text-[10px]">Status</th>
+                    <th class="px-5 py-5 text-center font-bold uppercase tracking-wider text-[10px] w-40">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 bg-white">
@@ -295,7 +294,6 @@
             </tbody>
         </table>
     </div>
-</div>
 </div>
 <?= $this->endSection() ?>
 

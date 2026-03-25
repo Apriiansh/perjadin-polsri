@@ -48,54 +48,46 @@ class TravelRequestController extends BaseController
         $isVerificator = auth()->user()->inGroup('verificator');
         $isStaff = $this->isStaff();
 
+        // 1. Fetch ALL relevant requests first (for correct stats)
         if ($isStaff || $isVerificator) {
-            // Staff and Verificators see all requests by default
-            if (!empty($statusFilter) && in_array($statusFilter, ['draft', 'active', 'completed', 'cancelled'])) {
-                $travelRequests = $this->travelRequestModel->where('status', $statusFilter)->orderBy('created_at', 'DESC')->findAll();
-            } else {
-                $travelRequests = $this->travelRequestModel->getAllRequests();
-            }
+            $allRequests = $this->travelRequestModel->getAllRequests();
         } else {
-            // Dosen only sees requests where they are a member
             $employee = $this->getCurrentEmployee();
             if (!$employee) {
                 return view('travel/index', [
                     'title'          => 'Pengajuan Perdin',
                     'travelRequests' => [],
                     'isStaff'        => false,
+                    'stats'          => ['total' => 0, 'draft' => 0, 'pending' => 0, 'completed' => 0],
+                    'currentStatus'  => 'all'
                 ]);
             }
-
-            // Find travel_request IDs where this employee is a member
             $memberRows = $this->travelMemberModel->where('employee_id', $employee['id'])->findAll();
             $requestIds = array_unique(array_column($memberRows, 'travel_request_id'));
-
-            if (empty($requestIds)) {
-                $travelRequests = [];
-            } else {
-                $query = $this->travelRequestModel->whereIn('id', $requestIds);
-                if (!empty($statusFilter) && in_array($statusFilter, ['draft', 'active', 'completed', 'cancelled'])) {
-                    $query->where('status', $statusFilter);
-                }
-                $travelRequests = $query->orderBy('created_at', 'DESC')->findAll();
-            }
+            $allRequests = !empty($requestIds) ? $this->travelRequestModel->whereIn('id', $requestIds)->orderBy('created_at', 'DESC')->findAll() : [];
         }
 
-        // Attach members and documentation stats to each request
-        $this->attachDocumentationStats($travelRequests);
+        // 2. Attach documentation stats to ALL (to count "pending" correctly)
+        $this->attachDocumentationStats($allRequests);
 
-        // Calculate summary stats
+        // 3. Calculate summary stats from ALL
         $stats = [
-            'total'     => count($travelRequests),
-            'draft'     => count(array_filter($travelRequests, fn($r) => $r->status === 'draft')),
-            'pending'   => count(array_filter($travelRequests, fn($r) => $r->status === 'active' && ($r->uploaded_docs ?? 0) > 0)),
-            'completed' => count(array_filter($travelRequests, fn($r) => $r->status === 'completed')),
+            'total'     => count($allRequests),
+            'draft'     => count(array_filter($allRequests, fn($r) => $r->status === 'draft')),
+            'pending'   => count(array_filter($allRequests, fn($r) => $r->status === 'active' && ($r->uploaded_docs ?? 0) > 0)),
+            'completed' => count(array_filter($allRequests, fn($r) => $r->status === 'completed')),
         ];
+
+        // 4. Filter the list for display if a specific status is requested
+        $travelRequests = $allRequests;
+        if (!empty($statusFilter) && in_array($statusFilter, ['draft', 'active', 'completed', 'cancelled'])) {
+            $travelRequests = array_filter($allRequests, fn($r) => $r->status === $statusFilter);
+        }
 
         return view('travel/index', [
             'title'          => 'Pengajuan Perdin',
             'travelRequests' => $travelRequests,
-            'isStaff'        => $this->isStaff(),
+            'isStaff'        => $isStaff,
             'stats'          => $stats,
             'currentStatus'  => $statusFilter ?? 'all',
         ]);
@@ -106,41 +98,50 @@ class TravelRequestController extends BaseController
      */
     public function active(): string|ResponseInterface
     {
-        if ($this->isStaff()) {
-            $travelRequests = $this->travelRequestModel->where('status', 'active')->orderBy('created_at', 'DESC')->findAll();
-        } elseif (auth()->user()->inGroup('verificator')) {
-            // Verificator sees all active requests
-            $travelRequests = $this->travelRequestModel->where('status', 'active')->orderBy('created_at', 'DESC')->findAll();
+        $isVerificator = auth()->user()->inGroup('verificator');
+        $isStaff = $this->isStaff();
+
+        // reuse index logic but force 'active' status for display
+        // However, we want to maintain the "Verifikasi Perdin" title for verificators
+        $title = ($isVerificator && !$isStaff) ? 'Verifikasi Perdin' : 'Perjalanan Dinas Aktif';
+
+        // Fetch ALL to get global stats
+        if ($isStaff || $isVerificator) {
+            $allRequests = $this->travelRequestModel->getAllRequests();
         } else {
-            // Dosen only sees active requests where they are a member
             $employee = $this->getCurrentEmployee();
             if (!$employee) {
                 return view('travel/index', [
-                    'title'          => 'Perjalanan Dinas Aktif',
+                    'title'          => $title,
                     'travelRequests' => [],
                     'isStaff'        => false,
+                    'stats'          => ['total' => 0, 'draft' => 0, 'pending' => 0, 'completed' => 0],
+                    'currentStatus'  => 'active'
                 ]);
             }
-
-            // Find travel_request IDs where this employee is a member
             $memberRows = $this->travelMemberModel->where('employee_id', $employee['id'])->findAll();
             $requestIds = array_unique(array_column($memberRows, 'travel_request_id'));
-
-            $travelRequests = !empty($requestIds)
-                ? $this->travelRequestModel->whereIn('id', $requestIds)->where('status', 'active')->orderBy('created_at', 'DESC')->findAll()
-                : [];
+            $allRequests = !empty($requestIds) ? $this->travelRequestModel->whereIn('id', $requestIds)->orderBy('created_at', 'DESC')->findAll() : [];
         }
 
-        $isVerifOnly = auth()->user()->inGroup('verificator') && !$this->isStaff();
-        $title = $isVerifOnly ? 'Verifikasi Perdin' : 'Perjalanan Dinas Aktif';
+        $this->attachDocumentationStats($allRequests);
 
-        // Attach members and documentation stats to each request
-        $this->attachDocumentationStats($travelRequests);
+        $stats = [
+            'total'     => count($allRequests),
+            'draft'     => count(array_filter($allRequests, fn($r) => $r->status === 'draft')),
+            'pending'   => count(array_filter($allRequests, fn($r) => $r->status === 'active' && ($r->uploaded_docs ?? 0) > 0)),
+            'completed' => count(array_filter($allRequests, fn($r) => $r->status === 'completed')),
+        ];
+
+        // Filter for display
+        $travelRequests = array_filter($allRequests, fn($r) => $r->status === 'active');
 
         return view('travel/index', [
             'title'          => $title,
             'travelRequests' => $travelRequests,
-            'isStaff'        => $this->isStaff(),
+            'isStaff'        => $isStaff,
+            'currentStatus'  => 'active',
+            'stats'          => $stats,
         ]);
     }
 
@@ -154,8 +155,6 @@ class TravelRequestController extends BaseController
         }
 
         return view('travel/create', [
-            'title'     => 'Input Data Perjalanan Dinas',
-            'employees' => $this->employeeModel->findAll(),
             'title'     => 'Input Data Perjalanan Dinas',
             'employees' => $this->employeeModel->findAll(),
         ]);
@@ -701,20 +700,27 @@ class TravelRequestController extends BaseController
             return redirect()->to('/travel')->with('error', 'Data tidak ditemukan.');
         }
 
-        if (!$this->isStaff()) {
-            $emp = $this->getCurrentEmployee();
+        $isStaff = $this->isStaff();
+        $emp = $this->getCurrentEmployee();
+        $specificMemberId = $this->request->getGet('member_id');
+        $showBackPage = $specificMemberId === null; // Show back page only for full download
+
+        if (!$isStaff) {
             $isMember = $emp
                 ? $this->travelMemberModel->where('travel_request_id', $id)->where('employee_id', $emp['id'])->first()
                 : null;
             if (!$isMember) {
                 return redirect()->to('/travel')->with('error', 'Akses ditolak.');
             }
+            // Lecturer can only see their own Individual SPD (1 page)
+            $specificMemberId = is_array($isMember) ? $isMember['id'] : $isMember->id;
+            $showBackPage = false; 
         }
 
         $members = $this->travelExpenseModel->getByRequestWithMember($id);
 
-        // Resolve PPK: prioritize ppk_id from travel_requests, then query param, then fallback to active PPK
-        $ppkId = $travelRequest->ppk_id ?: $this->request->getGet('ppk_id');
+        // Resolve PPK: prioritize ppk_id from travel_requests, then fallback to active PPK
+        $ppkId = $travelRequest->ppk_id;
         $ppk = $this->resolveSignatory((string) $ppkId);
 
         if (!$ppk) {
@@ -727,7 +733,7 @@ class TravelRequestController extends BaseController
             }
         }
 
-        (new \App\Libraries\Templates\SppdTemplate())->generate($travelRequest, $members, $ppk);
+        (new \App\Libraries\Templates\SppdTemplate())->generate($travelRequest, $members, $ppk, $specificMemberId, $showBackPage);
         exit; // generate() streams output
     }
 
@@ -753,7 +759,7 @@ class TravelRequestController extends BaseController
                 return redirect()->to('/travel')->with('error', 'Akses ditolak.');
             }
             // Lecturer can only see their own
-            $specificMemberId = $isMember->id;
+            $specificMemberId = is_array($isMember) ? $isMember['id'] : $isMember->id;
         }
 
         $members = $this->travelExpenseModel->getByRequestWithMember($id);
@@ -807,6 +813,100 @@ class TravelRequestController extends BaseController
         }
 
         (new \App\Libraries\Templates\DaftarKontrolTemplate())->generate($travelRequest, $members, $bpp);
+        exit;
+    }
+
+    /**
+     * Generate and download Daftar Nominatif (Excel).
+     */
+    public function downloadNominativeList(int $id): ResponseInterface
+    {
+        if (!$this->isStaff()) {
+            return redirect()->to('/travel')->with('error', 'Akses ditolak.');
+        }
+
+        $travelRequest = $this->travelRequestModel->find($id);
+        if (!$travelRequest) {
+            return redirect()->to('/travel')->with('error', 'Data tidak ditemukan.');
+        }
+
+        $members = $this->travelExpenseModel->getByRequestWithMember($id);
+
+        // Resolve BPP
+        $bppId = $travelRequest->bpp_id;
+        $bpp = $this->resolveSignatory((string) $bppId);
+
+        if (!$bpp) {
+            $bppSig = $this->signatoryModel
+                ->like('jabatan', 'Bendahara Pengeluaran Pembantu')
+                ->where('is_active', 1)
+                ->first();
+            if ($bppSig) {
+                $bpp = $this->resolveSignatory((string) $bppSig->id);
+            }
+        }
+
+        (new \App\Libraries\Templates\DaftarNominatifTemplate())->generate($travelRequest, $members, $bpp);
+        exit;
+    }
+
+    /**
+     * Generate and download Bundle Excel (all documents in one file).
+     */
+    public function downloadBundleExcel(int $id): ResponseInterface
+    {
+        if (!$this->isStaff()) {
+            return redirect()->to('/travel')->with('error', 'Akses ditolak.');
+        }
+
+        $travelRequest = $this->travelRequestModel->find($id);
+        if (!$travelRequest) {
+            return redirect()->to('/travel')->with('error', 'Data tidak ditemukan.');
+        }
+
+        $members = $this->travelExpenseModel->getByRequestWithMember($id);
+
+        // Resolve PPK
+        $ppkId = $travelRequest->ppk_id;
+        $ppk = $this->resolveSignatory((string) $ppkId);
+        if (!$ppk) {
+            $ppkSig = $this->signatoryModel
+                ->like('jabatan', 'PPK')
+                ->where('is_active', 1)
+                ->first();
+            if ($ppkSig) {
+                $ppk = $this->resolveSignatory((string) $ppkSig->id);
+            }
+        }
+
+        // Resolve BPP
+        $bppId = $travelRequest->bpp_id;
+        $bpp = $this->resolveSignatory((string) $bppId);
+        if (!$bpp) {
+            $bppSig = $this->signatoryModel
+                ->like('jabatan', 'Bendahara Pengeluaran Pembantu')
+                ->where('is_active', 1)
+                ->first();
+            if ($bppSig) {
+                $bpp = $this->resolveSignatory((string) $bppSig->id);
+            }
+        }
+
+        // Resolve Bendahara Pengeluaran
+        $bendaharaId = $travelRequest->bendahara_id;
+        $bendahara = $this->resolveSignatory((string) $bendaharaId);
+        if (!$bendahara) {
+            $bendaharaSig = $this->signatoryModel
+                ->like('jabatan', 'Bendahara Pengeluaran')
+                ->notLike('jabatan', 'Pembantu')
+                ->where('is_active', 1)
+                ->first();
+            if ($bendaharaSig) {
+                $bendahara = $this->resolveSignatory((string) $bendaharaSig->id);
+            }
+        }
+
+        (new \App\Libraries\Templates\BundleExcelTemplate())->generate($travelRequest, $members, $ppk, $bpp, $bendahara);
         exit;
     }
 
