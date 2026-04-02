@@ -163,30 +163,6 @@
                         </div>
                     </div>
 
-                    <!-- Standard Expenses (Manual Input) -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 pt-2">
-                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 block italic">Uang Harian (Total)</label>
-                            <div class="flex items-center gap-2">
-                                <span class="text-sm font-bold text-slate-400 font-mono">Rp</span>
-                                <input type="text" name="std_costs[<?= $member->id ?>][uang_harian]" 
-                                    value="<?= number_format($expenses[$member->id]->uang_harian ?? 0, 0, ',', '.') ?>" 
-                                    class="bg-transparent border-none p-0 focus:ring-0 text-lg font-black text-slate-800 w-full number-input" 
-                                    placeholder="0" oninput="formatNumber(this)">
-                            </div>
-                        </div>
-                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 block italic">Uang Representasi (Total)</label>
-                            <div class="flex items-center gap-2">
-                                <span class="text-sm font-bold text-slate-400 font-mono">Rp</span>
-                                <input type="text" name="std_costs[<?= $member->id ?>][uang_representasi]" 
-                                    value="<?= number_format($expenses[$member->id]->uang_representasi ?? 0, 0, ',', '.') ?>" 
-                                    class="bg-transparent border-none p-0 focus:ring-0 text-lg font-black text-slate-800 w-full number-input" 
-                                    placeholder="0" oninput="formatNumber(this)">
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Itemized Expenses Table -->
                     <div>
                         <div class="flex justify-between items-center mb-3">
@@ -206,6 +182,35 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
+                                    <!-- Fixed Rows: Uang Harian & Uang Representasi -->
+                                    <tr class="bg-indigo-50/40">
+                                        <td class="px-3 py-3 font-semibold text-slate-700">Uang Harian</td>
+                                        <td class="px-3 py-3">
+                                            <?php 
+                                                $total_hari = $request->duration_days ?? 1;
+                                                $total_uang_harian = $expenses[$member->id]->uang_harian ?? 0;
+                                                $per_hari = $total_hari > 0 ? $total_uang_harian / $total_hari : 0;
+                                            ?>
+                                            <div class="flex items-center gap-2">
+                                                <input type="number" id="hari_<?= $member->id ?>" value="<?= esc($total_hari) ?>" class="input-control text-xs py-1 px-2 w-16 text-center" oninput="calcUangHarian(<?= $member->id ?>)" placeholder="Hari">
+                                                <span class="text-xs text-slate-500 font-medium whitespace-nowrap">hari × Rp</span>
+                                                <input type="text" id="perhari_<?= $member->id ?>" value="<?= number_format($per_hari, 0, ',', '.') ?>" class="input-control text-xs py-1 px-2 w-32 number-input" oninput="formatNumber(this); calcUangHarian(<?= $member->id ?>)" placeholder="Tarif per hari">
+                                            </div>
+                                        </td>
+                                        <td class="px-3 py-3 text-right">
+                                            <input type="text" name="std_costs[<?= $member->id ?>][uang_harian]" id="total_uang_harian_<?= $member->id ?>" value="<?= number_format($total_uang_harian, 0, ',', '.') ?>" class="input-control text-xs py-1 px-2 border-none bg-transparent hover:bg-slate-50 text-right font-bold text-slate-800 w-full" readonly>
+                                        </td>
+                                        <td class="px-3 py-3 text-center"></td>
+                                    </tr>
+                                    <tr class="bg-indigo-50/40 border-b-2 border-b-slate-200">
+                                        <td class="px-3 py-3 font-semibold text-slate-700">Uang Representasi</td>
+                                        <td class="px-3 py-3 text-slate-400 text-xs italic">Sesuai tarif referensi golongan/jabatan</td>
+                                        <td class="px-3 py-3 text-right">
+                                            <input type="text" name="std_costs[<?= $member->id ?>][uang_representasi]" value="<?= number_format($expenses[$member->id]->uang_representasi ?? 0, 0, ',', '.') ?>" class="input-control text-xs py-1 px-2 text-right font-bold text-slate-800 number-input w-full bg-white" placeholder="0" oninput="formatNumber(this)">
+                                        </td>
+                                        <td class="px-3 py-3 text-center"></td>
+                                    </tr>
+
                                     <?php 
                                     $memberItems = $expenseItems[$member->id] ?? [];
                                     if (empty($memberItems)): 
@@ -338,6 +343,21 @@
         let val = el.value.replace(/[^0-9]/g, '');
         if (val === '') val = '0';
         el.value = new Intl.NumberFormat('id-ID').format(val);
+    }
+
+    function calcUangHarian(memberId) {
+        const hariInput = document.getElementById(`hari_${memberId}`);
+        const perhariInput = document.getElementById(`perhari_${memberId}`);
+        const totalInput = document.getElementById(`total_uang_harian_${memberId}`);
+
+        if (hariInput && perhariInput && totalInput) {
+            const hari = parseFloat(hariInput.value) || 0;
+            const perhariStr = perhariInput.value.replace(/[^0-9]/g, '');
+            const perhari = parseFloat(perhariStr) || 0;
+
+            const total = hari * perhari;
+            totalInput.value = new Intl.NumberFormat('id-ID').format(total);
+        }
     }
 </script>
 <?= $this->endSection() ?>
