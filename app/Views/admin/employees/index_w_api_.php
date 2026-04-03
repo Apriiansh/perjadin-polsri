@@ -5,14 +5,14 @@
 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
         <h1 class="text-2xl font-extrabold text-slate-900">Manage Pegawai</h1>
-        <p class="mt-1 text-sm text-slate-500">Data pegawai yang disinkronisasi dari Database PolsriPay.</p>
+        <p class="mt-1 text-sm text-slate-500">Data pegawai yang disinkronisasi dari API POLSRI.</p>
     </div>
 
     <form action="<?= base_url('admin/employees/sync') ?>" method="post" id="syncForm">
         <?= csrf_field() ?>
         <button type="submit" id="syncBtn" class="btn-primary group inline-flex items-center gap-2 text-sm">
             <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-            <span id="syncLabel">Refresh</span>
+            <span id="syncLabel">Sync dari API</span>
         </button>
     </form>
 </div>

@@ -85,6 +85,15 @@ $isLecturerOnly = in_array('lecturer', $userGroups) && !$isAdmin && !$isVerifica
         Laporan
       </a>
     <?php endif; ?>
+
+    <!-- Section: Eksternal -->
+    <?php if ($isSuperAdmin || $isVerificatorOnly): ?>
+      <p class="mb-2 mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Eksternal</p>
+      <a href="<?= base_url('sso/to-polsripay') ?>" target="_blank" class="sidebar-link group">
+        <i data-lucide="external-link" class="sidebar-icon"></i>
+        Sistem Honorarium Polsripay
+      </a>
+    <?php endif; ?>
   </nav>
 
   <!-- Bottom user card (desktop only) -->

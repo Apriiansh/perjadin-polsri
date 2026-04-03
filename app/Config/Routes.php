@@ -11,9 +11,21 @@ $routes->get('register', static function () {
 	return redirect()->to('/login');
 });
 
+$routes->get('register', static function () {
+	return redirect()->to('/login');
+});
+
 $routes->post('register', static function () {
 	return redirect()->to('/login');
 });
+
+// Override Shield's Login Controller with Hybrid Login Controller
+$routes->get('login', 'Auth\LoginController::loginView');
+$routes->post('login', 'Auth\LoginController::loginAction');
+
+// SSO Routes
+$routes->get('sso/to-polsripay', 'Auth\SsoController::toPolsripay');
+$routes->get('sso/consume', 'Auth\SsoController::consume');
 
 service('auth')->routes($routes);
 

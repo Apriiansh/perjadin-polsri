@@ -20,7 +20,6 @@ class EmployeeModel extends Model
         'nip',
         'nuptk',
         'name',
-        'email',
         'pangkat_golongan',
         'jabatan',
         'jafun',
