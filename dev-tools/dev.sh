@@ -6,7 +6,7 @@
 #  Default port: 8080
 # ─────────────────────────────────────────
 
-PORT=${1:-8080}
+PORT=${1:-8081}
 CSS_INPUT="./app/Views/css/input.css"
 CSS_OUTPUT="./public/assets/css/app.css"
 CSS_DIR="./public/assets/css"

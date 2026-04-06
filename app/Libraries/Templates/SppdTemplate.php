@@ -178,7 +178,7 @@ class SppdTemplate
                 $colValue,
                 '',
                 'c. Tingkat Biaya Perjalanan Dinas',
-                $member->tingkat_biaya ?? '-',
+                $this->resolveTingkat($member),
                 $fontSize
             );
 
@@ -369,22 +369,26 @@ class SppdTemplate
             $cell1A = $table2->addCell(5000);
             $cell1B = $table2->addCell(5000);
 
-            $cell1B->addText('Berangkat dari : ' . ($travelRequest->departure_place ?: 'Palembang'), $fontSize);
-            $cell1B->addText('Pada Tanggal   : ' . $tglBerangkat, $fontSize);
-            $cell1B->addText('Tujuan ke      : ' . $tujuan, $fontSize);
+            // $cell1B->addText('Berangkat dari : ' . ($travelRequest->departure_place ?: 'Palembang'), $fontSize);
+            // $cell1B->addText('Pada Tanggal   : ' . $tglBerangkat, $fontSize);
+            // $cell1B->addText('Tujuan ke      : ' . $tujuan, $fontSize);
+            $cell1B->addText('Berangkat dari : ', $fontSize);
+            $cell1B->addText('Pada Tanggal   : ', $fontSize);
+            $cell1B->addText('Tujuan ke      : ', $fontSize);
             $cell1B->addTextBreak(2);
             $cell1B->addText('(................................................)', $fontSize);
 
             // Dynamic Leg Rows - One per member (at least 2 for layout consistency if desired)
             $romanNumerals = ['I.', 'II.', 'III.', 'IV.', 'V.', 'VI.', 'VII.', 'VIII.', 'IX.', 'X.'];
             foreach ($targetMembers as $i => $member) {
-                $this->addLegRow(
-                    $table2,
-                    $romanNumerals[$i] ?? (($i + 1) . '.'),
-                    $fontSize,
-                    $member->employee_name,
-                    $member->employee_nip ?: '-'
-                );
+                // $this->addLegRow(
+                //     $table2,
+                //     $romanNumerals[$i] ?? (($i + 1) . '.'),
+                //     $fontSize,
+                //     $member->employee_name,
+                //     $member->employee_nip ?: '-'
+                // );
+                $this->addLegRow($table2, $romanNumerals[$i] ?? (($i + 1) . '.'), $fontSize, null, null);
             }
 
             // If only 1 member, add an extra empty leg row for layout
@@ -397,20 +401,26 @@ class SppdTemplate
             $cell5A = $table2->addCell(5000);
             $cell5B = $table2->addCell(5000);
 
-            $cell5A->addText('Tiba di tempat kedudukan : ' . ($travelRequest->departure_place ?: 'Palembang'), $fontSize);
-            $cell5A->addText('Pada Tanggal   : ' . $tglKembali, $fontSize);
-            $cell5A->addTextBreak(1);
+            // $cell5A->addText('Tiba di tempat kedudukan : ' . ($travelRequest->departure_place ?: 'Palembang'), $fontSize);
+            // $cell5A->addText('Pada Tanggal   : ' . $tglKembali, $fontSize);
+            $cell5A->addText('Tiba di tempat kedudukan : ', $fontSize);
+            $cell5A->addText('Pada Tanggal   : ', $fontSize);
+            $cell5A->addTextBreak(3);
             $cell5A->addText('PEJABAT PEMBUAT KOMITMEN', array_merge($bold, $fontSize), ['alignment' => Jc::CENTER]);
             $cell5A->addTextBreak(3);
-            $cell5A->addText($ppk ? $ppk->employee_name : '(................................................)', array_merge($bold, $fontSize), ['alignment' => Jc::CENTER]);
-            $cell5A->addText('NIP. ' . ($ppk ? ($ppk->nip ?: '.........................................') : '.........................................'), $fontSize, ['alignment' => Jc::CENTER]);
+            // $cell5A->addText($ppk ? $ppk->employee_name : '(................................................)', array_merge($bold, $fontSize), ['alignment' => Jc::CENTER]);
+            // $cell5A->addText('NIP. ' . ($ppk ? ($ppk->nip ?: '.........................................') : '.........................................'), $fontSize, ['alignment' => Jc::CENTER]);
+            $cell5A->addText('(................................................)', array_merge($bold, $fontSize), ['alignment' => Jc::CENTER]);
+            $cell5A->addText('NIP. .........................................', $fontSize, ['alignment' => Jc::CENTER]);
 
             $cell5B->addText('Telah diperiksa dengan keterangan bahwa perjalanan tersebut atas perintahnya dan semata-mata untuk kepentingan jabatan dalam waktu yang sesingkat-singkatnya.', $fontSize);
             $cell5B->addTextBreak(1);
             $cell5B->addText('PEJABAT PEMBUAT KOMITMEN', array_merge($bold, $fontSize), ['alignment' => Jc::CENTER]);
             $cell5B->addTextBreak(3);
-            $cell5B->addText($ppk ? $ppk->employee_name : '(................................................)', array_merge($bold, $fontSize), ['alignment' => Jc::CENTER]);
-            $cell5B->addText('NIP. ' . ($ppk ? ($ppk->nip ?: '.........................................') : '.........................................'), $fontSize, ['alignment' => Jc::CENTER]);
+            // $cell5B->addText($ppk ? $ppk->employee_name : '(................................................)', array_merge($bold, $fontSize), ['alignment' => Jc::CENTER]);
+            // $cell5B->addText('NIP. ' . ($ppk ? ($ppk->nip ?: '.........................................') : '.........................................'), $fontSize, ['alignment' => Jc::CENTER]);
+            $cell5B->addText('(................................................)', array_merge($bold, $fontSize), ['alignment' => Jc::CENTER]);
+            $cell5B->addText('NIP. .........................................', $fontSize, ['alignment' => Jc::CENTER]);
 
             $table2->addRow();
             $cellFooter = $table2->addCell(10000, ['gridSpan' => 2]);
@@ -519,5 +529,19 @@ class SppdTemplate
         ];
         $ts = strtotime($date);
         return date('d', $ts) . ' ' . $months[(int) date('n', $ts)] . ' ' . date('Y', $ts);
+    }
+
+    private function resolveTingkat(object $member): string
+    {
+        $golSrc = $member->kode_golongan ?: ($member->employee_golongan ?? '');
+        if (!$golSrc) {
+            return '-';
+        }
+        $gol = strtoupper($golSrc);
+        if (strpos($gol, 'IV') !== false) return 'A';
+        if (strpos($gol, 'III') !== false) return 'B';
+        if (strpos($gol, 'II') !== false) return 'C';
+        if (strpos($gol, 'I') !== false) return 'D';
+        return '-';
     }
 }

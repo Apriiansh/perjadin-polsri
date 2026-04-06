@@ -38,9 +38,20 @@ class SsoController extends Controller
         ]);
 
         // Redirect to PolsriPay's consume URL
-        // Karena Perjadin di /perjadin, Polsripay ada di root directory ( / )
-        $host = parse_url(base_url(), PHP_URL_SCHEME) . '://' . parse_url(base_url(), PHP_URL_HOST);
-        return redirect()->to($host . '/sso/consume?token=' . $token);
+        // POLSRIPAY_URL dikonfigurasi di .env:
+        //   - Localhost : 'http://localhost:8080' (port honorarium CI4 spark)
+        //   - Production: '' (kosong = otomatis strip /perjadin dari base_url)
+        $polsripayBaseUrl = rtrim((string) env('POLSRIPAY_URL', ''), '/');
+        if ($polsripayBaseUrl === '') {
+            // Production: PolsriPay ada di root domain yang sama, strip /perjadin
+            $host = parse_url(base_url(), PHP_URL_SCHEME) . '://' . parse_url(base_url(), PHP_URL_HOST);
+            $consumeUrl = $host . '/sso/consume?token=' . $token;
+        } else {
+            // Localhost: Honorarium berjalan di port/domain terpisah
+            $consumeUrl = $polsripayBaseUrl . '/sso/consume?token=' . $token;
+        }
+
+        return redirect()->to($consumeUrl);
     }
 
     /**

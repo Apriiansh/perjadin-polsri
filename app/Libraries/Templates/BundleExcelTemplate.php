@@ -123,9 +123,17 @@ class BundleExcelTemplate
                 $row += 3;
             }
             $row = $this->writeSpdMember(
-                $sheet, $row, $travelRequest, $member, $ppk,
-                $tujuan, $tglBerangkat, $tglKembali, $tglSurat,
-                $tempatTerbit, $transportLabel,
+                $sheet,
+                $row,
+                $travelRequest,
+                $member,
+                $ppk,
+                $tujuan,
+                $tglBerangkat,
+                $tglKembali,
+                $tglSurat,
+                $tempatTerbit,
+                $transportLabel,
             );
         }
 
@@ -252,7 +260,7 @@ class BundleExcelTemplate
 
             // Ensure group has a minimum height or padding if needed
             // But for SPD, we usually want to follow the content
-            
+
             $groupEndRow = $row - 1;
             $this->applySpdGroupBorders($sheet, $groupStartRow, $groupEndRow);
         }
@@ -264,7 +272,7 @@ class BundleExcelTemplate
 
         $sheet->setCellValue('B' . $row, 'Tembusan lain-lain kepada :');
         $sheet->mergeCells('B' . $row . ':C' . $row);
-        
+
         $sheet->setCellValue('D' . $row, 'DIKELUARKAN DI');
         $sheet->setCellValue('E' . $row, ': ' . strtoupper($tempatTerbit));
         $sheet->mergeCells('E' . $row . ':F' . $row);
@@ -349,8 +357,16 @@ class BundleExcelTemplate
                 $row += 3;
             }
             $row = $this->writeRincianMember(
-                $sheet, $row, $travelRequest, $member, $ppk, $bpp, $bendahara,
-                $tujuan, $tglSurat, $tempatTerbit,
+                $sheet,
+                $row,
+                $travelRequest,
+                $member,
+                $ppk,
+                $bpp,
+                $bendahara,
+                $tujuan,
+                $tglSurat,
+                $tempatTerbit,
             );
         }
 
@@ -924,9 +940,27 @@ class BundleExcelTemplate
 
     private function buildKontrolSheet(Worksheet $sheet, object $travelRequest, array $members, ?object $bpp): void
     {
-        $cols = ['A' => 5, 'B' => 35, 'C' => 20, 'D' => 20, 'E' => 25, 'F' => 15,
-                 'G' => 18, 'H' => 15, 'I' => 15, 'J' => 15, 'K' => 15, 'L' => 15,
-                 'M' => 18, 'N' => 18, 'O' => 18, 'P' => 18, 'Q' => 18, 'R' => 20, 'S' => 15];
+        $cols = [
+            'A' => 5,
+            'B' => 35,
+            'C' => 20,
+            'D' => 20,
+            'E' => 25,
+            'F' => 15,
+            'G' => 18,
+            'H' => 15,
+            'I' => 15,
+            'J' => 15,
+            'K' => 15,
+            'L' => 15,
+            'M' => 18,
+            'N' => 18,
+            'O' => 18,
+            'P' => 18,
+            'Q' => 18,
+            'R' => 20,
+            'S' => 15
+        ];
         foreach ($cols as $c => $w) {
             $sheet->getColumnDimension($c)->setWidth($w);
         }
@@ -962,7 +996,7 @@ class BundleExcelTemplate
         $sheet->mergeCells('H5:H6');
         $sheet->setCellValue('I5', 'Biaya Perjalanan Dinas');
         $sheet->mergeCells('I5:Q5');
-        
+
         $sheet->setCellValue('I6', 'Tiket');
         $sheet->setCellValue('J6', 'Transport Darat');
         $sheet->setCellValue('K6', 'Transport Lokal');
@@ -972,7 +1006,7 @@ class BundleExcelTemplate
         $sheet->setCellValue('O6', 'Jumlah');
         $sheet->setCellValue('P6', 'Dibayar Ke Pegawai');
         $sheet->setCellValue('Q6', 'Dibayar Ke Pihak Lainnya');
-        
+
         $sheet->setCellValue('R5', 'Rekening');
         $sheet->mergeCells('R5:R6');
         $sheet->setCellValue('S5', 'Tanda tangan');
@@ -998,24 +1032,24 @@ class BundleExcelTemplate
             $sheet->setCellValue('A' . $row, $idx + 1);
             $sheet->setCellValue('B' . $row, $member->employee_name . "\n\nST No. " . $noST . "\nTanggal " . $tglST);
             $sheet->getStyle('B' . $row)->getAlignment()->setWrapText(true);
-            
+
             $nik = $member->employee_nik ?: '-';
             $nip = $member->employee_nip ?: '-';
-            
+
             $sheet->setCellValue('C' . $row, $nik);
             $sheet->getStyle('C' . $row)->getAlignment()->setWrapText(true);
             $sheet->setCellValue('D' . $row, $nip);
             $sheet->getStyle('D' . $row)->getAlignment()->setWrapText(true);
-            
+
             $gol = ($member->nama_golongan ?? '') . (($member->nama_golongan && $member->kode_golongan) ? '/' : '') . ($member->kode_golongan ?? '');
             $sheet->setCellValue('E' . $row, $gol);
             $sheet->setCellValue('F' . $row, $travelRequest->lokasi ?: ($travelRequest->destination_city ?: '-'));
-            
+
             $dep = !empty($travelRequest->departure_date) ? date('d', strtotime($travelRequest->departure_date)) : '-';
             $ret = !empty($travelRequest->return_date) ? date('d/m/Y', strtotime($travelRequest->return_date)) : '-';
             $sheet->setCellValue('G' . $row, $dep . ' - ' . $ret);
             $sheet->setCellValue('H' . $row, $travelRequest->duration_days . ' Hari');
-            
+
             $sheet->setCellValue('I' . $row, $member->tiket ?? 0);
             $sheet->setCellValue('J' . $row, $member->transport_darat ?? 0);
             $sheet->setCellValue('K' . $row, $member->transport_lokal ?? 0);
@@ -1025,7 +1059,7 @@ class BundleExcelTemplate
             $sheet->setCellValue('O' . $row, $member->total_biaya ?? 0);
             $sheet->setCellValue('P' . $row, '');
             $sheet->setCellValue('Q' . $row, '');
-            $sheet->setCellValue('R' . $row, $member->rekening_bank ? "'" . $member->rekening_bank : '-');
+            $sheet->setCellValue("R{$row}", $member->rekening_bank ? "$member->rekening_bank" : '-');
             $sheet->setCellValue('S' . $row, '');
 
             $totals['tiket']  += ($member->tiket ?? 0);
@@ -1101,9 +1135,25 @@ class BundleExcelTemplate
 
     private function buildNominatifSheet(Worksheet $sheet, object $travelRequest, array $members, ?object $bpp): void
     {
-        $cols = ['A' => 5, 'B' => 35, 'C' => 20, 'D' => 20, 'E' => 25, 'F' => 15,
-                 'G' => 18, 'H' => 15, 'I' => 15, 'J' => 15, 'K' => 15, 'L' => 15,
-                 'M' => 15, 'N' => 18, 'O' => 18, 'P' => 20, 'Q' => 15];
+        $cols = [
+            'A' => 5,
+            'B' => 35,
+            'C' => 20,
+            'D' => 20,
+            'E' => 25,
+            'F' => 15,
+            'G' => 18,
+            'H' => 15,
+            'I' => 15,
+            'J' => 15,
+            'K' => 15,
+            'L' => 15,
+            'M' => 15,
+            'N' => 18,
+            'O' => 18,
+            'P' => 20,
+            'Q' => 15
+        ];
         foreach ($cols as $c => $w) {
             $sheet->getColumnDimension($c)->setWidth($w);
         }
@@ -1139,7 +1189,7 @@ class BundleExcelTemplate
         $sheet->mergeCells('H5:H6');
         $sheet->setCellValue('I5', 'Biaya Perjalanan Dinas');
         $sheet->mergeCells('I5:O5');
-        
+
         $sheet->setCellValue('I6', 'Tiket');
         $sheet->setCellValue('J6', 'Transport Darat');
         $sheet->setCellValue('K6', 'Transport Lokal');
@@ -1147,7 +1197,7 @@ class BundleExcelTemplate
         $sheet->setCellValue('M6', 'Uang Harian');
         $sheet->setCellValue('N6', 'Uang Representasi');
         $sheet->setCellValue('O6', 'Jumlah');
-        
+
         $sheet->setCellValue('P5', 'Rekening');
         $sheet->mergeCells('P5:P6');
         $sheet->setCellValue('Q5', 'Tanda tangan');
@@ -1173,24 +1223,24 @@ class BundleExcelTemplate
             $sheet->setCellValue('A' . $row, $idx + 1);
             $sheet->setCellValue('B' . $row, $member->employee_name . "\n\nST No. " . $noST . "\nTanggal " . $tglST);
             $sheet->getStyle('B' . $row)->getAlignment()->setWrapText(true);
-            
+
             $nik = $member->employee_nik ?: '-';
             $nip = $member->employee_nip ?: '-';
-            
+
             $sheet->setCellValue('C' . $row, $nik);
             $sheet->getStyle('C' . $row)->getAlignment()->setWrapText(true);
             $sheet->setCellValue('D' . $row, $nip);
             $sheet->getStyle('D' . $row)->getAlignment()->setWrapText(true);
-            
+
             $gol = ($member->nama_golongan ?? '') . (($member->nama_golongan && $member->kode_golongan) ? '/' : '') . ($member->kode_golongan ?? '');
             $sheet->setCellValue('E' . $row, $gol);
             $sheet->setCellValue('F' . $row, $travelRequest->lokasi ?: ($travelRequest->destination_city ?: '-'));
-            
+
             $dep = !empty($travelRequest->departure_date) ? date('d', strtotime($travelRequest->departure_date)) : '-';
             $ret = !empty($travelRequest->return_date) ? date('d/m/Y', strtotime($travelRequest->return_date)) : '-';
             $sheet->setCellValue('G' . $row, $dep . ' - ' . $ret);
             $sheet->setCellValue('H' . $row, $travelRequest->duration_days . ' Hari');
-            
+
             $sheet->setCellValue('I' . $row, $member->tiket ?? 0);
             $sheet->setCellValue('J' . $row, $member->transport_darat ?? 0);
             $sheet->setCellValue('K' . $row, $member->transport_lokal ?? 0);
@@ -1198,7 +1248,7 @@ class BundleExcelTemplate
             $sheet->setCellValue('M' . $row, $member->uang_harian ?? 0);
             $sheet->setCellValue('N' . $row, $member->uang_representasi ?? 0);
             $sheet->setCellValue('O' . $row, $member->total_biaya ?? 0);
-            $sheet->setCellValue('P' . $row, $member->rekening_bank ? "'" . $member->rekening_bank : '-');
+            $sheet->setCellValue("P{$row}", $member->rekening_bank ? "$member->rekening_bank" : '-');
             $sheet->setCellValue('Q' . $row, '');
 
             $totals['tiket']  += ($member->tiket ?? 0);
@@ -1279,9 +1329,18 @@ class BundleExcelTemplate
     private function formatTanggal(string $date): string
     {
         $months = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember',
         ];
         $ts = strtotime($date);
         return date('d', $ts) . ' ' . $months[(int) date('n', $ts)] . ' ' . date('Y', $ts);
@@ -1290,10 +1349,22 @@ class BundleExcelTemplate
     private function numberToWords(int $number): string
     {
         $words = [
-            0 => 'Nol', 1 => 'Satu', 2 => 'Dua', 3 => 'Tiga', 4 => 'Empat',
-            5 => 'Lima', 6 => 'Enam', 7 => 'Tujuh', 8 => 'Delapan', 9 => 'Sembilan',
-            10 => 'Sepuluh', 11 => 'Sebelas', 12 => 'Dua Belas', 13 => 'Tiga Belas',
-            14 => 'Empat Belas', 15 => 'Lima Belas',
+            0 => 'Nol',
+            1 => 'Satu',
+            2 => 'Dua',
+            3 => 'Tiga',
+            4 => 'Empat',
+            5 => 'Lima',
+            6 => 'Enam',
+            7 => 'Tujuh',
+            8 => 'Delapan',
+            9 => 'Sembilan',
+            10 => 'Sepuluh',
+            11 => 'Sebelas',
+            12 => 'Dua Belas',
+            13 => 'Tiga Belas',
+            14 => 'Empat Belas',
+            15 => 'Lima Belas',
         ];
         return $words[$number] ?? (string) $number;
     }

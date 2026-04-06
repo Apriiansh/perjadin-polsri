@@ -82,7 +82,7 @@
             </span>
             <div>
                 <p class="text-sm font-semibold text-slate-800">Sinkronisasi Pegawai</p>
-                <p class="text-xs text-slate-400">Update data dari API POLSRI</p>
+                <p class="text-xs text-slate-400">Sync data dari PolsriPay</p>
             </div>
         </a>
 

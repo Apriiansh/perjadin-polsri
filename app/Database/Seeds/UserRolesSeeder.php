@@ -158,7 +158,7 @@ class UserRolesSeeder extends Seeder
 
         $payload = [
             'user_id' => $userId,
-            'api_employee_id' => null,
+            'polsripay_id' => null,
             'nip' => $employee['nip'],
             'name' => $employee['name'],
             'email' => $email,

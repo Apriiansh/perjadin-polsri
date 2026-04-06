@@ -67,27 +67,27 @@ class EmployeeController extends BaseController
             // Cari apakah pegawai sudah ada di database Perjadin (berdasarkan ID asal atau NIP)
             $existing = $this->employeeModel
                 ->groupStart()
-                    ->where('api_employee_id', $sourceId)
+                    ->where('polsripay_id', $sourceId)
                     ->orWhere('nip', $nip)
                 ->groupEnd()
                 ->first();
 
             $data = [
-                'api_employee_id'  => $sourceId,
-                'nik'              => $mapped['nik'],
-                'nip'              => $nip,
-                'nuptk'            => $mapped['nuptk'],
-                'name'             => $name,
-                'pangkat_golongan' => $mapped['pangkat_golongan'],
-                'jabatan'          => $mapped['jabatan'],
-                'jafun'            => $mapped['jafun'],
-                'rekening_bank'    => $mapped['rekening_bank'],
-                'id_jurusan'       => $mapped['id_jurusan'],
-                'nama_jurusan'     => $mapped['nama_jurusan'],
-                'status'           => $mapped['status'],
-                'synced_at'        => $now,
-                'api_created_at'   => $row['created_at'] ?? null,
-                'api_updated_at'   => $row['updated_at'] ?? null,
+                'polsripay_id'         => $sourceId,
+                'nik'                  => $mapped['nik'],
+                'nip'                  => $nip,
+                'nuptk'                => $mapped['nuptk'],
+                'name'                 => $name,
+                'pangkat_golongan'     => $mapped['pangkat_golongan'],
+                'jabatan'              => $mapped['jabatan'],
+                'jafun'                => $mapped['jafun'],
+                'rekening_bank'        => $mapped['rekening_bank'],
+                'id_jurusan'           => $mapped['id_jurusan'],
+                'nama_jurusan'         => $mapped['nama_jurusan'],
+                'status'               => $mapped['status'],
+                'synced_at'            => $now,
+                'polsripay_created_at' => $row['created_at'] ?? null,
+                'polsripay_updated_at' => $row['updated_at'] ?? null,
             ];
 
             if ($existing === null) {

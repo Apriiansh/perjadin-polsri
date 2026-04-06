@@ -140,7 +140,7 @@ class DaftarNominatifTemplate
             $sheet->setCellValue('N' . $row, $member->uang_representasi ?? 0);
             $sheet->setCellValue('O' . $row, $member->total_biaya ?? 0);
 
-            $sheet->setCellValue('P' . $row, $member->rekening_bank ? "'" . $member->rekening_bank : '-');
+            $sheet->setCellValue("P{$row}", $member->rekening_bank ? "{$member->rekening_bank}" : '-');
             $sheet->setCellValue('Q' . $row, ''); // Tanda tangan blank
 
             // Sums

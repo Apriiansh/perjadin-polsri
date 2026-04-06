@@ -7,6 +7,11 @@
     <title><?= esc($title ?? 'PERJADIN') ?> — Sisperdin POLSRI</title>
     <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
     <?= $this->renderSection('headStyles') ?>
+    <script>
+        // Ensure APP_URL is absolute and ends with a slash
+        const APP_URL = "<?= rtrim(base_url(), '/') . '/' ?>";
+        console.log("APP_URL Initialized:", APP_URL);
+    </script>
 </head>
 
 <body class="bg-surface-50 text-slate-900">
@@ -70,7 +75,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- App Scripts -->
-    <script src="<?= base_url('assets/js/app-layout.js') ?>" defer></script>
+    <script src="<?= base_url('assets/js/app-layout.js') ?>?v=<?= time() ?>" defer></script>
     <?= $this->renderSection('pageScripts') ?>
 </body>
 

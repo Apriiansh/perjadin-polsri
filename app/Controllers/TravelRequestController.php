@@ -547,7 +547,7 @@ class TravelRequestController extends BaseController
     }
 
     /**
-     * API: Search employees with filter
+     * PolsriPay: Search employees with filter
      */
     public function getEmployees(): ResponseInterface
     {
@@ -578,7 +578,7 @@ class TravelRequestController extends BaseController
     }
 
     /**
-     * API: Real-time tariff check (Deprecated - No longer used)
+     * PolsriPay: Real-time tariff check (Deprecated - No longer used)
      */
     public function checkTariff(): ResponseInterface
     {
@@ -733,7 +733,11 @@ class TravelRequestController extends BaseController
             }
         }
 
-        (new \App\Libraries\Templates\SppdTemplate())->generate($travelRequest, $members, $ppk, $specificMemberId, $showBackPage);
+        if ($this->request->getGet('format') === 'pdf') {
+            (new \App\Libraries\Templates\SppdPdfTemplate())->generate($travelRequest, $members, $ppk, $specificMemberId, $showBackPage);
+        } else {
+            (new \App\Libraries\Templates\SppdTemplate())->generate($travelRequest, $members, $ppk, $specificMemberId, $showBackPage);
+        }
         exit; // generate() streams output
     }
 
@@ -778,7 +782,11 @@ class TravelRequestController extends BaseController
             }
         }
 
-        (new \App\Libraries\Templates\SuratPernyataanTemplate())->generate($travelRequest, $members, $ppk, $specificMemberId);
+        if ($this->request->getGet('format') === 'pdf') {
+            (new \App\Libraries\Templates\SuratPernyataanPdfTemplate())->generate($travelRequest, $members, $ppk, $specificMemberId);
+        } else {
+            (new \App\Libraries\Templates\SuratPernyataanTemplate())->generate($travelRequest, $members, $ppk, $specificMemberId);
+        }
         exit;
     }
 

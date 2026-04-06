@@ -178,7 +178,7 @@
 <?= $this->section('pageScripts') ?>
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.1/dist/js/tom-select.complete.min.js"></script>
 <script src="<?= base_url('assets/js/wilayah.js') ?>"></script>
-<script src="<?= base_url('assets/js/travel-members-select.js') ?>"></script>
+<script src="<?= base_url('assets/js/travel-members-select.js') ?>?v=<?= time() ?>"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const tglMulai = document.getElementById('departure_date');

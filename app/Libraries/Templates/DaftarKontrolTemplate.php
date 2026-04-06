@@ -143,7 +143,7 @@ class DaftarKontrolTemplate
             $sheet->setCellValue('P' . $row, ''); // Dibayar Ke Pegawai
             $sheet->setCellValue('Q' . $row, ''); // Dibayar Ke Pihak Lainnya
 
-            $sheet->setCellValue('R' . $row, $member->rekening_bank ? "'" . $member->rekening_bank : '-');
+            $sheet->setCellValue("R{$row}", $member->rekening_bank ? "{$member->rekening_bank}" : '-');
             $sheet->setCellValue('S' . $row, ''); // Tanda tangan blank
 
             // Sums

@@ -41,6 +41,9 @@ document.addEventListener('DOMContentLoaded', function () {
     let membersSelect;
     const originalSelect = document.getElementById('members');
 
+    // APP_URL is defined globally in main layout
+    console.log("Base URL for AJAX:", APP_URL);
+
     if (originalSelect) {
         // Function to extract member data safely
         function extractMemberData(val) {
@@ -68,10 +71,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 const golVal = document.getElementById('filter-golongan')?.value || '';
                 const jurVal = document.getElementById('filter-jurusan')?.value || '';
                 
-                const url = new URL(window.location.origin + '/travel/employees');
+                // Hardened URL construction: APP_URL is guaranteed to have a trailing slash
+                const endpoint = 'travel/employees';
+                const url = new URL(endpoint, APP_URL);
+                
                 if (query) url.searchParams.append('q', query);
                 if (golVal) url.searchParams.append('golongan', golVal);
                 if (jurVal) url.searchParams.append('jurusan', jurVal);
+
+                console.log("AJAX Request:", url.toString());
 
                 fetch(url)
                     .then(response => response.json())
@@ -85,7 +93,8 @@ document.addEventListener('DOMContentLoaded', function () {
                             jurusan: emp.nama_jurusan || '-'
                         }));
                         callback(results);
-                    }).catch(()=>{
+                    }).catch(error => {
+                        console.error('Fetch Employees Error:', error);
                         callback();
                     });
             },
@@ -106,7 +115,6 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             onChange: function () {
                 renderSelectedMembers();
-                debounceCheckTariffs();
             }
         });
 
@@ -185,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="flex items-center justify-between">
                         <div class="flex flex-col">
                             <span class="font-bold text-sm text-slate-800">${escapeHtml(emp.name)}</span>
-                            <span class="text-xs text-slate-500 font-mono">${escapeHtml(emp.nip)} • Gol API: ${escapeHtml(emp.golongan)} • Unit: ${escapeHtml(emp.jurusan)}</span>
+                            <span class="text-xs text-slate-500 font-mono">${escapeHtml(emp.nip)} • Golongan (PolsriPay): ${escapeHtml(emp.golongan)} • Unit: ${escapeHtml(emp.jurusan)}</span>
                         </div>
                         <button type="button" class="text-red-500 p-1.5 hover:bg-red-50 rounded-md transition-colors" data-remove-id="${emp.id}" title="Hapus Pegawai">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
@@ -234,67 +242,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Run render initially (for edit page mainly)
         renderSelectedMembers();
-    }
-
-    // -----------------------------------------------------
-    // Elemen terkait AJAX Tarif (Tidak berubah banyak)
-    // -----------------------------------------------------
-    const provinceSelect = document.getElementById('province');
-    const citySelect = document.getElementById('city');
-    const warningContainer = document.getElementById('tariff-warning-container');
-    const warningList = document.getElementById('tariff-warning-list');
-
-    // Listener ke perubahan input destinasi
-    if (provinceSelect) provinceSelect.addEventListener('change', debounceCheckTariffs);
-    if (citySelect) citySelect.addEventListener('change', debounceCheckTariffs);
-
-    let debounceTimer;
-
-    function debounceCheckTariffs() {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(checkTariffs, 500); // 500ms delay
-    }
-
-    async function checkTariffs() {
-        if (!provinceSelect || !membersSelect) return;
-        const province = provinceSelect.options[provinceSelect.selectedIndex]?.text;
-        const city = citySelect && citySelect.selectedIndex > 0 ? citySelect.options[citySelect.selectedIndex].text : '';
-        const selectedMembers = membersSelect.getValue(); // ini nge-return array values
-
-        // Reset UI
-        if (warningContainer) warningContainer.style.display = 'none';
-        if (warningList) warningList.innerHTML = '';
-
-        if (!province || selectedMembers.length === 0 || province.includes('Sedang memuat') || province === '') {
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('province', province);
-        formData.append('city', city);
-        formData.append('members', JSON.stringify(selectedMembers));
-
-        try {
-            const response = await fetch('/travel/check-tariff', {
-                method: 'POST',
-                body: formData,
-            });
-
-            const result = await response.json();
-
-            if (result.status === 'success' && result.missing_tariffs.length > 0 && warningList && warningContainer) {
-                result.missing_tariffs.forEach(item => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<strong>${item.name}</strong> (Tingkat ${item.tingkat_biaya}): Data tidak ditemukan.`;
-                    warningList.appendChild(li);
-                });
-
-                warningContainer.style.display = 'flex';
-                warningContainer.classList.remove('hidden');
-            }
-
-        } catch (error) {
-            console.error('Error checking tariffs:', error);
-        }
     }
 });

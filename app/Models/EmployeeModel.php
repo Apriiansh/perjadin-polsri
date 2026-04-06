@@ -15,7 +15,7 @@ class EmployeeModel extends Model
 
     protected $allowedFields = [
         'user_id',
-        'api_employee_id',
+        'polsripay_id',
         'nik',
         'nip',
         'nuptk',
@@ -28,7 +28,7 @@ class EmployeeModel extends Model
         'nama_jurusan',
         'status',
         'synced_at',
-        'api_created_at',
-        'api_updated_at',
+        'polsripay_created_at',
+        'polsripay_updated_at',
     ];
 }

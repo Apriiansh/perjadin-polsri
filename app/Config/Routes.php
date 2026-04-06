@@ -123,4 +123,10 @@ $routes->group('', ['filter' => 'session'], static function ($routes): void {
         $routes->get('download/(:num)', 'ReviewController::downloadFile/$1'); // Phase 16
         $routes->get('(:num)/verification', 'ReviewController::verification/$1', ['filter' => 'group:superadmin,verificator']);
     });
+
+    // Blanko Kosong (Phase 23)
+    $routes->group('blanko-kosong', ['filter' => 'group:lecturer,admin,superadmin,verificator'], static function ($routes) {
+        $routes->get('/', 'BlankoController::index');
+        $routes->get('download', 'BlankoController::download');
+    });
 });

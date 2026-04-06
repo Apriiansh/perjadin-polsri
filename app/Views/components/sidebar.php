@@ -61,6 +61,14 @@ $isLecturerOnly = in_array('lecturer', $userGroups) && !$isAdmin && !$isVerifica
       </a>
     <?php endif; ?>
 
+    <!-- Blanko Kosong for Lecturers -->
+    <?php if ($isLecturerOnly): ?>
+      <a href="<?= base_url('blanko-kosong') ?>" class="sidebar-link group <?= str_starts_with($current, 'blanko-kosong') ? 'active' : '' ?>">
+        <i data-lucide="file-text" class="sidebar-icon"></i>
+        Blanko Kosong
+      </a>
+    <?php endif; ?>
+
     <?php if ($isAdmin): ?>
       <!-- Section: Admin -->
       <p class="mb-2 mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Administrasi</p>
