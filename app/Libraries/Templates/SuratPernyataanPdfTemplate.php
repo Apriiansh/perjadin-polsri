@@ -28,8 +28,9 @@ class SuratPernyataanPdfTemplate
             'travelRequest'   => $travelRequest,
             'members'         => $targetMembers,
             'ppk'             => $ppk,
+            'tempatTerbit'    => $travelRequest->departure_place ?: 'Palembang',
             'tglSuratTugas'   => !empty($travelRequest->tgl_surat_tugas) ? $this->formatTanggal($travelRequest->tgl_surat_tugas) : '-',
-            'tglTandaTangan' => !empty($travelRequest->tgl_surat_tugas) ? $this->formatTanggal($travelRequest->tgl_surat_tugas) : date('d F Y'),
+            'tglTandaTangan'  => !empty($travelRequest->tgl_surat_tugas) ? $this->formatTanggal($travelRequest->tgl_surat_tugas) : date('d F Y'),
         ];
 
         // ── RENDER HTML ──

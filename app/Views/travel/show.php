@@ -246,67 +246,48 @@
 
                     <?php if ($travelRequest->status !== 'draft'): ?>
                         <div class="flex flex-col gap-2">
+                            <div class="grid grid-cols-2 gap-2">
+                                <!-- SPD Box -->
+                                <?php
+                                $spdUrl = base_url('travel/download/spd/' . $travelRequest->id) . '?format=pdf';
+                                if (!$isStaff && !$isKeuangan && $myMemberId) {
+                                    $spdUrl .= '&member_id=' . $myMemberId;
+                                }
+                                ?>
+                                <a href="<?= $spdUrl ?>"
+                                    class="flex flex-col items-center justify-center p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-primary-400 hover:text-primary-700 transition-all group gap-1 text-center">
+                                    <div class="w-7 h-7 rounded-md bg-white shadow-sm flex items-center justify-center group-hover:bg-primary-50">
+                                        <i data-lucide="file-text" class="w-3.5 h-3.5 text-primary-600"></i>
+                                    </div>
+                                    <div class="flex flex-col items-center">
+                                        <span class="text-[10px] font-bold leading-none"><?= ($isStaff || $isKeuangan) ? 'SPD' : 'SPD Saya' ?></span>
+                                        <span class="text-[9px] text-slate-400 leading-none">.pdf</span>
+                                    </div>
+                                </a>
 
-                            <!-- Row 1: SPD + Surat Pernyataan -->
-                            <div class="grid grid-cols-2 gap-3">
-                                <!-- SPD Block -->
-                                <div class="flex flex-col rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden group hover:border-primary-300 transition-all">
-                                    <div class="p-3 pb-2 flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
-                                            <?php if ($isStaff || $isKeuangan): ?>
-                                                <i data-lucide="layers" class="w-4 h-4 text-primary-600"></i>
-                                            <?php else: ?>
-                                                <i data-lucide="file-text" class="w-4 h-4 text-primary-600"></i>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="min-w-0">
-                                            <p class="text-[10px] font-bold text-slate-800 leading-tight truncate"><?= ($isStaff || $isKeuangan) ? 'SPD' : 'SPD Saya' ?></p>
-                                            <p class="text-[8px] text-slate-400 font-medium uppercase tracking-tighter">Surat Perjalanan</p>
-                                        </div>
+                                <!-- Pernyataan Box -->
+                                <?php
+                                $stmtUrl = base_url('travel/' . $travelRequest->id . '/statement') . '?format=pdf';
+                                if ($myMemberId) {
+                                    $stmtUrl .= '&member_id=' . $myMemberId;
+                                }
+                                ?>
+                                <a href="<?= $stmtUrl ?>"
+                                    class="flex flex-col items-center justify-center p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-emerald-400 hover:text-emerald-700 transition-all group gap-1 text-center">
+                                    <div class="w-7 h-7 rounded-md bg-white shadow-sm flex items-center justify-center group-hover:bg-emerald-50">
+                                        <i data-lucide="file-check" class="w-3.5 h-3.5 text-emerald-600"></i>
                                     </div>
-                                    <div class="flex border-t border-slate-100 bg-slate-50/50">
-                                        <?php
-                                        $spdUrl = base_url('travel/download/spd/' . $travelRequest->id);
-                                        if (!$isStaff && !$isKeuangan && $myMemberId) {
-                                            $spdUrl .= '?member_id=' . $myMemberId;
-                                        }
-                                        ?>
-                                        <a href="<?= $spdUrl ?>"
-                                            class="flex-1 py-2 text-[9px] font-bold text-slate-500 hover:text-primary-600 hover:bg-white text-center border-r border-slate-100 transition-all">DOCX</a>
-                                        <a href="<?= $spdUrl . (strpos($spdUrl, '?') !== false ? '&' : '?') . 'format=pdf' ?>"
-                                            class="flex-1 py-2 text-[9px] font-bold text-slate-500 hover:text-red-500 hover:bg-white text-center transition-all">PDF</a>
+                                    <div class="flex flex-col items-center">
+                                        <span class="text-[10px] font-bold leading-none">Surat Pernyataan<?= $isStaff ? '' : ' Saya' ?></span>
+                                        <span class="text-[9px] text-slate-400 leading-none">.pdf</span>
                                     </div>
-                                </div>
+                                </a>
 
-                                <!-- Pernyataan Block -->
-                                <div class="flex flex-col rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden group hover:border-emerald-300 transition-all">
-                                    <div class="p-3 pb-2 flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                                            <i data-lucide="file-check" class="w-4 h-4 text-emerald-600"></i>
-                                        </div>
-                                        <div class="min-w-0">
-                                            <p class="text-[10px] font-bold text-slate-800 leading-tight truncate">Pernyataan<?= $isStaff ? '' : ' Saya' ?></p>
-                                            <p class="text-[8px] text-slate-400 font-medium uppercase tracking-tighter">Bebas Temuan</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex border-t border-slate-100 bg-slate-50/50">
-                                        <?php
-                                        $stmtUrl = base_url('travel/' . $travelRequest->id . '/statement');
-                                        if ($myMemberId) {
-                                            $stmtUrl .= '?member_id=' . $myMemberId;
-                                        }
-                                        ?>
-                                        <a href="<?= $stmtUrl ?>"
-                                            class="flex-1 py-2 text-[9px] font-bold text-slate-500 hover:text-emerald-600 hover:bg-white text-center border-r border-slate-100 transition-all">DOCX</a>
-                                        <a href="<?= $stmtUrl . (strpos($stmtUrl, '?') !== false ? '&' : '?') . 'format=pdf' ?>"
-                                            class="flex-1 py-2 text-[9px] font-bold text-slate-500 hover:text-red-500 hover:bg-white text-center transition-all">PDF</a>
-                                    </div>
-                                </div>
                             </div>
 
                             <?php if ($isStaff && !$isAdminKepegawaian): ?>
-                                <!-- Row 2: Daftar Kontrol + Daftar Nominatif -->
-                                <div class="grid grid-cols-2 gap-2">
+                                <!-- Group 2: Daftar Kontrol + Daftar Nominatif (Admin only) -->
+                                <div class="grid grid-cols-2 gap-2 mt-2">
                                     <a href="<?= base_url('travel/' . $travelRequest->id . '/control-list') ?>"
                                         class="flex flex-col items-center justify-center p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-emerald-400 hover:text-emerald-700 transition-all group gap-1 text-center">
                                         <div class="w-7 h-7 rounded-md bg-white shadow-sm flex items-center justify-center group-hover:bg-emerald-50">
@@ -332,7 +313,7 @@
 
                                 <hr class="border-slate-100 my-2">
 
-                                <!-- Row 3: Bundle full width -->
+                                <!-- Row 3: Bundle Excel full width -->
                                 <a href="<?= base_url('travel/' . $travelRequest->id . '/bundle-excel') ?>"
                                     class="flex items-center justify-between p-3 rounded-lg border border-amber-200 bg-amber-50/40 hover:bg-white hover:border-amber-400 transition-all group gap-3">
                                     <div class="flex items-center gap-3 min-w-0">
@@ -340,11 +321,26 @@
                                             <i data-lucide="package" class="w-4 h-4 text-amber-500"></i>
                                         </div>
                                         <div class="min-w-0 flex flex-col">
-                                            <span class="text-[10px] font-bold text-slate-700 leading-none">Seluruh Dokumen</span>
-                                            <span class="text-[9px] text-slate-400 leading-none mt-0.5">SPD · Rincian Biaya · Pernyataan · Kontrol · Nominatif</span>
+                                            <span class="text-[10px] font-bold text-slate-700 leading-none">Seluruh Dokumen (Excel)</span>
+                                            <span class="text-[9px] text-slate-400 leading-none mt-0.5">Format Excel untuk Pengarsipan</span>
                                         </div>
                                     </div>
                                     <i data-lucide="download" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+                                </a>
+
+                                <!-- Row 4: Bundle SPJ (ZIP) full width -->
+                                <a href="<?= base_url('travel/' . $travelRequest->id . '/bundle-spj') ?>"
+                                    class="flex items-center justify-between p-3 rounded-lg border border-indigo-200 bg-indigo-50/40 hover:bg-white hover:border-indigo-400 transition-all group gap-3">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-8 h-8 rounded-md bg-white shadow-sm flex items-center justify-center shrink-0 group-hover:bg-indigo-50">
+                                            <i data-lucide="archive" class="w-4 h-4 text-indigo-500"></i>
+                                        </div>
+                                        <div class="min-w-0 flex flex-col">
+                                            <span class="text-[10px] font-bold text-slate-700 leading-none">Bundle SPJ (ZIP)</span>
+                                            <span class="text-[9px] text-slate-400 leading-none mt-0.5">PDF Laporan + Dokumentasi Lengkap</span>
+                                        </div>
+                                    </div>
+                                    <i data-lucide="download" class="w-3.5 h-3.5 text-indigo-400 shrink-0"></i>
                                 </a>
                             <?php endif; ?>
 
@@ -622,9 +618,9 @@ if (($hasAnyDoc || $travelRequest->status === 'active') && !empty($members)):
                                         if (($isStaff || $isOwnMember) && $travelRequest->status !== 'draft'):
                                         ?>
                                             <div class="mt-2 pt-2 border-t border-emerald-100">
-                                                <a href="<?= base_url('travel/' . $travelRequest->id . '/statement?member_id=' . $member->travel_member_id) ?>" class="text-[10px] text-emerald-600 hover:text-emerald-800 flex items-center justify-end gap-1">
+                                                <a href="<?= base_url('travel/' . $travelRequest->id . '/statement?format=pdf&member_id=' . $member->travel_member_id) ?>" class="text-[10px] text-emerald-600 hover:text-emerald-800 flex items-center justify-end gap-1">
                                                     <i data-lucide="file-check" class="w-3 h-3"></i>
-                                                    Surat Pernyataan
+                                                    Surat Pernyataan (PDF)
                                                 </a>
                                             </div>
                                         <?php endif; ?>

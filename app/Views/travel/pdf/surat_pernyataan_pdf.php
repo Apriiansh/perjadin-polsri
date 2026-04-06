@@ -2,307 +2,130 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Surat Pernyataan</title>
+    <title>Surat Pernyataan - <?= esc($travelRequest->no_surat_tugas ?: 'Dokumen') ?></title>
     <style>
         @page {
-            margin: 1.5cm 2.0cm 1.5cm 2.5cm; /* T R B L */
+            margin: 1.5cm 2.0cm 1.5cm 2.5cm;
         }
-
         body {
             font-family: "Times New Roman", Times, serif;
-            font-size: 12pt;
+            font-size: 11pt;
             line-height: 1.5;
             color: #000;
             margin: 0;
             padding: 0;
         }
-
-        /* ── HEADER / KOP ── */
+        .text-center { text-align: center; }
+        .text-justify { text-align: justify; }
+        .bold { font-weight: bold; }
+        .underline { text-decoration: underline; }
+        
         .kop-table {
             width: 100%;
-            border-bottom: 2px solid #000;
-            margin-bottom: 10px;
-            border-collapse: collapse;
-        }
-
-        .kop-table td {
-            vertical-align: middle;
-            padding-bottom: 8px;
-        }
-
-        .logo-cell {
-            width: 80px;
-            text-align: center;
-        }
-
-        .logo-img {
-            width: 75px;
-            height: 75px;
-        }
-
-        .text-cell {
-            text-align: center;
-            padding-right: 40px; 
-        }
-
-        .kop-header {
-            font-size: 14pt;
-            margin: 0;
-        }
-
-        .kop-title {
-            font-size: 16pt;
-            font-weight: bold;
-            margin: 0;
-        }
-
-        .kop-contact {
-            font-size: 10pt;
-            margin: 0;
-        }
-
-        .kop-link {
-            font-size: 10pt;
-            color: blue;
-            text-decoration: underline;
-        }
-
-        /* ── CONTENT ── */
-        .title-block {
-            text-align: center;
-            margin-top: 20px;
+            border-bottom: 2px solid black;
             margin-bottom: 20px;
         }
-
-        .title-text {
-            font-weight: bold;
-            text-decoration: underline;
-            font-size: 13pt;
+        .document-page {
+            position: relative;
         }
-
-        .section-gap {
-            margin-top: 15px;
-        }
-
-        .data-table {
-            width: 100%;
-            margin: 10px 0;
-            border-collapse: collapse;
-        }
-
-        .data-table td {
-            vertical-align: top;
-            padding: 2px 0;
-        }
-
-        .label-col {
-            width: 120px;
-        }
-
-        .separator-col {
-            width: 20px;
-            text-align: center;
-        }
-
-        .value-col {
-            font-weight: bold;
-        }
-
-        .justify {
-            text-align: justify;
-        }
-
-        .list-item {
-            display: table;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .list-no {
-            display: table-cell;
-            width: 30px;
-            vertical-align: top;
-        }
-
-        .list-text {
-            display: table-cell;
-            vertical-align: top;
-            text-align: justify;
-        }
-
-        /* ── SIGNATURE ── */
-        .signature-block {
-            margin-top: 40px;
-            width: 100%;
-        }
-
-        .sign-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .sign-table td:first-child {
-            width: 60%;
-            vertical-align: top;
-        }
-
-        .sign-table td:last-child {
-            width: 40%;
-            vertical-align: top;
-        }
-
-        .sign-title {
-            margin-bottom: 60px;
-        }
-
-        .sign-name {
-            font-weight: bold;
-            margin: 0;
-        }
-
-        .sign-nip {
-            margin: 0;
-        }
-
-        /* ── FOOTER ── */
-        #footer {
-            position: fixed;
-            bottom: -30px;
-            left: 0;
-            right: 0;
-            height: 50px;
-            text-align: left;
-        }
-
-        .iso-img {
-            height: 35px;
-        }
-
-        /* ── PAGE BREAK ── */
         .page-break {
             page-break-after: always;
+        }
+        .signature-block {
+            width: 100%;
+            margin-top: 50px;
+        }
+        .signature-block td {
+            vertical-align: top;
         }
     </style>
 </head>
 <body>
 
 <?php foreach ($members as $idx => $member): ?>
-    <div class="document-page <?= ($idx < count($members) - 1) ? 'page-break' : '' ?>">
-        
-        <!-- HEADER -->
-        <table class="kop-table">
-            <tr>
-                <td class="logo-cell">
-                    <?php if (file_exists(FCPATH . 'img/logo-polsri-bnw.jpg')): ?>
-                        <img src="<?= 'data:image/jpeg;base64,' . base64_encode(file_get_contents(FCPATH . 'img/logo-polsri-bnw.jpg')) ?>" class="logo-img">
-                    <?php endif; ?>
-                </td>
-                <td class="text-cell">
-                    <div class="kop-header">KEMENTERIAN PENDIDIKAN, KEBUDAYAAN,</div>
-                    <div class="kop-header">RISET, DAN TEKNOLOGI</div>
-                    <div class="kop-title">POLITEKNIK NEGERI SRIWIJAYA</div>
-                    <div class="kop-contact">Jalan Srijaya Negara Bukit Besar – Palembang 30139</div>
-                    <div class="kop-contact">Telp. 0711-353414 Fax. 0711-355918</div>
-                    <div class="kop-link">Laman : http://polsri.ac.id</div>
-                </td>
-            </tr>
-        </table>
+<div class="document-page <?= ($idx < count($members) - 1) ? 'page-break' : '' ?>">
+    <!-- HEADER -->
+    <table class="kop-table">
+        <tr>
+            <td style="width: 80px; text-align: center; padding-bottom: 5px;">
+                <?php if (file_exists(FCPATH . 'img/logo-polsri-bnw.jpg')): ?>
+                    <img src="<?= 'data:image/jpeg;base64,' . base64_encode(file_get_contents(FCPATH . 'img/logo-polsri-bnw.jpg')) ?>" style="width: 70px;">
+                <?php endif; ?>
+            </td>
+            <td style="text-align: center; padding-right: 40px; padding-bottom: 5px;">
+                <div style="font-size: 11pt;">KEMENTERIAN PENDIDIKAN, KEBUDAYAAN, RISET, DAN TEKNOLOGI</div>
+                <div style="font-size: 13pt; font-weight: bold;">POLITEKNIK NEGERI SRIWIJAYA</div>
+                <div style="font-size: 9pt;">Jalan Srijaya Negara Bukit Besar – Palembang 30139</div>
+                <div style="font-size: 9pt;">Telp. 0711-353414 Fax. 0711-355918</div>
+                <div style="font-size: 9pt; color: blue; text-decoration: underline;">Laman : http://polsri.ac.id</div>
+            </td>
+        </tr>
+    </table>
 
-        <!-- TITLE -->
-        <div class="title-block">
-            <span class="title-text">SURAT PERNYATAAN</span>
-        </div>
+    <div class="text-center bold underline" style="font-size: 14pt; margin-top: 20px; margin-bottom: 30px;">SURAT PERNYATAAN</div>
 
-        <!-- INTRO -->
-        <div class="section-gap">
-            Yang bertanda tangan di bawah ini :
-        </div>
+    <p>Yang bertanda tangan di bawah ini :</p>
 
-        <!-- DATA -->
-        <table class="data-table">
-            <tr>
-                <td class="label-col">Nama</td>
-                <td class="separator-col">:</td>
-                <td class="value-col"><?= esc($member->employee_name) ?></td>
-            </tr>
-            <tr>
-                <td class="label-col">NIP</td>
-                <td class="separator-col">:</td>
-                <td class="value-col"><?= esc($member->employee_nip ?: '-') ?></td>
-            </tr>
-            <tr>
-                <td class="label-col">Jabatan</td>
-                <td class="separator-col">:</td>
-                <td class="value-col"><?= esc($member->employee_jabatan ?: '-') ?></td>
-            </tr>
-        </table>
+    <table style="margin-left: 20px; margin-bottom: 20px;">
+        <tr>
+            <td style="width: 120px;">Nama</td>
+            <td style="width: 10px;">:</td>
+            <td class="bold"><?= esc($member->employee_name) ?></td>
+        </tr>
+        <tr>
+            <td>NIP</td>
+            <td>:</td>
+            <td class="bold"><?= esc($member->employee_nip ?: '-') ?></td>
+        </tr>
+        <tr>
+            <td>Jabatan</td>
+            <td>:</td>
+            <td class="bold"><?= esc($member->employee_jabatan ?? '-') ?></td>
+        </tr>
+    </table>
 
-        <!-- BODY -->
-        <div class="section-gap justify">
-            Berdasarkan Surat Tugas tanggal <?= $tglSuratTugas ?> 
-            Nomor: <?= esc($travelRequest->no_surat_tugas ?: '__________________') ?> 
-            dengan ini kami menyatakan dengan sesungguhnya bahwa :
-        </div>
+    <p class="text-justify">
+        Berdasarkan Surat Tugas tanggal <?= $tglSuratTugas ?> Nomor: <?= esc($travelRequest->no_surat_tugas ?: '__________________') ?> dengan ini kami menyatakan dengan sesungguhnya bahwa :
+    </p>
 
-        <!-- LIST -->
-        <div class="section-gap">
-            <div class="list-item">
-                <div class="list-no">1.</div>
-                <div class="list-text">
-                    Bukti-bukti (Tiket / bukti transportasi, Boarding Pass, Kwitansi, Hotel bill / tagihan hotel 
-                    dan sebagainya) yang dilampirkan dalam rangka melakukan perjalanan dinas adalah bukti-bukti 
-                    asli dan benar yang dikeluarkan oleh perusahaan / instansi yang berwenang untuk menerbitkan 
-                    bukti-bukti tersebut.
-                </div>
-            </div>
-            <div class="list-item">
-                <div class="list-no">2.</div>
-                <div class="list-text">
-                    Apabila dikemudian hari terdapat kesalahan atau temuan dari aparat pengawasan fungsional, 
-                    kami bersedia untuk mempertanggungjawabkannya.
-                </div>
-            </div>
-        </div>
+    <table style="margin-top: 15px; margin-left: 10px;">
+        <tr>
+            <td style="width: 30px; vertical-align: top;">1.</td>
+            <td class="text-justify">
+                Bukti-bukti (Tiket / bukti transportasi, Boarding Pass, Kwitansi, Hotel bill / tagihan hotel dan sebagainya) yang dilampirkan dalam rangka melakukan perjalanan dinas adalah bukti-bukti asli dan benar yang dikeluarkan oleh perusahaan / instansi yang berwenang untuk menerbitkan bukti-bukti tersebut.
+            </td>
+        </tr>
+        <tr style="height: 15px;"><td></td><td></td></tr>
+        <tr>
+            <td style="width: 30px; vertical-align: top;">2.</td>
+            <td class="text-justify">
+                Apabila dikemudian hari terdapat kesalahan atau temuan dari aparat pengawasan fungsional, kami bersedia untuk mempertanggungjawabkannya.
+            </td>
+        </tr>
+    </table>
 
-        <!-- CLOSING -->
-        <div class="section-gap justify">
-            Demikian pernyataan ini kami buat dengan sebenarnya, untuk dipertanggungjawabkan sebagaimana mestinya.
-        </div>
+    <p style="margin-top: 20px;" class="text-justify">
+        Demikian pernyataan ini kami buat dengan sebenarnya, untuk dipertanggungjawabkan sebagaimana mestinya.
+    </p>
 
-        <!-- SIGNATURES -->
-        <div class="signature-block">
-            <table class="sign-table">
-                <tr>
-                    <td>
-                        <div class="sign-title">
-                            Mengetahui/Menyetujui<br>
-                            an. Kuasa Pengguna Anggaran<br>
-                            Pejabat Pembuat Komitmen
-                        </div>
-                        <p class="sign-name"><?= esc($ppk ? $ppk->employee_name : '___________________________') ?></p>
-                        <p class="sign-nip">NIP. <?= esc($ppk ? ($ppk->nip ?: '-') : '___________________________') ?></p>
-                    </td>
-                    <td>
-                        <div class="sign-title">
-                            <br>
-                            <?= esc($travelRequest->departure_place ?: 'Palembang') ?>, <?= $tglTandaTangan ?><br>
-                            Yang melakukan Perjalanan Dinas,
-                        </div>
-                        <p class="sign-name"><?= esc($member->employee_name) ?></p>
-                        <p class="sign-nip">NIP. <?= esc($member->employee_nip ?: '-') ?></p>
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-        <!-- FOOTER (ISO LOGO) -->
-        <div id="footer">
-            <?php if (file_exists(FCPATH . 'img/iso.png')): ?>
-                <img src="<?= 'data:image/png;base64,' . base64_encode(file_get_contents(FCPATH . 'img/iso.png')) ?>" class="iso-img">
-            <?php endif; ?>
-        </div>
-
-    </div>
+    <table class="signature-block">
+        <tr>
+            <td style="width: 50%;">
+                Mengetahui/Menyetujui<br>
+                an. Kuasa Pengguna Anggaran<br>
+                Pejabat Pembuat Komitmen<br><br><br><br><br>
+                <span class="bold underline"><?= esc($ppk ? $ppk->employee_name : '___________________________') ?></span><br>
+                NIP. <?= esc($ppk ? ($ppk->nip ?: '-') : '___________________________') ?>
+            </td>
+            <td style="padding-left: 50px;">
+                <?= esc($tempatTerbit) ?>, <?= $tglTandaTangan ?><br>
+                Yang melakukan Perjalanan Dinas,<br><br><br><br><br><br>
+                <span class="bold underline"><?= esc($member->employee_name) ?></span><br>
+                NIP. <?= esc($member->employee_nip ?: '-') ?>
+            </td>
+        </tr>
+    </table>
+</div>
 <?php endforeach; ?>
 
 </body>

@@ -187,7 +187,7 @@
                     <td class="value-col">
                         <?= trim(($member->nama_golongan ?? '') . ' / ' . ($member->kode_golongan ?? ''), ' /') ?: '-' ?><br>
                         <?= esc($member->employee_jabatan ?? '-') ?><br>
-                        <?= $member->tingkatBiaya ?>
+                        <?= $member->tingkatBiaya ?? '-' ?>
                     </td>
                 </tr>
 

@@ -122,5 +122,9 @@ _modules/*
 # Visual Studio Code
 .vscode/
 
+deploy_perjadin-app.zip
+deploy_perjadin_public.zip
+deploy_*.zip
+
 /results/
 /phpunit*.xml

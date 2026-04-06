@@ -44,7 +44,10 @@ $routes->group('', ['filter' => 'session'], static function ($routes): void {
 			$routes->post('(:num)/update', 'Admin\SignatoriesController::update/$1');
 			$routes->post('(:num)/destroy', 'Admin\SignatoriesController::destroy/$1');
 		});
-		$routes->get('reports', 'Admin\PlaceholderController::index/reports');
+		$routes->group('reports', static function ($routes) {
+			$routes->get('/', 'Admin\ReportController::index');
+			$routes->get('download/(:num)', 'Admin\ReportController::downloadSpjBundle/$1');
+		});
 
 		$routes->group('users', static function ($routes) {
 			$routes->get('/', 'Admin\UserController::index');
@@ -83,13 +86,14 @@ $routes->group('', ['filter' => 'session'], static function ($routes): void {
 		$routes->post('(:num)/submit', 'TravelRequestController::submit/$1');
 		$routes->post('(:num)/cancel', 'TravelRequestController::cancel/$1');
 		$routes->post('(:num)/complete', 'TravelRequestController::complete/$1');
-		    $routes->get('download/lampiran/(:num)', 'TravelRequestController::downloadLampiran/$1');
-    $routes->get('download/file/(:num)', 'TravelRequestController::downloadFile/$1');
-    $routes->get('download/spd/(:num)', 'TravelRequestController::downloadSpd/$1');
+		$routes->get('download/lampiran/(:num)', 'TravelRequestController::downloadLampiran/$1');
+		$routes->get('download/file/(:num)', 'TravelRequestController::downloadFile/$1');
+		$routes->get('download/spd/(:num)', 'TravelRequestController::downloadSpd/$1');
 		$routes->get('(:num)/statement', 'TravelRequestController::downloadStatement/$1');
 		$routes->get('(:num)/control-list', 'TravelRequestController::downloadControlList/$1');
 		$routes->get('(:num)/nominative-list', 'TravelRequestController::downloadNominativeList/$1');
 		$routes->get('(:num)/bundle-excel', 'TravelRequestController::downloadBundleExcel/$1');
+		$routes->get('(:num)/bundle-spj', 'Admin\ReportController::downloadSpjBundle/$1');
 
 		// Data Enrichment (Phase 8)
 		$routes->get('(:num)/enrichment', 'CompletenessController::enrichment/$1');
@@ -114,19 +118,19 @@ $routes->group('', ['filter' => 'session'], static function ($routes): void {
 		$routes->post('(:num)/reject', 'VerificationController::reject/$1');
 	});
 
-    // Documentation & Verification (Phase 12 & 13)
-    $routes->group('documentation', function($routes) {
-        $routes->get('(:num)', 'ReviewController::documentation/$1');
-        $routes->post('(:num)', 'ReviewController::submitDocumentation/$1');
-        $routes->delete('file/(:num)', 'ReviewController::deleteFile/$1');
-        $routes->get('file/(:num)', 'ReviewController::viewFile/$1'); // Phase 15
-        $routes->get('download/(:num)', 'ReviewController::downloadFile/$1'); // Phase 16
-        $routes->get('(:num)/verification', 'ReviewController::verification/$1', ['filter' => 'group:superadmin,verificator']);
-    });
+	// Documentation & Verification (Phase 12 & 13)
+	$routes->group('documentation', function ($routes) {
+		$routes->get('(:num)', 'ReviewController::documentation/$1');
+		$routes->post('(:num)', 'ReviewController::submitDocumentation/$1');
+		$routes->delete('file/(:num)', 'ReviewController::deleteFile/$1');
+		$routes->get('file/(:num)', 'ReviewController::viewFile/$1'); // Phase 15
+		$routes->get('download/(:num)', 'ReviewController::downloadFile/$1'); // Phase 16
+		$routes->get('(:num)/verification', 'ReviewController::verification/$1', ['filter' => 'group:superadmin,verificator']);
+	});
 
-    // Blanko Kosong (Phase 23)
-    $routes->group('blanko-kosong', ['filter' => 'group:lecturer,admin,superadmin,verificator'], static function ($routes) {
-        $routes->get('/', 'BlankoController::index');
-        $routes->get('download', 'BlankoController::download');
-    });
+	// Blanko Kosong (Phase 23)
+	$routes->group('blanko-kosong', ['filter' => 'group:lecturer,admin,superadmin,verificator'], static function ($routes) {
+		$routes->get('/', 'BlankoController::index');
+		$routes->get('download', 'BlankoController::download');
+	});
 });

@@ -48,6 +48,9 @@ class SppdPdfTemplate
         // 3. Prepare Member Data (Enrich with level)
         foreach ($targetMembers as $member) {
             $member->tingkatBiaya = $this->resolveTingkat($member);
+            $member->employee_name = $member->employee_name ?? '';
+            $member->employee_nip = $member->employee_nip ?? '';
+            $member->employee_jabatan = $member->employee_jabatan ?? '';
         }
 
         // 4. Global Variables
