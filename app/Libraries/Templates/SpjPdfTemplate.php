@@ -83,12 +83,14 @@ class SpjPdfTemplate
     /**
      * Generate Surat Pernyataan PDF for a single member
      */
-    public function generatePernyataan(object $travelRequest, object $member, ?object $ppk = null): string
+    public function generatePernyataan(object $travelRequest, object $member, ?object $ppk = null, ?string $customDate = null): string
     {
         $data = $this->prepareSharedData($travelRequest, [$member], $ppk);
         $data['member']         = $member;
         $data['tglSuratTugas']  = $this->formatTanggal($travelRequest->departure_date);
-        $data['tglTandaTangan'] = $this->formatTanggal($travelRequest->tgl_surat_tugas ?? $travelRequest->created_at);
+        $data['tglTandaTangan'] = !empty($customDate) 
+            ? $this->formatTanggal($customDate)
+            : $this->formatTanggal($travelRequest->tgl_surat_tugas ?? $travelRequest->created_at);
         $data['tempatTerbit']   = $travelRequest->departure_place ?: 'Palembang';
         $data['template']       = $this;
 

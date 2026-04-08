@@ -71,6 +71,7 @@ class ReportController extends BaseController
 
 
         $spjTemplate = new SpjPdfTemplate();
+        $customDate = $this->request->getGet('stmt_date');
 
         // 2. Prepare ZIP
         $zip = new ZipArchive();
@@ -93,7 +94,7 @@ class ReportController extends BaseController
                 $zip->addFromString($memberFolder . '2_Rincian_Biaya_Kuitansi_' . $cleanName . '.pdf', $rincianContent);
 
                 // 3. Surat Pernyataan
-                $pernyataanContent = $spjTemplate->generatePernyataan($travelRequest, $member, $ppk);
+                $pernyataanContent = $spjTemplate->generatePernyataan($travelRequest, $member, $ppk, $customDate);
                 $zip->addFromString($memberFolder . '3_Surat_Pernyataan_' . $cleanName . '.pdf', $pernyataanContent);
 
                 // 4. Documentation & Attachments (Organized into subfolders)

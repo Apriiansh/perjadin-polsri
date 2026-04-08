@@ -94,7 +94,8 @@
                                     title="Lihat Detail">
                                     <i data-lucide="external-link" class="w-4 h-4"></i>
                                 </a>
-                                <a href="<?= base_url('admin/reports/download/' . $travel->id) ?>"
+                                <a href="javascript:void(0)"
+                                    onclick="downloadWithDate('<?= base_url('admin/reports/download/' . $travel->id) ?>', 'Pilih Tanggal Surat Pernyataan', '<?= $travel->tgl_surat_tugas ?>')"
                                     class="flex h-9 items-center gap-2 px-3 rounded-lg bg-primary-600 text-white text-[10px] font-extrabold uppercase tracking-widest hover:bg-primary-700 shadow-md shadow-primary-500/20 transition-all active:scale-95 group"
                                     title="Download Bundle SPJ (ZIP)">
                                     <i data-lucide="file-archive" class="w-4 h-4 group-hover:animate-bounce"></i>
@@ -148,5 +149,28 @@
             }
         });
     });
+
+    async function downloadWithDate(url, title, defaultDate) {
+        const { value: date } = await Swal.fire({
+            title: title,
+            html: '<p class="text-xs text-slate-500 mb-2 leading-relaxed">Pilih tanggal untuk bagian tanda tangan Surat Pernyataan dalam bundle ini.<br>Biarkan sesuai input untuk menggunakan <b>Tanggal Surat Tugas</b> default.</p>',
+            input: 'date',
+            inputValue: defaultDate,
+            showCancelButton: true,
+            confirmButtonText: 'Download',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#4f46e5',
+            cancelButtonColor: '#64748b',
+        });
+
+        if (date) {
+            const separator = url.includes('?') ? '&' : '?';
+            window.location.href = `${url}${separator}stmt_date=${date}`;
+        } else if (date === '') {
+            // If user cleared and clicked download, use default
+            window.location.href = url;
+        }
+        // if dismissed, do nothing
+    }
 </script>
 <?= $this->endSection() ?>

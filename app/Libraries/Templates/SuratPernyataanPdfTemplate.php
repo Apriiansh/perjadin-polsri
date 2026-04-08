@@ -15,13 +15,17 @@ class SuratPernyataanPdfTemplate
      * @param object|null $ppk
      * @param int|null    $specificMemberId If set, only generate for this member
      */
-    public function generate(object $travelRequest, array $members, ?object $ppk = null, ?int $specificMemberId = null): void
+    public function generate(object $travelRequest, array $members, ?object $ppk = null, ?int $specificMemberId = null, ?string $customDate = null): void
     {
         // Filter members
         $targetMembers = $members;
         if ($specificMemberId !== null) {
             $targetMembers = array_filter($members, fn($m) => (int) $m->travel_member_id === (int) $specificMemberId);
         }
+
+        // Determine signature date
+        $tglTandaTangan = !empty($customDate) ? $this->formatTanggal($customDate) : 
+                          (!empty($travelRequest->tgl_surat_tugas) ? $this->formatTanggal($travelRequest->tgl_surat_tugas) : date('d F Y'));
 
         // Prepare Data for View
         $data = [
@@ -30,7 +34,7 @@ class SuratPernyataanPdfTemplate
             'ppk'             => $ppk,
             'tempatTerbit'    => $travelRequest->departure_place ?: 'Palembang',
             'tglSuratTugas'   => !empty($travelRequest->tgl_surat_tugas) ? $this->formatTanggal($travelRequest->tgl_surat_tugas) : '-',
-            'tglTandaTangan'  => !empty($travelRequest->tgl_surat_tugas) ? $this->formatTanggal($travelRequest->tgl_surat_tugas) : date('d F Y'),
+            'tglTandaTangan'  => $tglTandaTangan,
         ];
 
         // ── RENDER HTML ──

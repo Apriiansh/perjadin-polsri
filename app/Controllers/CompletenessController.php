@@ -200,17 +200,30 @@ class CompletenessController extends BaseController
                 'status' => 'active'
             ]);
 
-            // 4. Create Checklist Items from the form (Per Member - Phase 28)
-            $this->travelCompletenessModel->where('travel_request_id', $id)->delete();
-            $checklistItems = $this->request->getPost('checklist');
-            if ($checklistItems) {
-                foreach ($existingMembers as $member) {
-                    foreach ($checklistItems as $itemName) {
-                        if (empty($itemName)) continue;
+            // 4. Surgical Update for Checklist Items (Phase 28 Improved)
+            $checklistItems = $this->request->getPost('checklist') ?? [];
+            $existingDbItems = $this->travelCompletenessModel->where('travel_request_id', $id)->findAll();
+            $existingItemNames = array_unique(array_column($existingDbItems, 'item_name'));
+
+            // A. Remove items that were deleted from the form (only if no files uploaded yet)
+            foreach ($existingItemNames as $oldName) {
+                if (!in_array($oldName, $checklistItems)) {
+                    $this->travelCompletenessModel
+                        ->where('travel_request_id', $id)
+                        ->where('item_name', $oldName)
+                        ->where('document_path', null) // Safety measure: don't delete if file exists
+                        ->delete();
+                }
+            }
+
+            // B. Add new items for all members
+            foreach ($checklistItems as $newName) {
+                if (!empty($newName) && !in_array($newName, $existingItemNames)) {
+                    foreach ($existingMembers as $member) {
                         $this->travelCompletenessModel->insert([
                             'travel_request_id' => $id,
                             'member_id' => $member->id,
-                            'item_name' => $itemName,
+                            'item_name' => $newName,
                             'status' => 'pending',
                         ]);
                     }

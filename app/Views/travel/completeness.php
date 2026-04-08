@@ -56,8 +56,11 @@
 
                 <div id="checklist-container" class="space-y-2">
                     <?php 
+                    // Use array_unique because checklist items are stored per member in the DB
                     $itemsToDisplay = !empty($existingChecklist) 
-                        ? array_column($existingChecklist, 'item_name') 
+                        ? array_unique(array_map(function($item) {
+                            return is_object($item) ? $item->item_name : $item['item_name'];
+                        }, $existingChecklist)) 
                         : ['Laporan Perjalanan', 'Dokumentasi Kegiatan', 'File Presentasi', 'Daftar Pengeluaran Riil', 'Tiket & Boarding Pass']; 
                     ?>
                     <?php foreach ($itemsToDisplay as $item): ?>

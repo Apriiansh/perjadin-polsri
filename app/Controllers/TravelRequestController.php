@@ -767,6 +767,7 @@ class TravelRequestController extends BaseController
         }
 
         $members = $this->travelExpenseModel->getByRequestWithMember($id);
+        $customDate = $this->request->getGet('stmt_date');
 
         // Resolve PPK
         $ppkId = $travelRequest->ppk_id;
@@ -783,9 +784,9 @@ class TravelRequestController extends BaseController
         }
 
         if ($this->request->getGet('format') === 'pdf') {
-            (new \App\Libraries\Templates\SuratPernyataanPdfTemplate())->generate($travelRequest, $members, $ppk, $specificMemberId);
+            (new \App\Libraries\Templates\SuratPernyataanPdfTemplate())->generate($travelRequest, $members, $ppk, $specificMemberId, $customDate);
         } else {
-            (new \App\Libraries\Templates\SuratPernyataanTemplate())->generate($travelRequest, $members, $ppk, $specificMemberId);
+            (new \App\Libraries\Templates\SuratPernyataanTemplate())->generate($travelRequest, $members, $ppk, $specificMemberId, $customDate);
         }
         exit;
     }

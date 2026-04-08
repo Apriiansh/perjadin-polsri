@@ -272,16 +272,30 @@
                                     $stmtUrl .= '&member_id=' . $myMemberId;
                                 }
                                 ?>
-                                <a href="<?= $stmtUrl ?>"
-                                    class="flex flex-col items-center justify-center p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-emerald-400 hover:text-emerald-700 transition-all group gap-1 text-center">
-                                    <div class="w-7 h-7 rounded-md bg-white shadow-sm flex items-center justify-center group-hover:bg-emerald-50">
-                                        <i data-lucide="file-check" class="w-3.5 h-3.5 text-emerald-600"></i>
-                                    </div>
-                                    <div class="flex flex-col items-center">
-                                        <span class="text-[10px] font-bold leading-none">Surat Pernyataan<?= $isStaff ? '' : ' Saya' ?></span>
-                                        <span class="text-[9px] text-slate-400 leading-none">.pdf</span>
-                                    </div>
-                                </a>
+                                <?php if ($isStaff || $isKeuangan): ?>
+                                    <a href="javascript:void(0)" 
+                                        onclick="downloadWithDate('<?= $stmtUrl ?>', 'Tanggal Tanda Tangan Surat Pernyataan')"
+                                        class="flex flex-col items-center justify-center p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-emerald-400 hover:text-emerald-700 transition-all group gap-1 text-center">
+                                        <div class="w-7 h-7 rounded-md bg-white shadow-sm flex items-center justify-center group-hover:bg-emerald-50">
+                                            <i data-lucide="file-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+                                        </div>
+                                        <div class="flex flex-col items-center">
+                                            <span class="text-[10px] font-bold leading-none">Surat Pernyataan</span>
+                                            <span class="text-[9px] text-slate-400 leading-none">.pdf</span>
+                                        </div>
+                                    </a>
+                                <?php else: ?>
+                                    <a href="<?= $stmtUrl ?>"
+                                        class="flex flex-col items-center justify-center p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white hover:border-emerald-400 hover:text-emerald-700 transition-all group gap-1 text-center">
+                                        <div class="w-7 h-7 rounded-md bg-white shadow-sm flex items-center justify-center group-hover:bg-emerald-50">
+                                            <i data-lucide="file-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+                                        </div>
+                                        <div class="flex flex-col items-center">
+                                            <span class="text-[10px] font-bold leading-none">Surat Pernyataan Saya</span>
+                                            <span class="text-[9px] text-slate-400 leading-none">.pdf</span>
+                                        </div>
+                                    </a>
+                                <?php endif; ?>
 
                             </div>
 
@@ -329,7 +343,8 @@
                                 </a>
 
                                 <!-- Row 4: Bundle SPJ (ZIP) full width -->
-                                <a href="<?= base_url('travel/' . $travelRequest->id . '/bundle-spj') ?>"
+                                <a href="javascript:void(0)"
+                                    onclick="downloadWithDate('<?= base_url('travel/' . $travelRequest->id . '/bundle-spj') ?>', 'Masukkan Tanggal Tanda Tangan Surat Pernyataan dalam Bundle SPJ')"
                                     class="flex items-center justify-between p-3 rounded-lg border border-indigo-200 bg-indigo-50/40 hover:bg-white hover:border-indigo-400 transition-all group gap-3">
                                     <div class="flex items-center gap-3 min-w-0">
                                         <div class="w-8 h-8 rounded-md bg-white shadow-sm flex items-center justify-center shrink-0 group-hover:bg-indigo-50">
@@ -939,6 +954,29 @@ if (($hasAnyDoc || $travelRequest->status === 'active') && !empty($members)):
             } catch (error) {
                 Swal.fire('Error', 'Terjadi kesalahan sistem saat menandai perjalanan selesai.', 'error');
             }
+        }
+    }
+
+    // Function to prompt for signature date using SweetAlert2
+    async function downloadWithDate(url, title) {
+        const result = await Swal.fire({
+            title: title,
+            html: '<p class="text-xs text-slate-500 mb-2 leading-relaxed">Pilih tanggal untuk bagian tanda tangan Surat Pernyataan.<br>Biarkan sesuai input untuk menggunakan <b>Tanggal Surat Tugas</b> default.</p>',
+            input: 'date',
+            inputValue: '<?= $travelRequest->tgl_surat_tugas ?>',
+            showCancelButton: true,
+            confirmButtonText: 'Download',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#4f46e5',
+            cancelButtonColor: '#64748b',
+        });
+
+        if (result.isConfirmed) {
+            // result.value will contain the date string from the input
+            const dateVal = result.value;
+            const separator = url.includes('?') ? '&' : '?';
+            const finalUrl = dateVal ? `${url}${separator}stmt_date=${dateVal}` : url;
+            window.location.href = finalUrl;
         }
     }
 </script>

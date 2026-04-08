@@ -17,7 +17,7 @@ class SuratPernyataanTemplate
      * @param object|null $ppk
      * @param int|null    $specificMemberId If set, only generate for this member
      */
-    public function generate(object $travelRequest, array $members, ?object $ppk = null, ?int $specificMemberId = null): void
+    public function generate(object $travelRequest, array $members, ?object $ppk = null, ?int $specificMemberId = null, ?string $customDate = null): void
     {
         $phpWord = new PhpWord();
         $phpWord->setDefaultFontName('Times New Roman');
@@ -202,9 +202,9 @@ class SuratPernyataanTemplate
 
             // Kanan: Pelaksana
             $tempatTerbit   = $travelRequest->departure_place ?: 'Palembang';
-            $tglTandaTangan = !empty($travelRequest->tgl_surat_tugas)
-                ? $this->formatTanggal($travelRequest->tgl_surat_tugas)
-                : date('d F Y');
+            $tglTandaTangan = !empty($customDate) 
+                ? $this->formatTanggal($customDate)
+                : (!empty($travelRequest->tgl_surat_tugas) ? $this->formatTanggal($travelRequest->tgl_surat_tugas) : date('d F Y'));
 
             $cellRight->addText($tempatTerbit . ', ' . $tglTandaTangan, $tnr, $left15);
             $cellRight->addText('Yang melakukan Perjalanan Dinas,', $tnr, $left15);
