@@ -36,6 +36,8 @@ class TravelMemberModel extends Model
     protected $validationRules = [
         'travel_request_id' => 'required|integer|is_not_unique[travel_requests.id]',
         'employee_id'       => 'required|integer|is_not_unique[employees.id]',
+        'kode_golongan'     => 'required|string|max_length[100]',
+        'nama_golongan'     => 'required|string|max_length[150]',
         'no_sppd'           => 'permit_empty|string|max_length[100]',
         'tgl_sppd'          => 'permit_empty|valid_date',
         'keterangan'        => 'permit_empty|string|max_length[255]',

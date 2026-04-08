@@ -196,7 +196,7 @@
                     <td class="no-col">4</td>
                     <td class="label-col">Maksud Perjalanan Dinas</td>
                     <td class="value-col text-justify">
-                        <?= !empty($travelRequest->perihal_surat_rujukan) ? 'Mengikuti kegiatan ' . esc($travelRequest->perihal_surat_rujukan) : '-' ?>
+                        <?= !empty($travelRequest->perihal) ? 'Mengikuti kegiatan ' . esc($travelRequest->perihal) : '-' ?>
                     </td>
                 </tr>
 

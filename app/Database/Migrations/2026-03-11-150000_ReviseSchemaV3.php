@@ -57,7 +57,7 @@ class ReviseSchemaV3 extends Migration
                 'null'       => true,
                 'after'      => 'tgl_surat_rujukan',
             ],
-            'perihal_surat_rujukan' => [
+            'perihal' => [
                 'type'  => 'TEXT',
                 'null'  => true,
                 'after' => 'instansi_pengirim_rujukan',

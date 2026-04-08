@@ -194,8 +194,8 @@
                                     <i data-lucide="map-pin" class="w-3 h-3 text-primary-500"></i>
                                     <span class="text-[10px] font-bold uppercase tracking-tight"><?= esc($req->destination_province ?? '-') ?></span>
                                 </div>
-                                <span class="text-[11px] font-medium text-slate-400 line-clamp-1 italic" title="<?= esc($req->perihal_surat_rujukan) ?>">
-                                    "<?= esc(mb_strimwidth($req->perihal_surat_rujukan ?? '-', 0, 50, '...')) ?>"
+                                <span class="text-[11px] font-medium text-slate-400 line-clamp-1 italic" title="<?= esc($req->perihal) ?>">
+                                    "<?= esc(mb_strimwidth($req->perihal ?? '-', 0, 50, '...')) ?>"
                                 </span>
                             </div>
                         </td>

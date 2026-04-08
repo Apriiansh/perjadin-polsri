@@ -138,7 +138,7 @@
 
                 <!-- Group 2: Surat Rujukan -->
                 <div class="space-y-4 md:border-l md:border-slate-100 md:pl-8">
-                    <?php if (!empty($travelRequest->nomor_surat_rujukan) || !empty($travelRequest->instansi_pengirim_rujukan) || !empty($travelRequest->perihal_surat_rujukan)): ?>
+                    <?php if (!empty($travelRequest->nomor_surat_rujukan) || !empty($travelRequest->instansi_pengirim_rujukan) || !empty($travelRequest->perihal)): ?>
                         <div class="grid grid-cols-1 gap-y-4">
                             <?php if (!empty($travelRequest->nomor_surat_rujukan)): ?>
                                 <div>
@@ -155,11 +155,11 @@
                                     <span class="text-sm font-medium text-slate-800"><?= esc($travelRequest->instansi_pengirim_rujukan) ?></span>
                                 </div>
                             <?php endif; ?>
-                            <?php if (!empty($travelRequest->perihal_surat_rujukan)): ?>
+                            <?php if (!empty($travelRequest->perihal)): ?>
                                 <div>
                                     <span class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Perihal</span>
                                     <p class="text-xs text-slate-600 italic leading-relaxed bg-slate-50 p-2.5 rounded-lg border border-slate-100 mt-1">
-                                        <?= nl2br(esc((string) $travelRequest->perihal_surat_rujukan)) ?>
+                                        <?= nl2br(esc((string) $travelRequest->perihal)) ?>
                                     </p>
                                 </div>
                             <?php endif; ?>

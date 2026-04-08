@@ -43,8 +43,8 @@
                         <td class="px-5 py-4 text-slate-400 font-bold"><?= $idx + 1 ?></td>
                         <td class="px-5 py-4">
                             <div class="flex flex-col gap-1">
-                                <span class="font-extrabold text-slate-800 tracking-tight leading-tight line-clamp-1" title="<?= esc($travel->perihal_surat_rujukan) ?>">
-                                    <?= esc($travel->perihal_surat_rujukan) ?>
+                                <span class="font-extrabold text-slate-800 tracking-tight leading-tight line-clamp-1" title="<?= esc($travel->perihal) ?>">
+                                    <?= esc($travel->perihal) ?>
                                 </span>
                                 <div class="flex items-center gap-1.5 leading-none">
                                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">ST: <?= esc($travel->no_surat_tugas ?: '-') ?></span>

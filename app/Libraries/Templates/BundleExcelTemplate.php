@@ -162,8 +162,8 @@ class BundleExcelTemplate
         $pangkatGol = trim(($member->nama_golongan ?? '') . '/' . ($member->kode_golongan ?? ''), '/');
         $tingkat = $this->resolveTingkat($member);
 
-        $maksud = $travelRequest->perihal_surat_rujukan
-            ? 'Mengikuti kegiatan ' . $travelRequest->perihal_surat_rujukan
+        $maksud = $travelRequest->perihal
+            ? 'Mengikuti kegiatan ' . $travelRequest->perihal
             : '-';
 
         $durasi = ($travelRequest->duration_days ?? '-') . ' (' . $this->numberToWords($travelRequest->duration_days ?? 0) . ') Hari';

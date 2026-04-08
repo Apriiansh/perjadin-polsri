@@ -87,8 +87,8 @@
                     <input type="number" value="<?= date('Y') ?>" name="tahun_anggaran" class="input-control" placeholder="<?= date('Y') ?>" min="2020" max="2099" required>
                 </div>
                 <div class="md:col-span-2">
-                    <label class="form-label mb-2 block">Perihal Surat Rujukan <span class="text-red-500">*</span></label>
-                    <textarea name="perihal_surat_rujukan" rows="2" class="input-control" placeholder="Contoh: Undangan Mengikuti Kegiatan RESD Phase 2" required></textarea>
+                    <label class="form-label mb-2 block">Perihal<span class="text-red-500">*</span></label>
+                    <textarea name="perihal" rows="2" class="input-control" placeholder="Contoh: Undangan Mengikuti Kegiatan RESD Phase 2" required></textarea>
                 </div>
                 <div>
                     <label class="form-label mb-2 block">Lokasi / Venue <span class="text-xs text-slate-400 font-normal">(Opsional)</span></label>

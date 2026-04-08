@@ -18,7 +18,7 @@ class TravelRequestModel extends Model
         'nomor_surat_rujukan',
         'tgl_surat_rujukan',
         'instansi_pengirim_rujukan',
-        'perihal_surat_rujukan',
+        'perihal',
         'transportation_type',
         'destination_province',
         'destination_city',
@@ -60,7 +60,7 @@ class TravelRequestModel extends Model
         'nomor_surat_rujukan'         => 'required|string|max_length[100]',
         'tgl_surat_rujukan'           => 'required|valid_date',
         'instansi_pengirim_rujukan'   => 'required|string|max_length[200]',
-        'perihal_surat_rujukan'       => 'required|string',
+        'perihal'                     => 'required|string',
         'mak'                         => 'permit_empty|string|max_length[100]',
         'transportation_type'         => 'permit_empty|string',
         'destination_province'        => 'required|string|max_length[100]',
@@ -110,8 +110,8 @@ class TravelRequestModel extends Model
         'instansi_pengirim_rujukan' => [
             'required' => 'Instansi pengirim harus diisi.',
         ],
-        'perihal_surat_rujukan' => [
-            'required' => 'Perihal surat rujukan harus diisi.',
+        'perihal' => [
+            'required' => 'Perihal harus diisi.',
         ],
         'tahun_anggaran' => [
             'required' => 'Tahun anggaran harus diisi.',

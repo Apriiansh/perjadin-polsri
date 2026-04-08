@@ -183,8 +183,8 @@ class SppdTemplate
             );
 
             // Row 4 — Maksud
-            $maksud = $travelRequest->perihal_surat_rujukan
-                ? 'Mengikuti kegiatan ' . $travelRequest->perihal_surat_rujukan
+            $maksud = $travelRequest->perihal
+                ? 'Mengikuti kegiatan ' . $travelRequest->perihal
                 : '-';
             $this->addRow(
                 $table,
