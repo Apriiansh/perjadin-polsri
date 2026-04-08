@@ -31,7 +31,6 @@ class BundleExcelTemplate
         object $travelRequest,
         array  $members,
         ?object $ppk = null,
-        ?object $bpp = null,
         ?object $bendahara = null,
     ): void {
         helper('terbilang');
@@ -57,7 +56,7 @@ class BundleExcelTemplate
         // ── Sheet 2: Rincian Biaya Perjadin (all members) ─────────────
         $sheetRincian = new Worksheet($spreadsheet, 'Rincian Biaya Perjadin');
         $spreadsheet->addSheet($sheetRincian);
-        $this->buildRincianSheet($sheetRincian, $travelRequest, $members, $ppk, $bpp, $bendahara, $tujuan, $tglSurat, $tempatTerbit);
+        $this->buildRincianSheet($sheetRincian, $travelRequest, $members, $ppk, $bendahara, $tujuan, $tglSurat, $tempatTerbit);
 
         // ── Sheet 3+: Surat Pernyataan per member ─────────────────────
         foreach ($members as $idx => $member) {
@@ -70,12 +69,12 @@ class BundleExcelTemplate
         // ── Daftar Kontrol ────────────────────────────────────────────
         $sheetCtrl = new Worksheet($spreadsheet, 'Daftar Kontrol');
         $spreadsheet->addSheet($sheetCtrl);
-        $this->buildKontrolSheet($sheetCtrl, $travelRequest, $members, $bpp);
+        $this->buildKontrolSheet($sheetCtrl, $travelRequest, $members, $bendahara);
 
         // ── Daftar Nominatif ──────────────────────────────────────────
         $sheetNom = new Worksheet($spreadsheet, 'Daftar Nominatif');
         $spreadsheet->addSheet($sheetNom);
-        $this->buildNominatifSheet($sheetNom, $travelRequest, $members, $bpp);
+        $this->buildNominatifSheet($sheetNom, $travelRequest, $members, $bendahara);
 
         // ── Output ────────────────────────────────────────────────────
         $spreadsheet->setActiveSheetIndex(0);
@@ -331,7 +330,6 @@ class BundleExcelTemplate
         object $travelRequest,
         array $members,
         ?object $ppk,
-        ?object $bpp,
         ?object $bendahara,
         string $tujuan,
         string $tglSurat,
@@ -362,7 +360,6 @@ class BundleExcelTemplate
                 $travelRequest,
                 $member,
                 $ppk,
-                $bpp,
                 $bendahara,
                 $tujuan,
                 $tglSurat,
@@ -380,7 +377,6 @@ class BundleExcelTemplate
         object $travelRequest,
         object $member,
         ?object $ppk,
-        ?object $bpp,
         ?object $bendahara,
         string $tujuan,
         string $tglSurat,
@@ -938,7 +934,7 @@ class BundleExcelTemplate
     //  Daftar Kontrol
     // ═════════════════════════════════════════════════════════════════════
 
-    private function buildKontrolSheet(Worksheet $sheet, object $travelRequest, array $members, ?object $bpp): void
+    private function buildKontrolSheet(Worksheet $sheet, object $travelRequest, array $members, ?object $bendahara): void
     {
         $cols = [
             'A' => 5,
@@ -1043,7 +1039,7 @@ class BundleExcelTemplate
 
             $gol = ($member->nama_golongan ?? '') . (($member->nama_golongan && $member->kode_golongan) ? '/' : '') . ($member->kode_golongan ?? '');
             $sheet->setCellValue('E' . $row, $gol);
-            $sheet->setCellValue('F' . $row, $travelRequest->lokasi ?: ($travelRequest->destination_city ?: '-'));
+            $sheet->setCellValue('F' . $row, $travelRequest->destination_province ?: '-');
 
             $dep = !empty($travelRequest->departure_date) ? date('d', strtotime($travelRequest->departure_date)) : '-';
             $ret = !empty($travelRequest->return_date) ? date('d/m/Y', strtotime($travelRequest->return_date)) : '-';
@@ -1115,9 +1111,9 @@ class BundleExcelTemplate
         $sheet->setCellValue('B' . $row, 'Mengetahui,');
         $sheet->setCellValue('B' . ($row + 1), 'yang Membayar,');
         $row += 4;
-        $sheet->setCellValue('B' . $row, $bpp ? $bpp->employee_name : '________________________');
+        $sheet->setCellValue('B' . $row, $bendahara ? $bendahara->employee_name : '________________________');
         $sheet->getStyle('B' . $row)->applyFromArray(['font' => ['bold' => true]]);
-        $sheet->setCellValue('B' . ($row + 1), 'NIP. ' . ($bpp ? ($bpp->nip ?: '-') : '________________________'));
+        $sheet->setCellValue('B' . ($row + 1), 'NIP. ' . ($bendahara ? ($bendahara->nip ?: '-') : '________________________'));
 
         $row = $sigStart;
         $sheet->setCellValue('R' . $row, 'Palembang, ' . date('j F Y'));
@@ -1133,7 +1129,7 @@ class BundleExcelTemplate
     //  Daftar Nominatif
     // ═════════════════════════════════════════════════════════════════════
 
-    private function buildNominatifSheet(Worksheet $sheet, object $travelRequest, array $members, ?object $bpp): void
+    private function buildNominatifSheet(Worksheet $sheet, object $travelRequest, array $members, ?object $bendahara): void
     {
         $cols = [
             'A' => 5,
@@ -1234,7 +1230,7 @@ class BundleExcelTemplate
 
             $gol = ($member->nama_golongan ?? '') . (($member->nama_golongan && $member->kode_golongan) ? '/' : '') . ($member->kode_golongan ?? '');
             $sheet->setCellValue('E' . $row, $gol);
-            $sheet->setCellValue('F' . $row, $travelRequest->lokasi ?: ($travelRequest->destination_city ?: '-'));
+            $sheet->setCellValue('F' . $row, $travelRequest->destination_province ?: '-');
 
             $dep = !empty($travelRequest->departure_date) ? date('d', strtotime($travelRequest->departure_date)) : '-';
             $ret = !empty($travelRequest->return_date) ? date('d/m/Y', strtotime($travelRequest->return_date)) : '-';
@@ -1302,9 +1298,9 @@ class BundleExcelTemplate
         $sheet->setCellValue('B' . $row, 'Mengetahui,');
         $sheet->setCellValue('B' . ($row + 1), 'yang Membayar,');
         $row += 4;
-        $sheet->setCellValue('B' . $row, $bpp ? $bpp->employee_name : '________________________');
+        $sheet->setCellValue('B' . $row, $bendahara ? $bendahara->employee_name : '________________________');
         $sheet->getStyle('B' . $row)->applyFromArray(['font' => ['bold' => true]]);
-        $sheet->setCellValue('B' . ($row + 1), 'NIP. ' . ($bpp ? ($bpp->nip ?: '-') : '________________________'));
+        $sheet->setCellValue('B' . ($row + 1), 'NIP. ' . ($bendahara ? ($bendahara->nip ?: '-') : '________________________'));
 
         $row = $sigStart;
         $sheet->setCellValue('P' . $row, 'Palembang, ' . date('j F Y'));

@@ -181,7 +181,7 @@
                         <?= esc($member->nama_golongan ?? '') ?><br>
                         <?= esc($member->kode_golongan ?? '') ?>
                     </td>
-                    <td class="text-center"><?= esc($travelRequest->lokasi ?: ($travelRequest->destination_city ?: '-')) ?></td>
+                    <td class="text-center"><?= esc($travelRequest->destination_province ?: '-') ?></td>
                     <td class="text-center">
                         <?= !empty($travelRequest->departure_date) ? date('d', strtotime($travelRequest->departure_date)) : '-' ?> -
                         <?= !empty($travelRequest->return_date) ? date('d/m/Y', strtotime($travelRequest->return_date)) : '-' ?>
@@ -220,8 +220,8 @@
         <div style="float: left; width: 40%;">
             Mengetahui,<br>
             Yang Membayar,<br><br><br><br>
-            <span class="bold underline"><?= esc($bpp ? $bpp->employee_name : '________________________') ?></span><br>
-            NIP. <?= esc($bpp ? ($bpp->nip ?: '-') : '________________________') ?>
+            <span class="bold underline"><?= esc($bendahara ? $bendahara->employee_name : '________________________') ?></span><br>
+            NIP. <?= esc($bendahara ? ($bendahara->nip ?: '-') : '________________________') ?>
         </div>
         <div style="float: right; width: 35%; text-align: left;">
             Palembang, <?= date('j F Y') ?><br>

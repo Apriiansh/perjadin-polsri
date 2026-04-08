@@ -30,9 +30,7 @@
             <select id="jabatan" name="jabatan" class="input-control" required>
                 <option value="">-- Pilih Peran/Jabatan --</option>
                 <option value="Pejabat Pembuat Komitmen (PPK)" <?= old('jabatan', $signatory->jabatan) == 'Pejabat Pembuat Komitmen (PPK)' ? 'selected' : '' ?>>Pejabat Pembuat Komitmen (PPK)</option>
-                <option value="Kuasa Pengguna Anggaran (KPA)" <?= old('jabatan', $signatory->jabatan) == 'Kuasa Pengguna Anggaran (KPA)' ? 'selected' : '' ?>>Kuasa Pengguna Anggaran (KPA)</option>
                 <option value="Bendahara Pengeluaran" <?= old('jabatan', $signatory->jabatan) == 'Bendahara Pengeluaran' ? 'selected' : '' ?>>Bendahara Pengeluaran</option>
-                <option value="Bendahara Pengeluaran Pembantu (BPP)" <?= old('jabatan', $signatory->jabatan) == 'Bendahara Pengeluaran Pembantu (BPP)' ? 'selected' : '' ?>>Bendahara Pengeluaran Pembantu (BPP)</option>
             </select>
         </div>
 

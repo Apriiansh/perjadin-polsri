@@ -66,22 +66,18 @@ class CompletenessController extends BaseController
 
         // Group signatories by role for easier selection
         $groupedSignatories = [
-            'PPK' => [],
-            'KPA' => [],
+            'PPK'       => [],
             'Bendahara' => [],
-            'BPP' => [],
         ];
 
         foreach ($signatories as $sig) {
             $roleKey = match (true) {
                 str_contains($sig->jabatan, '(PPK)') => 'PPK',
-                str_contains($sig->jabatan, '(KPA)') => 'KPA',
-                str_contains($sig->jabatan, 'Bendahara Pengeluaran Pembantu') || str_contains($sig->jabatan, '(BPP)') => 'BPP',
-                str_contains($sig->jabatan, 'Bendahara') => 'Bendahara',
-                default => $sig->jabatan // Fallback just in case
+                str_contains($sig->jabatan, 'Bendahara') && !str_contains($sig->jabatan, 'Pembantu') => 'Bendahara',
+                default => null
             };
 
-            if (isset($groupedSignatories[$roleKey])) {
+            if ($roleKey && isset($groupedSignatories[$roleKey])) {
                 $groupedSignatories[$roleKey][] = $sig;
             }
         }
@@ -114,9 +110,7 @@ class CompletenessController extends BaseController
 
         $validation = $this->validate([
             'ppk_id' => 'required',
-            'kpa_id' => 'required',
             'bendahara_id' => 'required',
-            'bpp_id' => 'required',
             'members.*.kode_golongan' => 'required',
             'members.*.nama_golongan' => 'required',
             'expense_items' => 'required', // JSON or handle array
@@ -133,9 +127,7 @@ class CompletenessController extends BaseController
             // 1. Update Travel Request Signatories & MAK
             $this->travelRequestModel->update($id, [
                 'ppk_id' => $this->request->getPost('ppk_id'),
-                'kpa_id' => $this->request->getPost('kpa_id'),
                 'bendahara_id' => $this->request->getPost('bendahara_id'),
-                'bpp_id' => $this->request->getPost('bpp_id'),
                 'mak' => $this->request->getPost('mak'),
                 'status' => 'active', // Activate it!
             ]);

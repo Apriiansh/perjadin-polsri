@@ -62,15 +62,13 @@ class ReportController extends BaseController
             ->like('signatories.jabatan', 'PPK')
             ->where('signatories.is_active', 1)->first();
 
-        $bpp = $this->signatoryModel->select('signatories.*, employees.name as employee_name, employees.nip')
-            ->join('employees', 'employees.id = signatories.employee_id')
-            ->like('signatories.jabatan', 'Bendahara Pengeluaran Pembantu')
-            ->where('signatories.is_active', 1)->first();
-
         $bendahara = $this->signatoryModel->select('signatories.*, employees.name as employee_name, employees.nip')
             ->join('employees', 'employees.id = signatories.employee_id')
             ->like('signatories.jabatan', 'Bendahara Pengeluaran')
+            ->notLike('signatories.jabatan', 'Pembantu')
             ->where('signatories.is_active', 1)->first();
+
+
 
         $spjTemplate = new SpjPdfTemplate();
 
@@ -91,7 +89,7 @@ class ReportController extends BaseController
                 $zip->addFromString($memberFolder . '1_SPD_' . $cleanName . '.pdf', $sppdContent);
 
                 // 2. Rincian Biaya & Kuitansi
-                $rincianContent = $spjTemplate->generateRincian($travelRequest, $member, $ppk, $bpp, $bendahara);
+                $rincianContent = $spjTemplate->generateRincian($travelRequest, $member, $ppk, $bendahara);
                 $zip->addFromString($memberFolder . '2_Rincian_Biaya_Kuitansi_' . $cleanName . '.pdf', $rincianContent);
 
                 // 3. Surat Pernyataan
@@ -125,12 +123,12 @@ class ReportController extends BaseController
             $collectiveFolder = 'Laporan/';
 
             // 1. Daftar Kontrol
-            $kontrolContent = $spjTemplate->generateKontrol($travelRequest, $members, $ppk, $bpp);
+            $kontrolContent = $spjTemplate->generateKontrol($travelRequest, $members, $ppk, $bendahara);
             $zip->addFromString($collectiveFolder . '1_Daftar_Kontrol_Pembayaran.pdf', $kontrolContent);
 
             // 2. Daftar Nominatif
             if (count($members) > 1) {
-                $nominatifContent = $spjTemplate->generateNominatif($travelRequest, $members, $ppk, $bpp);
+                $nominatifContent = $spjTemplate->generateNominatif($travelRequest, $members, $ppk, $bendahara);
                 $zip->addFromString($collectiveFolder . '2_Daftar_Nominatif.pdf', $nominatifContent);
             }
 

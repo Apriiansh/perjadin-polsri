@@ -61,10 +61,9 @@ class SpjPdfTemplate
         object $travelRequest, 
         object $member, 
         ?object $ppk = null, 
-        ?object $bpp = null, 
         ?object $bendahara = null
     ): string {
-        $data = $this->prepareSharedData($travelRequest, [$member], $ppk, $bpp, $bendahara);
+        $data = $this->prepareSharedData($travelRequest, [$member], $ppk, $bendahara);
         $data['member']       = $member;
         $data['terbilang']    = $this->terbilang($member->total_biaya ?? 0);
         $data['tempatTerbit'] = $travelRequest->departure_place ?: 'Palembang';
@@ -104,9 +103,9 @@ class SpjPdfTemplate
         object $travelRequest, 
         array $members, 
         ?object $ppk = null, 
-        ?object $bpp = null
+        ?object $bendahara = null
     ): string {
-        $data = $this->prepareSharedData($travelRequest, $members, $ppk, $bpp);
+        $data = $this->prepareSharedData($travelRequest, $members, $ppk, $bendahara);
         $grandTotal = 0;
         foreach ($members as $m) $grandTotal += ($m->total_biaya ?? 0);
         $data['terbilangGrand'] = $this->terbilang($grandTotal);
@@ -123,9 +122,9 @@ class SpjPdfTemplate
         object $travelRequest, 
         array $members, 
         ?object $ppk = null, 
-        ?object $bpp = null
+        ?object $bendahara = null
     ): string {
-        $data = $this->prepareSharedData($travelRequest, $members, $ppk, $bpp);
+        $data = $this->prepareSharedData($travelRequest, $members, $ppk, $bendahara);
         $grandTotal = 0;
         foreach ($members as $m) $grandTotal += ($m->total_biaya ?? 0);
         $data['terbilangGrand'] = $this->terbilang($grandTotal);
@@ -174,7 +173,7 @@ class SpjPdfTemplate
         return $this->renderToPdf($html, 'A4', 'portrait');
     }
 
-    private function prepareSharedData($travelRequest, $members, $ppk = null, $bpp = null, $bendahara = null): array
+    private function prepareSharedData($travelRequest, $members, $ppk = null, $bendahara = null): array
     {
         $tujuan = $travelRequest->destination_city
             ? $travelRequest->destination_city . ', ' . $travelRequest->destination_province
@@ -186,7 +185,6 @@ class SpjPdfTemplate
             'travelRequest'  => $travelRequest,
             'members'        => $members,
             'ppk'            => $ppk,
-            'bpp'            => $bpp,
             'bendahara'      => $bendahara,
             'tujuan'         => $tujuan,
             'transportLabel' => $transportLabel,

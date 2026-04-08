@@ -14,7 +14,7 @@ class DaftarNominatifTemplate
     /**
      * Generate and stream Daftar Nominatif Excel (Original Style)
      */
-    public function generate(object $travelRequest, array $members, ?object $bpp = null): void
+    public function generate(object $travelRequest, array $members, ?object $bendahara = null): void
     {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -122,7 +122,7 @@ class DaftarNominatifTemplate
             $gol = ($member->nama_golongan ?? '') . (($member->nama_golongan && $member->kode_golongan) ? '/' : '') . ($member->kode_golongan ?? '');
             $sheet->setCellValue('E' . $row, $gol);
 
-            $sheet->setCellValue('F' . $row, $travelRequest->lokasi ?: ($travelRequest->destination_city ?: '-'));
+            $sheet->setCellValue('F' . $row, $travelRequest->destination_province ?: '-');
             
             // Fix date format
             $departureDate = !empty($travelRequest->departure_date) ? date('d', strtotime($travelRequest->departure_date)) : '-';
@@ -210,13 +210,13 @@ class DaftarNominatifTemplate
         // ── SIGNATORIES ──────────────────────────────────────────────────────
         $sigStartRow = $row;
 
-        // Left Column: BPP
+        // Left Column: Bendahara
         $sheet->setCellValue('B' . $row, 'Mengetahui,');
         $sheet->setCellValue('B' . ($row + 1), 'yang Membayar,');
         $row += 4;
-        $sheet->setCellValue('B' . $row, $bpp ? $bpp->employee_name : '________________________');
+        $sheet->setCellValue('B' . $row, $bendahara ? $bendahara->employee_name : '________________________');
         $sheet->getStyle('B' . $row)->applyFromArray(['font' => ['bold' => true]]);
-        $sheet->setCellValue('B' . ($row + 1), 'NIP. ' . ($bpp ? ($bpp->nip ?: '-') : '________________________'));
+        $sheet->setCellValue('B' . ($row + 1), 'NIP. ' . ($bendahara ? ($bendahara->nip ?: '-') : '________________________'));
 
         // Right Column: Receiver
         $row = $sigStartRow;

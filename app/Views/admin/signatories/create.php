@@ -31,9 +31,7 @@
             <select id="jabatan" name="jabatan" class="input-control" required>
                 <option value="">-- Pilih Peran/Jabatan --</option>
                 <option value="Pejabat Pembuat Komitmen (PPK)" <?= old('jabatan') == 'Pejabat Pembuat Komitmen (PPK)' ? 'selected' : '' ?>>Pejabat Pembuat Komitmen (PPK)</option>
-                <option value="Kuasa Pengguna Anggaran (KPA)" <?= old('jabatan') == 'Kuasa Pengguna Anggaran (KPA)' ? 'selected' : '' ?>>Kuasa Pengguna Anggaran (KPA)</option>
                 <option value="Bendahara Pengeluaran" <?= old('jabatan') == 'Bendahara Pengeluaran' ? 'selected' : '' ?>>Bendahara Pengeluaran</option>
-                <option value="Bendahara Pengeluaran Pembantu (BPP)" <?= old('jabatan') == 'Bendahara Pengeluaran Pembantu (BPP)' ? 'selected' : '' ?>>Bendahara Pengeluaran Pembantu (BPP)</option>
             </select>
             <p class="mt-1 text-xs text-slate-500">Tentukan kewenangan akses jabatan pegawai di atas waktu penandatanganan.</p>
         </div>

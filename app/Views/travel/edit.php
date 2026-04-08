@@ -26,8 +26,13 @@
         <?= csrf_field() ?>
 
         <!-- Section 1: Data Dasar -->
-        <div>
-            <h3 class="font-bold text-lg mb-4 text-slate-800 border-b border-slate-200 pb-2">1. Data Dasar</h3>
+        <div class="bg-white rounded-xl">
+            <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+                <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600">
+                    <i data-lucide="info" class="w-5 h-5"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800">1. Data Dasar</h3>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                 <div>
                     <label class="form-label mb-2 block">Nomor Surat Tugas <span class="text-red-500">*</span></label>
@@ -66,9 +71,14 @@
         </div>
 
         <!-- Section 2: Surat Rujukan & Lampiran -->
-        <div>
-            <h3 class="font-bold text-lg mb-4 text-slate-800 border-b border-slate-200 pb-2">2. Surat Rujukan & Lampiran</h3>
-            <p class="text-sm text-slate-500 mb-3">Data surat undangan atau dasar penugasan yang menjadi rujukan perjalanan dinas ini.</p>
+        <div class="bg-white rounded-xl">
+            <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800">2. Surat Rujukan & Lampiran</h3>
+            </div>
+            <p class="text-sm text-slate-500 mb-4">Data surat undangan atau dasar penugasan yang menjadi rujukan perjalanan dinas ini.</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                 <div>
                     <label class="form-label mb-2 block">Nomor Surat Rujukan <span class="text-red-500">*</span></label>
@@ -116,11 +126,15 @@
         </div>
 
         <!-- Section 3: Anggota Perjalanan -->
-        <?php
-        $selectedMembers = array_column($travelMembers, 'employee_id');
-        ?>
-        <div>
-            <h3 class="font-bold text-lg mb-4 text-slate-800 border-b border-slate-200 pb-2">3. Anggota Perjalanan</h3>
+        <?php $selectedMembers = array_column($travelMembers, 'employee_id'); ?>
+        <div class="bg-white rounded-xl">
+            <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800">3. Anggota Perjalanan</h3>
+            </div>
+            <p class="text-sm text-slate-500 mb-4">Pilih satu atau lebih dosen yang akan melakukan perjalanan dinas.</p>
             <?php
             $uniqueGolongan = [];
             $uniqueJurusan = [];

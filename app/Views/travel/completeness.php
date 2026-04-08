@@ -89,7 +89,7 @@
                     </div>
 
                     <div class="pt-2 border-t border-slate-100">
-                        <label class="form-label mb-1.5 block">PPK <span class="text-red-500">*</span></label>
+                        <label class="form-label mb-1.5 block text-xs">PPK <span class="text-red-500">*</span></label>
                         <select name="ppk_id" class="input-control sig-select" required>
                             <option value="">Pilih PPK...</option>
                             <?php foreach ($groupedSignatories['PPK'] as $sig): ?>
@@ -98,29 +98,11 @@
                         </select>
                     </div>
                     <div>
-                        <label class="form-label mb-1.5 block">KPA <span class="text-red-500">*</span></label>
-                        <select name="kpa_id" class="input-control sig-select" required>
-                            <option value="">Pilih KPA...</option>
-                            <?php foreach ($groupedSignatories['KPA'] as $sig): ?>
-                                <option value="<?= $sig->id ?>" <?= $request->kpa_id == $sig->id ? 'selected' : '' ?>><?= esc($sig->employee_name) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label mb-1.5 block">Bendahara <span class="text-red-500">*</span></label>
+                        <label class="form-label mb-1.5 block text-xs">Bendahara Pengeluaran <span class="text-red-500">*</span></label>
                         <select name="bendahara_id" class="input-control sig-select" required>
                             <option value="">Pilih Bendahara...</option>
                             <?php foreach ($groupedSignatories['Bendahara'] as $sig): ?>
                                 <option value="<?= $sig->id ?>" <?= $request->bendahara_id == $sig->id ? 'selected' : '' ?>><?= esc($sig->employee_name) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label mb-1.5 block">Bendahara Pengeluaran Pembantu<span class="text-red-500">*</span></label>
-                        <select name="bpp_id" class="input-control sig-select" required>
-                            <option value="">Pilih Bendahara Pengeluaran Pembantu...</option>
-                            <?php foreach ($groupedSignatories['BPP'] as $sig): ?>
-                                <option value="<?= $sig->id ?>" <?= $request->bpp_id == $sig->id ? 'selected' : '' ?>><?= esc($sig->employee_name) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>

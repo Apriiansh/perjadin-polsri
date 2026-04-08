@@ -168,10 +168,10 @@
             <div class="sig-box">
                 <br>Telah dibayar sejumlah<br>
                 <span class="bold">Rp. <?= number_format($totalBiaya, 0, ',', '.') ?> ,-</span><br><br>
-                Bendahara Pengeluaran Pembantu,<br>
+                Bendahara Pengeluaran,<br>
                 <div class="sig-spacer"></div>
-                <span class="bold underline"><?= esc($bpp ? $bpp->employee_name : '___________________________') ?></span><br>
-                NIP. <?= esc($bpp ? ($bpp->nip ?: '-') : '___________________________') ?>
+                <span class="bold underline"><?= esc($bendahara ? $bendahara->employee_name : '___________________________') ?></span><br>
+                NIP. <?= esc($bendahara ? ($bendahara->nip ?: '-') : '___________________________') ?>
             </div>
             <div class="sig-box" style="text-align: left; padding-left: 20px;">
                 <?= esc($tempatTerbit) ?>, <?= $tglSurat ?><br>

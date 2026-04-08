@@ -176,8 +176,8 @@ class TravelRequestController extends BaseController
             'tgl_surat_rujukan'           => $this->request->getPost('tgl_surat_rujukan'),
             'instansi_pengirim_rujukan'   => $this->request->getPost('instansi_pengirim_rujukan'),
             'perihal'                     => $this->request->getPost('perihal'),
-            'destination_province'        => $this->request->getPost('destination_province'),
-            'destination_city'            => $this->request->getPost('destination_city'),
+            'destination_province'        => $this->formatRegionalName($this->request->getPost('destination_province')),
+            'destination_city'            => $this->formatRegionalName($this->request->getPost('destination_city')),
             'lokasi'                      => $this->request->getPost('lokasi') ?: null,
             'departure_place'             => $this->request->getPost('departure_place') ?: null,
             'budget_burden_by'            => $this->request->getPost('budget_burden_by'),
@@ -371,8 +371,8 @@ class TravelRequestController extends BaseController
             'tgl_surat_rujukan'           => $this->request->getPost('tgl_surat_rujukan'),
             'instansi_pengirim_rujukan'   => $this->request->getPost('instansi_pengirim_rujukan'),
             'perihal'                     => $this->request->getPost('perihal'),
-            'destination_province'        => $this->request->getPost('destination_province'),
-            'destination_city'            => $this->request->getPost('destination_city'),
+            'destination_province'        => $this->formatRegionalName($this->request->getPost('destination_province')),
+            'destination_city'            => $this->formatRegionalName($this->request->getPost('destination_city')),
             'lokasi'                      => $this->request->getPost('lokasi') ?: null,
             'departure_place'             => $this->request->getPost('departure_place') ?: null,
             'budget_burden_by'            => $this->request->getPost('budget_burden_by'),
@@ -806,21 +806,21 @@ class TravelRequestController extends BaseController
 
         $members = $this->travelExpenseModel->getByRequestWithMember($id);
 
-        // Resolve BPP
-        $bppId = $travelRequest->bpp_id;
-        $bpp = $this->resolveSignatory((string) $bppId);
+        // Resolve Bendahara
+        $bendaharaId = $travelRequest->bendahara_id;
+        $bendahara = $this->resolveSignatory((string) $bendaharaId);
 
-        if (!$bpp) {
-            $bppSig = $this->signatoryModel
-                ->like('jabatan', 'Bendahara Pengeluaran Pembantu')
+        if (!$bendahara) {
+            $bendaharaSig = $this->signatoryModel
+                ->like('jabatan', 'Bendahara Pengeluaran')
                 ->where('is_active', 1)
                 ->first();
-            if ($bppSig) {
-                $bpp = $this->resolveSignatory((string) $bppSig->id);
+            if ($bendaharaSig) {
+                $bendahara = $this->resolveSignatory((string) $bendaharaSig->id);
             }
         }
 
-        (new \App\Libraries\Templates\DaftarKontrolTemplate())->generate($travelRequest, $members, $bpp);
+        (new \App\Libraries\Templates\DaftarKontrolTemplate())->generate($travelRequest, $members, $bendahara);
         exit;
     }
 
@@ -840,21 +840,22 @@ class TravelRequestController extends BaseController
 
         $members = $this->travelExpenseModel->getByRequestWithMember($id);
 
-        // Resolve BPP
-        $bppId = $travelRequest->bpp_id;
-        $bpp = $this->resolveSignatory((string) $bppId);
+        // Resolve Bendahara
+        $bendaharaId = $travelRequest->bendahara_id;
+        $bendahara = $this->resolveSignatory((string) $bendaharaId);
 
-        if (!$bpp) {
-            $bppSig = $this->signatoryModel
-                ->like('jabatan', 'Bendahara Pengeluaran Pembantu')
+        if (!$bendahara) {
+            $bendaharaSig = $this->signatoryModel
+                ->like('jabatan', 'Bendahara Pengeluaran')
+                ->notLike('jabatan', 'Pembantu')
                 ->where('is_active', 1)
                 ->first();
-            if ($bppSig) {
-                $bpp = $this->resolveSignatory((string) $bppSig->id);
+            if ($bendaharaSig) {
+                $bendahara = $this->resolveSignatory((string) $bendaharaSig->id);
             }
         }
 
-        (new \App\Libraries\Templates\DaftarNominatifTemplate())->generate($travelRequest, $members, $bpp);
+        (new \App\Libraries\Templates\DaftarNominatifTemplate())->generate($travelRequest, $members, $bendahara);
         exit;
     }
 
@@ -887,19 +888,6 @@ class TravelRequestController extends BaseController
             }
         }
 
-        // Resolve BPP
-        $bppId = $travelRequest->bpp_id;
-        $bpp = $this->resolveSignatory((string) $bppId);
-        if (!$bpp) {
-            $bppSig = $this->signatoryModel
-                ->like('jabatan', 'Bendahara Pengeluaran Pembantu')
-                ->where('is_active', 1)
-                ->first();
-            if ($bppSig) {
-                $bpp = $this->resolveSignatory((string) $bppSig->id);
-            }
-        }
-
         // Resolve Bendahara Pengeluaran
         $bendaharaId = $travelRequest->bendahara_id;
         $bendahara = $this->resolveSignatory((string) $bendaharaId);
@@ -914,7 +902,7 @@ class TravelRequestController extends BaseController
             }
         }
 
-        (new \App\Libraries\Templates\BundleExcelTemplate())->generate($travelRequest, $members, $ppk, $bpp, $bendahara);
+        (new \App\Libraries\Templates\BundleExcelTemplate())->generate($travelRequest, $members, $ppk, $bendahara);
         exit;
     }
 
@@ -1001,5 +989,22 @@ class TravelRequestController extends BaseController
                 }
             }
         }
+    }
+    private function formatRegionalName(?string $name): ?string
+    {
+        if (!$name) return null;
+        
+        $acronyms = ['DKI', 'DI', 'NTB', 'NTT', 'NAD', 'DIY'];
+        $words = explode(' ', strtolower($name));
+        
+        $formatted = array_map(function($word) use ($acronyms) {
+            $upper = strtoupper($word);
+            if (in_array($upper, $acronyms)) {
+                return $upper;
+            }
+            return ucfirst($word);
+        }, $words);
+
+        return implode(' ', $formatted);
     }
 }

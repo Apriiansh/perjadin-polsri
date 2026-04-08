@@ -16,8 +16,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (provinces && provinces.length > 0) {
                     provinces.forEach(prov => {
                         const option = document.createElement('option');
-                        option.value = prov.name;
-                        option.textContent = prov.name;
+                        const formattedName = toTitleCase(prov.name);
+                        option.value = formattedName;
+                        option.textContent = formattedName;
                         option.dataset.kode = prov.id;
 
                         // Tandai sebagai terpilih jika nilainya cocok dengan oldValue
@@ -62,8 +63,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (regencies && regencies.length > 0) {
                             regencies.forEach(reg => {
                                 const option = document.createElement('option');
-                                option.value = reg.name;
-                                option.textContent = reg.name;
+                                const formattedName = toTitleCase(reg.name);
+                                option.value = formattedName; // Simpan dalam format cantik ke DB
+                                option.textContent = formattedName;
                                 option.dataset.kode = reg.id;
 
                                 if (oldCity && (oldCity === reg.name || oldCity.toUpperCase() === reg.name.toUpperCase())) {
@@ -80,5 +82,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
             });
         }
+    }
+
+    function toTitleCase(str) {
+        if (!str) return '';
+        const acronyms = ['DKI', 'DI', 'NTB', 'NTT', 'NAD', 'DIY'];
+        return str.toLowerCase().split(' ').map(word => {
+            if (acronyms.includes(word.toUpperCase())) {
+                return word.toUpperCase();
+            }
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(' ');
     }
 });
