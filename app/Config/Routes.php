@@ -61,6 +61,15 @@ $routes->group('', ['filter' => 'session'], static function ($routes): void {
 			$routes->post('(:num)/destroy', 'Admin\UserController::destroy/$1');
 		});
 
+		$routes->group('students', static function ($routes) {
+			$routes->get('/', 'Admin\StudentController::index');
+			$routes->get('(:num)', 'Admin\StudentController::show/$1');
+			$routes->get('(:num)/edit', 'Admin\StudentController::edit/$1');
+			$routes->post('(:num)/update', 'Admin\StudentController::update/$1');
+			$routes->post('(:num)/reset-password', 'Admin\StudentController::resetPassword/$1');
+			$routes->post('(:num)/destroy', 'Admin\StudentController::destroy/$1');
+		});
+
 		$routes->group('tariffs', static function ($routes) {
 			$routes->get('/', 'Admin\TariffController::index');
 			$routes->get('create', 'Admin\TariffController::create');
@@ -72,7 +81,8 @@ $routes->group('', ['filter' => 'session'], static function ($routes): void {
 	});
 
 	// Pengajuan Perdin — accessible by Kepegawaian, Keuangan, Dosen
-	$routes->group('travel', ['filter' => 'group:admin,superadmin,lecturer,verificator'], static function ($routes): void {
+	// Pengajuan Perdin — accessible by Kepegawaian, Keuangan, Dosen, Mahasiswa
+	$routes->group('travel', ['filter' => 'group:admin,superadmin,lecturer,verificator,student'], static function ($routes): void {
 		$routes->get('', 'TravelRequestController::index');
 		$routes->get('active', 'TravelRequestController::active');
 		$routes->get('create', 'TravelRequestController::create');
@@ -108,6 +118,32 @@ $routes->group('', ['filter' => 'session'], static function ($routes): void {
 			$routes->post('(:num)/reject-all', 'ReviewController::rejectAll/$1'); // Phase 21
 			$routes->post('member/(:num)/verify', 'ReviewController::verifyMember/$1'); // Phase 31
 			$routes->post('member/(:num)/reject', 'ReviewController::rejectMember/$1'); // Phase 31
+		});
+
+		// Student Travel Routes (Phase 24)
+		$routes->group('student', static function ($routes) {
+			$routes->get('', 'StudentTravelController::index');
+			$routes->get('create', 'StudentTravelController::create');
+			$routes->post('store', 'StudentTravelController::store');
+			$routes->get('credential', 'StudentTravelController::credential');
+			$routes->get('(:num)', 'StudentTravelController::show/$1');
+			$routes->get('(:num)/download', 'StudentTravelController::downloadReport/$1');
+
+			// Support Documentation (Perjadin Mahasiswa)
+			$routes->get('(:num)/enrichment', 'StudentCompletenessController::enrichment/$1');
+			$routes->post('(:num)/enrichment', 'StudentCompletenessController::storeEnrichment/$1');
+
+			$routes->get('(:num)/documentation', 'StudentReviewController::documentation/$1');
+			$routes->post('(:num)/documentation', 'StudentReviewController::submitDocumentation/$1');
+			$routes->get('(:num)/verification', 'StudentReviewController::verification/$1');
+			$routes->post('(:num)/verify/(:segment)', 'StudentReviewController::verifyAll/$1');
+
+			$routes->post('(:num)/destroy', 'StudentTravelController::destroy/$1'); 
+			$routes->post('(:num)/cancel', 'StudentTravelController::cancel/$1');
+
+			$routes->delete('file/(:num)', 'StudentReviewController::deleteFile/$1');
+			$routes->get('file/(:num)', 'StudentReviewController::viewFile/$1');
+			$routes->get('download/(:num)', 'StudentReviewController::downloadFile/$1');
 		});
 	});
 

@@ -6,7 +6,8 @@ $groupTitles = array_map(fn($group) => $config->groups[$group]['title'] ?? $grou
 $isAdmin = in_array('superadmin', $userGroups) || in_array('admin', $userGroups);
 $isSuperAdmin = in_array('superadmin', $userGroups);
 $isVerificatorOnly = in_array('verificator', $userGroups) && !$isAdmin;
-$isLecturerOnly = in_array('lecturer', $userGroups) && !$isAdmin && !$isVerificatorOnly;
+$isStudent = in_array('student', $userGroups);
+$isLecturerOnly = in_array('lecturer', $userGroups) && !$isAdmin && !$isVerificatorOnly && !$isStudent;
 ?>
 <aside class="flex h-full flex-col border-r border-surface-200 bg-white lg:min-h-screen">
   <!-- Brand header -->
@@ -41,19 +42,26 @@ $isLecturerOnly = in_array('lecturer', $userGroups) && !$isAdmin && !$isVerifica
       </a>
     <?php endif; ?>
 
-    <?php 
-      // Consolidate "travel/active" links to remove redundancy (Phase 22)
-      // Perjadin Aktif hidden for superadmin as they use the main "Perjalanan Dinas" list
-      $showActive = ($isLecturerOnly || $isVerificatorOnly || $isAdmin) && !$isSuperAdmin;
-      if ($showActive): 
-        $activeTitle = 'Perjadin Aktif';
-        $activeIcon = 'check-circle';
-        
-        // If user is ONLY a verificator (not admin), show "Verifikasi Perdin"
-        if ($isVerificatorOnly) {
-          $activeTitle = 'Verifikasi Perdin';
-          $activeIcon = 'shield-check';
-        }
+    <?php if ($isAdmin || $isStudent): ?>
+      <a href="<?= base_url('travel/student') ?>" class="sidebar-link group <?= str_starts_with($current, 'travel/student') ? 'active' : '' ?>">
+        <i data-lucide="graduation-cap" class="sidebar-icon"></i>
+        Perjadin Mahasiswa
+      </a>
+    <?php endif; ?>
+
+    <?php
+    // Consolidate "travel/active" links to remove redundancy (Phase 22)
+    // Perjadin Aktif hidden for superadmin as they use the main "Perjalanan Dinas" list
+    $showActive = ($isLecturerOnly || $isVerificatorOnly || $isAdmin) && !$isSuperAdmin;
+    if ($showActive):
+      $activeTitle = 'Perjadin Aktif';
+      $activeIcon = 'check-circle';
+
+      // If user is ONLY a verificator (not admin), show "Verifikasi Perdin"
+      if ($isVerificatorOnly) {
+        $activeTitle = 'Verifikasi Perdin';
+        $activeIcon = 'shield-check';
+      }
     ?>
       <a href="<?= base_url('travel/active') ?>" class="sidebar-link group <?= str_starts_with($current, 'travel/active') ? 'active' : '' ?>">
         <i data-lucide="<?= $activeIcon ?>" class="sidebar-icon"></i>
@@ -76,6 +84,11 @@ $isLecturerOnly = in_array('lecturer', $userGroups) && !$isAdmin && !$isVerifica
       <a href="<?= base_url('admin/employees') ?>" class="sidebar-link group <?= str_starts_with($current, 'admin/employees') ? 'active' : '' ?>">
         <i data-lucide="users" class="sidebar-icon"></i>
         Manage Pegawai
+      </a>
+
+      <a href="<?= base_url('admin/students') ?>" class="sidebar-link group <?= str_starts_with($current, 'admin/students') ? 'active' : '' ?>">
+        <i data-lucide="graduation-cap" class="sidebar-icon"></i>
+        Manage Mahasiswa
       </a>
 
       <a href="<?= base_url('admin/users') ?>" class="sidebar-link group <?= str_starts_with($current, 'admin/users') ? 'active' : '' ?>">

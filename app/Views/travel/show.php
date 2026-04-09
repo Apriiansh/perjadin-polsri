@@ -402,12 +402,34 @@
                         </form>
 
                     <?php elseif ($travelRequest->status === 'active'): ?>
-                        <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-100 text-[10px] text-emerald-700 leading-relaxed relative overflow-hidden group mb-1">
-                            <div class="absolute -right-2 -top-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <i data-lucide="check-circle-2" class="w-12 h-12"></i>
+                        <?php
+                        $totalTeamMembers = count($members ?? []);
+                        $submittedDocumentationMembers = 0;
+                        foreach (($members ?? []) as $m) {
+                            if (!empty($m->documentation_files)) {
+                                $submittedDocumentationMembers++;
+                            }
+                        }
+                        $pendingDocumentationMembers = max(0, $totalTeamMembers - $submittedDocumentationMembers);
+                        ?>
+                        <?php if ($totalTeamMembers > 0 && $pendingDocumentationMembers > 0): ?>
+                            <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 text-[10px] text-amber-700 leading-relaxed relative overflow-hidden group mb-1">
+                                <div class="absolute -right-2 -top-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <i data-lucide="clock-3" class="w-12 h-12"></i>
+                                </div>
+                                <strong>Status Aktif:</strong>
+                                Dokumentasi tim belum lengkap.
+                                <strong><?= $submittedDocumentationMembers ?>/<?= $totalTeamMembers ?></strong> dosen sudah mengumpulkan,
+                                <strong><?= $pendingDocumentationMembers ?></strong> dosen masih belum mengumpulkan dokumentasi.
                             </div>
-                            <strong>Status Aktif:</strong> Data sudah lengkap. Berkas siap diunduh.
-                        </div>
+                        <?php else: ?>
+                            <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-100 text-[10px] text-emerald-700 leading-relaxed relative overflow-hidden group mb-1">
+                                <div class="absolute -right-2 -top-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <i data-lucide="check-circle-2" class="w-12 h-12"></i>
+                                </div>
+                                <strong>Status Aktif:</strong> Seluruh anggota tim sudah mengumpulkan dokumentasi.
+                            </div>
+                        <?php endif; ?>
                         <?php if ($travelRequest->status === 'active' || (auth()->user()->inGroup('superadmin') && $travelRequest->status === 'completed')): ?>
                             <div class="flex flex-col gap-2">
                                 <a href="<?= base_url('travel/' . $travelRequest->id . '/enrichment') ?>" class="btn-warning w-full justify-center shadow-md hover:shadow-lg transition-all animate-in fade-in slide-in-from-bottom-2">
@@ -479,6 +501,19 @@ if (($hasAnyDoc || $travelRequest->status === 'active') && !empty($members)):
                     </a>
                 <?php endif; ?>
             </div>
+            <?php if ($hasPendingValidationDocs ?? false): ?>
+                <div class="px-4 py-2 text-[10px] font-semibold text-amber-700 bg-amber-50 border-b border-amber-200">
+                    Status dokumentasi: <strong>Menunggu validasi</strong>.
+                </div>
+            <?php elseif ($hasRejectedDocs ?? false): ?>
+                <div class="px-4 py-2 text-[10px] font-semibold text-rose-700 bg-rose-50 border-b border-rose-200">
+                    Status dokumentasi: <strong>Perlu perbaikan</strong>.
+                </div>
+            <?php elseif ($hasVerifiedDocs ?? false): ?>
+                <div class="px-4 py-2 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border-b border-emerald-200">
+                    Status dokumentasi: <strong>Sudah tervalidasi</strong>.
+                </div>
+            <?php endif; ?>
 
             <!-- Member grid: 2 cols on larger screens -->
             <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100">

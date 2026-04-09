@@ -39,6 +39,7 @@ class TravelRequestModel extends Model
         'bendahara_id',
         'bpp_id',
         'created_by',
+        'category',
     ];
 
     protected bool $allowEmptyInserts = false;
@@ -139,9 +140,21 @@ class TravelRequestModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    public function getMyRequests(int $userId): array
+    public function getMyRequests(int $userId, ?string $category = null): array
     {
-        return $this->where('created_by', $userId)->orderBy('created_at', 'DESC')->findAll();
+        $builder = $this->where('created_by', $userId);
+        
+        if ($category) {
+            $builder->where('category', $category);
+        } else {
+            // Default: if no category specified, show everything EXCEPT mahasiswa (legacy/pegawai)
+            $builder->groupStart()
+                    ->where('category !=', 'mahasiswa')
+                    ->orWhere('category', null)
+                    ->groupEnd();
+        }
+
+        return $builder->orderBy('created_at', 'DESC')->findAll();
     }
 
     public function getDetail(int $id)
@@ -152,11 +165,22 @@ class TravelRequestModel extends Model
             ->first();
     }
 
-    public function getAllRequests(): array
+    public function getAllRequests(?string $category = null): array
     {
-        return $this->select('travel_requests.*, users.username as creator_username')
-            ->join('users', 'users.id = travel_requests.created_by', 'left')
-            ->orderBy('travel_requests.created_at', 'DESC')
+        $builder = $this->select('travel_requests.*, users.username as creator_username')
+            ->join('users', 'users.id = travel_requests.created_by', 'left');
+
+        if ($category) {
+            $builder->where('category', $category);
+        } else {
+            // Default: if no category specified, show everything EXCEPT mahasiswa (legacy/pegawai)
+            $builder->groupStart()
+                    ->where('category !=', 'mahasiswa')
+                    ->orWhere('category', null)
+                    ->groupEnd();
+        }
+
+        return $builder->orderBy('travel_requests.created_at', 'DESC')
             ->findAll();
     }
 }

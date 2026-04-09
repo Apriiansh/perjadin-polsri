@@ -57,6 +57,10 @@ class AuthGroups extends ShieldAuthGroups
             'title'       => 'Dosen',
             'description' => 'Travelers who upload documents and view ST/SPPD.',
         ],
+        'student' => [
+            'title'       => 'Mahasiswa',
+            'description' => 'Student travelers who upload group documents.',
+        ],
     ];
 
     /**
@@ -73,6 +77,10 @@ class AuthGroups extends ShieldAuthGroups
         'travel.edit'   => 'Can edit travel requests',
         'travel.view'   => 'Can view travel requests',
         'travel.delete' => 'Can delete travel requests',
+
+        // Student Travel
+        'travel.student.create' => 'Can create student travel requests',
+        'travel.student.view'   => 'Can view student travel requests',
 
         // Verification
         'verification.verify' => 'Can verify travel documents',
@@ -128,6 +136,10 @@ class AuthGroups extends ShieldAuthGroups
             'travel.create',
             'travel.edit',  // Hanya own
             'travel.view',  // Hanya own
+        ],
+        'student' => [
+            'travel.view',
+            'travel.student.view',
         ],
     ];
 }

@@ -64,7 +64,18 @@ class TravelRequestController extends BaseController
             }
             $memberRows = $this->travelMemberModel->where('employee_id', $employee['id'])->findAll();
             $requestIds = array_unique(array_column($memberRows, 'travel_request_id'));
-            $allRequests = !empty($requestIds) ? $this->travelRequestModel->whereIn('id', $requestIds)->orderBy('created_at', 'DESC')->findAll() : [];
+            
+            if (!empty($requestIds)) {
+                $allRequests = $this->travelRequestModel->whereIn('id', $requestIds)
+                    ->groupStart()
+                        ->where('category !=', 'mahasiswa')
+                        ->orWhere('category', null)
+                    ->groupEnd()
+                    ->orderBy('created_at', 'DESC')
+                    ->findAll();
+            } else {
+                $allRequests = [];
+            }
         }
 
         // 2. Attach documentation stats to ALL (to count "pending" correctly)
@@ -121,7 +132,18 @@ class TravelRequestController extends BaseController
             }
             $memberRows = $this->travelMemberModel->where('employee_id', $employee['id'])->findAll();
             $requestIds = array_unique(array_column($memberRows, 'travel_request_id'));
-            $allRequests = !empty($requestIds) ? $this->travelRequestModel->whereIn('id', $requestIds)->orderBy('created_at', 'DESC')->findAll() : [];
+            
+            if (!empty($requestIds)) {
+                $allRequests = $this->travelRequestModel->whereIn('id', $requestIds)
+                    ->groupStart()
+                        ->where('category !=', 'mahasiswa')
+                        ->orWhere('category', null)
+                    ->groupEnd()
+                    ->orderBy('created_at', 'DESC')
+                    ->findAll();
+            } else {
+                $allRequests = [];
+            }
         }
 
         $this->attachDocumentationStats($allRequests);
@@ -318,6 +340,16 @@ class TravelRequestController extends BaseController
         // Legacy items go to global completeness display if needed
         $completeness = $legacyCompleteness;
 
+        $uploadedDocsCount = $completenessModel->where('travel_request_id', $id)
+            ->where('status', 'uploaded')
+            ->countAllResults();
+        $verifiedDocsCount = $completenessModel->where('travel_request_id', $id)
+            ->where('status', 'verified')
+            ->countAllResults();
+        $rejectedDocsCount = $completenessModel->where('travel_request_id', $id)
+            ->where('status', 'rejected')
+            ->countAllResults();
+
         return view('travel/show', [
             'title'          => 'Detail Perjalanan Dinas',
             'travelRequest'  => $travelRequest,
@@ -325,6 +357,9 @@ class TravelRequestController extends BaseController
             'completeness'   => $completeness,
             'signatories'    => $this->signatoryModel->getAllWithEmployee(),
             'isStaff'        => $this->isStaff(),
+            'hasPendingValidationDocs' => $uploadedDocsCount > 0,
+            'hasRejectedDocs' => $rejectedDocsCount > 0,
+            'hasVerifiedDocs' => $verifiedDocsCount > 0,
         ]);
     }
 
