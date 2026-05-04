@@ -423,6 +423,9 @@
       max-width: 96rem;
     }
   }
+  .\!m-0 {
+    margin: calc(var(--spacing) * 0) !important;
+  }
   .-mx-6 {
     margin-inline: calc(var(--spacing) * -6);
   }
@@ -440,6 +443,9 @@
   }
   .my-2 {
     margin-block: calc(var(--spacing) * 2);
+  }
+  .\!mt-0 {
+    margin-top: calc(var(--spacing) * 0) !important;
   }
   .mt-0\.5 {
     margin-top: calc(var(--spacing) * 0.5);
@@ -561,6 +567,9 @@
   .table {
     display: table;
   }
+  .\!h-10 {
+    height: calc(var(--spacing) * 10) !important;
+  }
   .h-1 {
     height: calc(var(--spacing) * 1);
   }
@@ -629,6 +638,9 @@
   }
   .min-h-screen {
     min-height: 100vh;
+  }
+  .\!w-full {
+    width: 100% !important;
   }
   .w-0\.5 {
     width: calc(var(--spacing) * 0.5);
@@ -1253,6 +1265,12 @@
   .bg-amber-100 {
     background-color: var(--color-amber-100);
   }
+  .bg-amber-100\/50 {
+    background-color: color-mix(in srgb, oklch(96.2% 0.059 95.617) 50%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-amber-100) 50%, transparent);
+    }
+  }
   .bg-amber-500 {
     background-color: var(--color-amber-500);
   }
@@ -1751,6 +1769,10 @@
   }
   .font-mono {
     font-family: var(--font-mono);
+  }
+  .\!text-sm {
+    font-size: var(--text-sm) !important;
+    line-height: var(--tw-leading, var(--text-sm--line-height)) !important;
   }
   .text-2xl {
     font-size: var(--text-2xl);

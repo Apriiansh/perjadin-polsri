@@ -151,26 +151,46 @@
     });
 
     async function downloadWithDate(url, title, defaultDate) {
-        const { value: date } = await Swal.fire({
+        const {
+            value: formValues
+        } = await Swal.fire({
             title: title,
-            html: '<p class="text-xs text-slate-500 mb-2 leading-relaxed">Pilih tanggal untuk bagian tanda tangan Surat Pernyataan dalam bundle ini.<br>Biarkan sesuai input untuk menggunakan <b>Tanggal Surat Tugas</b> default.</p>',
-            input: 'date',
-            inputValue: defaultDate,
+            html: `
+                <div class="text-left space-y-3 px-1">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tanggal Surat Pernyataan</label>
+                        <input id="swal-stmt-date" type="date" class="swal2-input !m-0 !w-full !text-sm" value="${defaultDate}">
+                        <p class="text-[9px] text-slate-400 mt-1 italic leading-tight">Digunakan untuk bagian tanda tangan Surat Pernyataan dalam bundle ini.</p>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Nomor SPPD</label>
+                        <input id="swal-no-sppd" type="text" class="swal2-input !m-0 !w-full !text-sm" placeholder="xxxx/SPPD/BLU/202x">
+                        <p class="text-[9px] text-slate-400 mt-1 italic leading-tight">Digunakan pada Rincian Biaya & Kuitansi. Kosongkan untuk format default.</p>
+                    </div>
+                </div>
+            `,
+            focusConfirm: false,
             showCancelButton: true,
             confirmButtonText: 'Download',
             cancelButtonText: 'Batal',
             confirmButtonColor: '#4f46e5',
             cancelButtonColor: '#64748b',
+            preConfirm: () => {
+                return {
+                    date: document.getElementById('swal-stmt-date').value,
+                    no_sppd: document.getElementById('swal-no-sppd').value
+                }
+            }
         });
 
-        if (date) {
+        if (formValues) {
             const separator = url.includes('?') ? '&' : '?';
-            window.location.href = `${url}${separator}stmt_date=${date}`;
-        } else if (date === '') {
-            // If user cleared and clicked download, use default
-            window.location.href = url;
+            let finalUrl = `${url}${separator}stmt_date=${formValues.date}`;
+            if (formValues.no_sppd) {
+                finalUrl += `&no_sppd=${encodeURIComponent(formValues.no_sppd)}`;
+            }
+            window.location.href = finalUrl;
         }
-        // if dismissed, do nothing
     }
 </script>
 <?= $this->endSection() ?>

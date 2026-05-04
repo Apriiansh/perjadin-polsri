@@ -543,22 +543,22 @@ class TravelRequestController extends BaseController
     public function cancel(int $id): ResponseInterface
     {
         if (!$this->isStaff()) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Akses ditolak.']);
+            return redirect()->back()->with('error', 'Akses ditolak.');
         }
 
         $travelRequest = $this->travelRequestModel->find($id);
         if (!$travelRequest) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Data tidak ditemukan.']);
+            return redirect()->back()->with('error', 'Data tidak ditemukan.');
         }
 
         // Only allow cancelling active or draft requests
         if (!in_array($travelRequest->status, ['draft', 'active'])) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Hanya pengajuan berstatus draft atau aktif yang dapat dibatalkan.']);
+            return redirect()->back()->with('error', 'Hanya pengajuan berstatus draft atau aktif yang dapat dibatalkan.');
         }
 
         $this->travelRequestModel->update($id, ['status' => 'cancelled']);
 
-        return $this->response->setJSON(['status' => 'success', 'message' => 'Perjalanan dinas telah dibatalkan.']);
+        return redirect()->back()->with('success', 'Perjalanan dinas telah dibatalkan.');
     }
 
     public function complete(int $id): ResponseInterface
@@ -938,7 +938,10 @@ class TravelRequestController extends BaseController
             }
         }
 
-        (new \App\Libraries\Templates\BundleExcelTemplate())->generate($travelRequest, $members, $ppk, $bendahara);
+        $stmtDate = $this->request->getGet('stmt_date');
+        $noSppd = $this->request->getGet('no_sppd');
+
+        (new \App\Libraries\Templates\BundleExcelTemplate())->generate($travelRequest, $members, $ppk, $bendahara, $stmtDate, $noSppd);
         exit;
     }
 

@@ -129,7 +129,8 @@
                                         ?>
                                         <div class="flex items-center justify-between gap-2 px-2 py-1.5 bg-slate-50/50 border <?= $isRepresentative ? 'border-primary-200 bg-primary-50/30' : 'border-slate-100' ?> rounded-lg w-full max-w-[280px] transition-all hover:bg-white hover:border-slate-200 hover:shadow-sm">
                                             <div class="flex items-center gap-2.5 min-w-0">
-                                                <div class="flex h-7 w-7 shrink-0 <?= $isRepresentative ? 'bg-primary-500 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200' ?> rounded-lg items-center justify-center text-[10px] font-bold uppercase">
+                                                <?php $badgeColor = $isRepresentative ? 'bg-primary-500 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200'; ?>
+                                                <div class="flex h-7 w-7 shrink-0 <?= $badgeColor ?> rounded-lg items-center justify-center text-[10px] font-bold uppercase">
                                                     <?= esc(substr((string) ($member->name ?? 'M'), 0, 1)) ?>
                                                 </div>
                                                 <div class="flex flex-col min-w-0">

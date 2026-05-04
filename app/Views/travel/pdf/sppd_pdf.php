@@ -157,6 +157,7 @@
         <div class="document-page <?= ($showBackPage || $idx < count($members) - 1) ? 'page-break' : '' ?>">
 
             <div class="spd-title">SURAT PERJALANAN DINAS (SPD)</div>
+<?php $noSppdDisplay = $custom_no_sppd ?: ($member->no_sppd ?: '          /SPPD/BLU/' . ($travelRequest->tahun_anggaran ?: date('Y'))); ?>
 
             <table class="spd-table">
                 <!-- Row 1: PPK -->

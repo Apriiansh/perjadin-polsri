@@ -14,6 +14,7 @@ class SpjPdfTemplate
     ];
 
     private $options;
+    private $noSppd = null;
 
     public function __construct()
     {
@@ -21,6 +22,17 @@ class SpjPdfTemplate
         $this->options->set('isHtml5ParserEnabled', true);
         $this->options->set('isRemoteEnabled', true);
         $this->options->set('defaultFont', 'Times New Roman');
+    }
+
+    /**
+     * Set custom SPPD number for documentation.
+     * 
+     * @param string $noSppd
+     * @return void
+     */
+    public function setNoSppd(string $noSppd): void
+    {
+        $this->noSppd = $noSppd;
     }
 
     /**
@@ -177,9 +189,8 @@ class SpjPdfTemplate
 
     private function prepareSharedData($travelRequest, $members, $ppk = null, $bendahara = null): array
     {
-        $tujuan = $travelRequest->destination_city
-            ? $travelRequest->destination_city . ', ' . $travelRequest->destination_province
-            : $travelRequest->destination_province;
+        $city = $travelRequest->destination_city ?: $travelRequest->destination_province;
+        $tujuan = $this->formatRegionalName($city);
 
         $transportLabel = self::TRANSPORT_LABELS[strtolower((string) $travelRequest->transportation_type)] ?? strtoupper((string) $travelRequest->transportation_type);
 
@@ -192,6 +203,7 @@ class SpjPdfTemplate
             'transportLabel' => $transportLabel,
             'tglSurat'       => $this->formatTanggal($travelRequest->created_at),
             'tempatTerbit'   => $travelRequest->departure_place ?: 'Palembang',
+            'custom_no_sppd' => $this->noSppd,
         ];
     }
 
@@ -207,6 +219,24 @@ class SpjPdfTemplate
     {
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         return in_array($ext, ['jpg', 'jpeg', 'png', 'webp']);
+    }
+
+    private function formatRegionalName(?string $name): ?string
+    {
+        if (!$name) return null;
+        
+        $acronyms = ['DKI', 'DI', 'NTB', 'NTT', 'NAD', 'DIY'];
+        $words = explode(' ', strtolower($name));
+        
+        $formatted = array_map(function($word) use ($acronyms) {
+            $upper = strtoupper($word);
+            if (in_array($upper, $acronyms)) {
+                return $upper;
+            }
+            return ucfirst($word);
+        }, $words);
+
+        return implode(' ', $formatted);
     }
 
     public function formatTanggal(?string $date): string

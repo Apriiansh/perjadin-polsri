@@ -32,15 +32,16 @@ class BundleExcelTemplate
         array  $members,
         ?object $ppk = null,
         ?object $bendahara = null,
+        ?string $stmtDate = null,
+        ?string $noSppd = null,
     ): void {
         helper('terbilang');
 
         $spreadsheet = new Spreadsheet();
         $spreadsheet->removeSheetByIndex(0);
 
-        $tujuan = $travelRequest->destination_city
-            ? $travelRequest->destination_city . ', ' . $travelRequest->destination_province
-            : $travelRequest->destination_province;
+        $city = $travelRequest->destination_city ?: $travelRequest->destination_province;
+        $tujuan = $this->formatRegionalName($city);
 
         $tglBerangkat = !empty($travelRequest->departure_date) ? $this->formatTanggal($travelRequest->departure_date) : '-';
         $tglKembali   = !empty($travelRequest->return_date) ? $this->formatTanggal($travelRequest->return_date) : '-';
@@ -51,30 +52,32 @@ class BundleExcelTemplate
         // ── Sheet 1: SPD (all members) ────────────────────────────────
         $sheetSpd = new Worksheet($spreadsheet, 'SPD');
         $spreadsheet->addSheet($sheetSpd);
-        $this->buildSpdSheet($sheetSpd, $travelRequest, $members, $ppk, $tujuan, $tglBerangkat, $tglKembali, $tglSurat, $tempatTerbit, $transportLabel);
+        $this->buildSpdSheet($sheetSpd, $travelRequest, $members, $ppk, $tujuan, $tglBerangkat, $tglKembali, $tglSurat, $tempatTerbit, $transportLabel, $noSppd);
 
         // ── Sheet 2: Rincian Biaya Perjadin (all members) ─────────────
         $sheetRincian = new Worksheet($spreadsheet, 'Rincian Biaya Perjadin');
         $spreadsheet->addSheet($sheetRincian);
-        $this->buildRincianSheet($sheetRincian, $travelRequest, $members, $ppk, $bendahara, $tujuan, $tglSurat, $tempatTerbit);
+        $this->buildRincianSheet($sheetRincian, $travelRequest, $members, $ppk, $bendahara, $tujuan, $tglSurat, $tempatTerbit, $noSppd);
 
         // ── Sheet 3+: Surat Pernyataan per member ─────────────────────
         foreach ($members as $idx => $member) {
             $name = $this->sheetName('Pernyataan ' . ($idx + 1) . ' - ' . $member->employee_name);
             $sheet = new Worksheet($spreadsheet, $name);
             $spreadsheet->addSheet($sheet);
-            $this->buildPernyataanSheet($sheet, $travelRequest, $member, $ppk, $tempatTerbit, $tglSurat);
+            $customTgl = $stmtDate ?: $travelRequest->tgl_surat_tugas;
+            $formattedCustomTgl = $this->formatTanggal($customTgl);
+            $this->buildPernyataanSheet($sheet, $travelRequest, $member, $ppk, $tempatTerbit, $formattedCustomTgl);
         }
 
         // ── Daftar Kontrol ────────────────────────────────────────────
         $sheetCtrl = new Worksheet($spreadsheet, 'Daftar Kontrol');
         $spreadsheet->addSheet($sheetCtrl);
-        $this->buildKontrolSheet($sheetCtrl, $travelRequest, $members, $bendahara);
+        $this->buildKontrolSheet($sheetCtrl, $travelRequest, $members, $bendahara, $tujuan);
 
         // ── Daftar Nominatif ──────────────────────────────────────────
         $sheetNom = new Worksheet($spreadsheet, 'Daftar Nominatif');
         $spreadsheet->addSheet($sheetNom);
-        $this->buildNominatifSheet($sheetNom, $travelRequest, $members, $bendahara);
+        $this->buildNominatifSheet($sheetNom, $travelRequest, $members, $bendahara, $tujuan);
 
         // ── Output ────────────────────────────────────────────────────
         $spreadsheet->setActiveSheetIndex(0);
@@ -106,6 +109,7 @@ class BundleExcelTemplate
         string $tglSurat,
         string $tempatTerbit,
         string $transportLabel,
+        ?string $customNoSppd = null,
     ): void {
         // Columns: A(num) B(sub-prefix) C(label) D(val-prefix) E(val1) F(val2)
         $sheet->getColumnDimension('A')->setWidth(4);
@@ -133,6 +137,7 @@ class BundleExcelTemplate
                 $tglSurat,
                 $tempatTerbit,
                 $transportLabel,
+                $customNoSppd,
             );
         }
 
@@ -152,6 +157,7 @@ class BundleExcelTemplate
         string $tglSurat,
         string $tempatTerbit,
         string $transportLabel,
+        ?string $customNoSppd = null,
     ): int {
         $bold   = ['font' => ['bold' => true]];
 
@@ -172,6 +178,13 @@ class BundleExcelTemplate
         // ── Empty row above ───────────────────────────────────────────
         $row++;
 
+        $noSppdDisplay = $customNoSppd ?: ( ($member->no_sppd ?? '') ?: ('          /SPPD/BLU/' . ($travelRequest->tahun_anggaran ?: date('Y'))) );
+
+        $row = $startRow;
+
+        // ── Empty row above ───────────────────────────────────────────
+        $row++;
+
         // ── Title ─────────────────────────────────────────────────────
         $sheet->setCellValue('A' . $row, 'SURAT PERJALANAN DINAS');
         $sheet->mergeCells('A' . $row . ':F' . $row);
@@ -179,7 +192,15 @@ class BundleExcelTemplate
             'font'      => ['bold' => true, 'size' => 14, 'underline' => true],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
         ]);
-        $row += 2;
+
+        $row++;
+
+        $sheet->mergeCells('A' . $row . ':F' . $row);
+        $sheet->getStyle('A' . $row)->applyFromArray([
+            'font'      => ['bold' => true],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+        ]);
+        $row++;
 
         // ── Bordered table ────────────────────────────────────────────
         $tableStart = $row;
@@ -334,6 +355,7 @@ class BundleExcelTemplate
         string $tujuan,
         string $tglSurat,
         string $tempatTerbit,
+        ?string $customNoSppd = null,
     ): void {
         // Column widths matching example: A-K
         $sheet->getColumnDimension('A')->setWidth(5);
@@ -364,6 +386,7 @@ class BundleExcelTemplate
                 $tujuan,
                 $tglSurat,
                 $tempatTerbit,
+                $customNoSppd,
             );
         }
 
@@ -381,6 +404,7 @@ class BundleExcelTemplate
         string $tujuan,
         string $tglSurat,
         string $tempatTerbit,
+        ?string $customNoSppd = null,
     ): int {
         $bold = ['font' => ['bold' => true]];
 
@@ -401,7 +425,7 @@ class BundleExcelTemplate
 
         $noSppd = $member->no_sppd ?? '';
         $tglSppd = !empty($member->tgl_sppd) ? $this->formatTanggal($member->tgl_sppd) : $tglSurat;
-        $noSppdDisplay = $noSppd ?: ('          /SPPD/BLU/' . ($travelRequest->tahun_anggaran ?: date('Y')));
+        $noSppdDisplay = $customNoSppd ?: ($noSppd ?: ('          /SPPD/BLU/' . ($travelRequest->tahun_anggaran ?: date('Y'))));
 
         $row = $startRow;
 
@@ -485,7 +509,7 @@ class BundleExcelTemplate
             }
             if (($member->tiket ?? 0) > 0) {
                 $categories[] = [
-                    'Tiket ' . ($travelRequest->departure_place ?: 'Palembang') . '-' . ($travelRequest->destination_city ?: $tujuan) . ' (PP)',
+                    'Tiket ' . ($travelRequest->departure_place ?: 'Palembang') . '-' . $tujuan . ' (PP)',
                     $member->tiket,
                 ];
             }
@@ -715,7 +739,7 @@ class BundleExcelTemplate
             ['Berdasarkan SPPD', $travelRequest->budget_burden_by ?: 'Direktur Politeknik Negeri Sriwijaya'],
             ['Nomor', $noSppdDisplay],
             ['Tanggal', $tglSppd],
-            ['Untuk perjalanan dinas dari', ($travelRequest->departure_place ?: 'Palembang') . '-' . ($travelRequest->destination_city ?: $tujuan)],
+            ['Untuk perjalanan dinas dari', ($travelRequest->departure_place ?: 'Palembang') . '-' . $tujuan],
             ['Terbilang', $terbilangText],
         ];
 
@@ -934,7 +958,7 @@ class BundleExcelTemplate
     //  Daftar Kontrol
     // ═════════════════════════════════════════════════════════════════════
 
-    private function buildKontrolSheet(Worksheet $sheet, object $travelRequest, array $members, ?object $bendahara): void
+    private function buildKontrolSheet(Worksheet $sheet, object $travelRequest, array $members, ?object $bendahara, string $tujuan): void
     {
         $cols = [
             'A' => 5,
@@ -1039,7 +1063,7 @@ class BundleExcelTemplate
 
             $gol = ($member->nama_golongan ?? '') . (($member->nama_golongan && $member->kode_golongan) ? '/' : '') . ($member->kode_golongan ?? '');
             $sheet->setCellValue('E' . $row, $gol);
-            $sheet->setCellValue('F' . $row, $travelRequest->destination_province ?: '-');
+            $sheet->setCellValue('F' . $row, $tujuan);
 
             $dep = !empty($travelRequest->departure_date) ? date('d', strtotime($travelRequest->departure_date)) : '-';
             $ret = !empty($travelRequest->return_date) ? date('d/m/Y', strtotime($travelRequest->return_date)) : '-';
@@ -1129,7 +1153,7 @@ class BundleExcelTemplate
     //  Daftar Nominatif
     // ═════════════════════════════════════════════════════════════════════
 
-    private function buildNominatifSheet(Worksheet $sheet, object $travelRequest, array $members, ?object $bendahara): void
+    private function buildNominatifSheet(Worksheet $sheet, object $travelRequest, array $members, ?object $bendahara, string $tujuan): void
     {
         $cols = [
             'A' => 5,
@@ -1230,7 +1254,7 @@ class BundleExcelTemplate
 
             $gol = ($member->nama_golongan ?? '') . (($member->nama_golongan && $member->kode_golongan) ? '/' : '') . ($member->kode_golongan ?? '');
             $sheet->setCellValue('E' . $row, $gol);
-            $sheet->setCellValue('F' . $row, $travelRequest->destination_province ?: '-');
+            $sheet->setCellValue('F' . $row, $tujuan);
 
             $dep = !empty($travelRequest->departure_date) ? date('d', strtotime($travelRequest->departure_date)) : '-';
             $ret = !empty($travelRequest->return_date) ? date('d/m/Y', strtotime($travelRequest->return_date)) : '-';
@@ -1320,6 +1344,24 @@ class BundleExcelTemplate
     {
         $name = preg_replace('/[\[\]\*\?\/\\\\:]/', '', $name);
         return mb_substr($name, 0, 31);
+    }
+
+    private function formatRegionalName(?string $name): ?string
+    {
+        if (!$name) return null;
+        
+        $acronyms = ['DKI', 'DI', 'NTB', 'NTT', 'NAD', 'DIY'];
+        $words = explode(' ', strtolower($name));
+        
+        $formatted = array_map(function($word) use ($acronyms) {
+            $upper = strtoupper($word);
+            if (in_array($upper, $acronyms)) {
+                return $upper;
+            }
+            return ucfirst($word);
+        }, $words);
+
+        return implode(' ', $formatted);
     }
 
     private function formatTanggal(string $date): string

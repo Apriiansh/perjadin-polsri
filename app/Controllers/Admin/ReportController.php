@@ -70,8 +70,14 @@ class ReportController extends BaseController
 
 
 
+        /** @var SpjPdfTemplate $spjTemplate */
         $spjTemplate = new SpjPdfTemplate();
         $customDate = $this->request->getGet('stmt_date');
+        $noSppd = $this->request->getGet('no_sppd');
+        
+        if ($noSppd) {
+            $spjTemplate->setNoSppd($noSppd);
+        }
 
         // 2. Prepare ZIP
         $zip = new ZipArchive();

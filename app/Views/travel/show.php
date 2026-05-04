@@ -328,7 +328,8 @@
                                 <hr class="border-slate-100 my-2">
 
                                 <!-- Row 3: Bundle Excel full width -->
-                                <a href="<?= base_url('travel/' . $travelRequest->id . '/bundle-excel') ?>"
+                                 <a href="javascript:void(0)"
+                                    onclick="downloadWithDate('<?= base_url('travel/' . $travelRequest->id . '/bundle-excel') ?>', 'Pengaturan Download Bundle Excel')"
                                     class="flex items-center justify-between p-3 rounded-lg border border-amber-200 bg-amber-50/40 hover:bg-white hover:border-amber-400 transition-all group gap-3">
                                     <div class="flex items-center gap-3 min-w-0">
                                         <div class="w-8 h-8 rounded-md bg-white shadow-sm flex items-center justify-center shrink-0 group-hover:bg-amber-50">
@@ -394,12 +395,9 @@
                                 <strong>Status Draft:</strong> Pengajuan Anda sedang menunggu verifikasi dan pengisian rincian biaya oleh bagian Keuangan.
                             </p>
                         <?php endif; ?>
-                        <form action="<?= base_url('travel/' . $travelRequest->id . '/destroy') ?>" method="POST">
-                            <?= csrf_field() ?>
-                            <button type="submit" class="btn-danger w-full justify-center shadow-md hover:shadow-lg transition-all" onclick="return confirm('Apakah Anda yakin ingin menghapus permintaan dinas ini secara permanen?')">
-                                <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i> Hapus
-                            </button>
-                        </form>
+                        <button type="button" onclick="deleteTravel(<?= $travelRequest->id ?>)" class="btn-danger w-full justify-center shadow-md hover:shadow-lg transition-all">
+                            <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i> Hapus
+                        </button>
 
                     <?php elseif ($travelRequest->status === 'active'): ?>
                         <?php
@@ -456,9 +454,12 @@
                         </p>
 
                     <?php elseif ($travelRequest->status === 'cancelled'): ?>
-                        <p class="text-[10px] text-red-600 bg-red-50 p-2 rounded-lg leading-relaxed border border-red-100 italic">
+                        <p class="text-[10px] text-red-600 bg-red-50 p-2 rounded-lg leading-relaxed border border-red-100 italic mb-2">
                             <strong>Status Dibatalkan:</strong> Pengajuan perjalanan dinas ini telah dibatalkan.
                         </p>
+                        <button type="button" onclick="deleteTravel(<?= $travelRequest->id ?>)" class="btn-danger w-full justify-center shadow-md hover:shadow-lg transition-all">
+                            <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i> Hapus Permanen
+                        </button>
                     <?php endif; ?>
                 </div>
             </div>
@@ -921,7 +922,7 @@ if (($hasAnyDoc || $travelRequest->status === 'active') && !empty($members)):
             isConfirmed
         } = await Swal.fire({
             title: 'Batalkan Perjalanan Dinas?',
-            text: "Status perjalanan akan diubah menjadi 'Cancelled' dan proses akan dihentikan secara permanen.",
+            text: "Status perjalanan akan diubah menjadi 'Dibatalkan' dan proses akan dihentikan sementara.",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
@@ -930,27 +931,43 @@ if (($hasAnyDoc || $travelRequest->status === 'active') && !empty($members)):
             cancelButtonText: 'Tutup'
         });
         if (isConfirmed) {
-            try {
-                const response = await axios.post(`<?= base_url('travel') ?>/${id}/cancel`, {}, {
-                    headers: {
-                        'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
-                    }
-                });
-                if (response.data.status === 'success') {
-                    await Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: response.data.message,
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                    window.location.reload();
-                } else {
-                    Swal.fire('Gagal', response.data.message, 'error');
-                }
-            } catch (error) {
-                Swal.fire('Error', 'Terjadi kesalahan sistem saat membatalkan perjalanan.', 'error');
-            }
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `<?= base_url('travel') ?>/${id}/cancel`;
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '<?= csrf_token() ?>';
+            csrf.value = '<?= csrf_hash() ?>';
+            form.appendChild(csrf);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    async function deleteTravel(id) {
+        const {
+            isConfirmed
+        } = await Swal.fire({
+            title: 'Hapus Pengajuan?',
+            text: "Data pengajuan akan dihapus secara permanen dari sistem.",
+            icon: 'error',
+            showCancelButton: true,
+            confirmButtonColor: '#be123c',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        });
+        if (isConfirmed) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `<?= base_url('travel') ?>/${id}/destroy`;
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '<?= csrf_token() ?>';
+            csrf.value = '<?= csrf_hash() ?>';
+            form.appendChild(csrf);
+            document.body.appendChild(form);
+            form.submit();
         }
     }
 
@@ -993,12 +1010,31 @@ if (($hasAnyDoc || $travelRequest->status === 'active') && !empty($members)):
     }
 
     // Function to prompt for signature date using SweetAlert2
+    // Function to prompt for signature date and No SPPD using SweetAlert2
     async function downloadWithDate(url, title) {
         const result = await Swal.fire({
             title: title,
-            html: '<p class="text-xs text-slate-500 mb-2 leading-relaxed">Pilih tanggal untuk bagian tanda tangan Surat Pernyataan.<br>Biarkan sesuai input untuk menggunakan <b>Tanggal Surat Tugas</b> default.</p>',
-            input: 'date',
-            inputValue: '<?= $travelRequest->tgl_surat_tugas ?>',
+            html: `
+                <div class="text-left py-2">
+                    <div class="mb-4">
+                        <label for="swal-stmt-date" class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tanggal Surat Pernyataan</label>
+                        <input type="date" id="swal-stmt-date" class="swal2-input !mt-0 !w-full !text-sm !h-10" value="<?= $travelRequest->tgl_surat_tugas ?>">
+                        <p class="mt-1.5 text-[10px] text-slate-400 leading-relaxed italic">Default: Tanggal Surat Tugas (<?= date('d M Y', strtotime($travelRequest->tgl_surat_tugas)) ?>)</p>
+                    </div>
+                    <div>
+                        <label for="swal-no-sppd" class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Nomor SPPD</label>
+                        <input type="text" id="swal-no-sppd" class="swal2-input !mt-0 !w-full !text-sm !h-10" placeholder="xxxx/SPPD/BLU/<?= $travelRequest->tahun_anggaran ?? date('Y') ?>">
+                        <p class="mt-1.5 text-[10px] text-slate-400 leading-relaxed italic">Format Contoh: 0001/SPPD/BLU/<?= $travelRequest->tahun_anggaran ?? date('Y') ?></p>
+                    </div>
+                </div>
+            `,
+            focusConfirm: false,
+            preConfirm: () => {
+                return {
+                    stmt_date: document.getElementById('swal-stmt-date').value,
+                    no_sppd: document.getElementById('swal-no-sppd').value
+                }
+            },
             showCancelButton: true,
             confirmButtonText: 'Download',
             cancelButtonText: 'Batal',
@@ -1007,10 +1043,15 @@ if (($hasAnyDoc || $travelRequest->status === 'active') && !empty($members)):
         });
 
         if (result.isConfirmed) {
-            // result.value will contain the date string from the input
-            const dateVal = result.value;
+            const { stmt_date, no_sppd } = result.value;
+            const params = new URLSearchParams();
+            
+            if (stmt_date) params.append('stmt_date', stmt_date);
+            if (no_sppd) params.append('no_sppd', no_sppd);
+            
             const separator = url.includes('?') ? '&' : '?';
-            const finalUrl = dateVal ? `${url}${separator}stmt_date=${dateVal}` : url;
+            const finalUrl = params.toString() ? `${url}${separator}${params.toString()}` : url;
+            
             window.location.href = finalUrl;
         }
     }

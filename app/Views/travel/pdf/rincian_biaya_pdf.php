@@ -61,7 +61,7 @@
             <div class="info-row">
                 <span class="info-label bold">Lampiran SPPD Nomor</span>
                 <span class="info-colon">:</span>
-                <span class="info-value"><?= esc($member->no_sppd ?: '          /SPPD/BLU/' . ($travelRequest->tahun_anggaran ?: date('Y'))) ?></span>
+                <span class="info-value"><?= esc($custom_no_sppd ?: ($member->no_sppd ?: '          /SPPD/BLU/' . ($travelRequest->tahun_anggaran ?: date('Y')))) ?></span>
             </div>
             <div class="info-row">
                 <span class="info-label bold">Tanggal</span>
@@ -269,7 +269,7 @@
             <div class="info-row">
                 <span class="info-label" style="padding-left: 20px; width: 140px;">Nomor</span>
                 <span class="info-colon">:</span>
-                <span class="info-value"><?= esc($member->no_sppd ?: '          /SPPD/BLU/' . ($travelRequest->tahun_anggaran ?: date('Y'))) ?></span>
+                <span class="info-value"><?= esc($custom_no_sppd ?: ($member->no_sppd ?: '          /SPPD/BLU/' . ($travelRequest->tahun_anggaran ?: date('Y')))) ?></span>
             </div>
             <div class="info-row">
                 <span class="info-label" style="padding-left: 20px; width: 140px;">Tanggal</span>
@@ -279,7 +279,7 @@
             <div class="info-row mt-10">
                 <span class="info-label">Untuk Perjalanan Dinas</span>
                 <span class="info-colon">:</span>
-                <span class="info-value"><?= esc($travelRequest->departure_place ?: 'Palembang') ?> ke <?= esc($tujuan) ?></span>
+                <span class="info-value"><?= esc($travelRequest->departure_place ?: 'Palembang') ?> - <?= esc($tujuan) ?></span>
             </div>
         </div>
 

@@ -269,17 +269,24 @@
                                     <?php endif; ?>
                                 <?php endif; ?>
 
-                                <?php if ($isStaff && $req->status === 'draft'): ?>
-                                    <div class="h-4 w-px bg-slate-100 mx-0.5"></div>
-                                    <a href="<?= base_url('travel/' . $req->id . '/edit') ?>" class="flex h-8 w-8 items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 shadow-sm hover:text-blue-600 hover:bg-blue-50 transition-colors" title="Edit Data Dasar">
-                                        <i data-lucide="edit-2" class="w-4 h-4"></i>
-                                    </a>
-                                    <form action="<?= base_url('travel/' . $req->id . '/destroy') ?>" method="post" onsubmit="return confirm('Hapus pengajuan ini secara permanen?')">
-                                        <?= csrf_field() ?>
-                                        <button type="submit" class="flex h-8 w-8 items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 shadow-sm hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus">
+                                <?php if ($isStaff): ?>
+                                    <?php if ($req->status === 'active'): ?>
+                                        <button type="button" onclick="confirmCancel(<?= $req->id ?>)" class="flex h-8 w-8 items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 shadow-sm hover:text-red-600 hover:bg-red-50 transition-colors" title="Batalkan">
+                                            <i data-lucide="x-circle" class="w-4 h-4"></i>
+                                        </button>
+                                    <?php endif; ?>
+
+                                    <?php if (in_array($req->status, ['draft', 'cancelled'])): ?>
+                                        <div class="h-4 w-px bg-slate-100 mx-0.5"></div>
+                                        <?php if ($req->status === 'draft'): ?>
+                                            <a href="<?= base_url('travel/' . $req->id . '/edit') ?>" class="flex h-8 w-8 items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 shadow-sm hover:text-blue-600 hover:bg-blue-50 transition-colors" title="Edit Data Dasar">
+                                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                            </a>
+                                        <?php endif; ?>
+                                        <button type="button" onclick="confirmDelete(<?= $req->id ?>)" class="flex h-8 w-8 items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 shadow-sm hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus">
                                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                                         </button>
-                                    </form>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                                 <!-- Detail -->
                                 <a href="<?= base_url('travel/' . $req->id) ?>"
@@ -300,5 +307,59 @@
 <?= $this->section('pageScripts') ?>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="<?= base_url('assets/js/travel.js') ?>" defer></script>
+<script>
+    async function confirmCancel(id) {
+        const { isConfirmed } = await Swal.fire({
+            title: 'Batalkan Perjalanan Dinas?',
+            text: "Status perjalanan akan diubah menjadi 'Dibatalkan'.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Batalkan!',
+            cancelButtonText: 'Tutup'
+        });
+
+        if (isConfirmed) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `<?= base_url('travel') ?>/${id}/cancel`;
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '<?= csrf_token() ?>';
+            csrf.value = '<?= csrf_hash() ?>';
+            form.appendChild(csrf);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    async function confirmDelete(id) {
+        const { isConfirmed } = await Swal.fire({
+            title: 'Hapus Pengajuan?',
+            text: "Data pengajuan akan dihapus secara permanen.",
+            icon: 'error',
+            showCancelButton: true,
+            confirmButtonColor: '#be123c',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        });
+
+        if (isConfirmed) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `<?= base_url('travel') ?>/${id}/destroy`;
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '<?= csrf_token() ?>';
+            csrf.value = '<?= csrf_hash() ?>';
+            form.appendChild(csrf);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+</script>
 <?= $this->endSection() ?>
